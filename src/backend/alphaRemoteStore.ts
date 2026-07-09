@@ -1,11 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { STORAGE_KEY, STATE_SCHEMA_VERSION } from '../data';
+import { STORAGE_KEY, STATE_SCHEMA_VERSION, createInitialState } from '../data';
 import { AppState } from '../types';
 import { supabase } from './supabaseClient';
 import { Json } from './supabaseTypes';
 
 const SYNC_META_KEY = `${STORAGE_KEY}:sync-meta`;
+const USER_CACHE_PREFIX = `${STORAGE_KEY}:user-cache`;
 
 interface SyncMeta {
   userId: string;
@@ -39,14 +40,27 @@ async function writeSyncMeta(meta: SyncMeta) {
   await AsyncStorage.setItem(SYNC_META_KEY, JSON.stringify(meta));
 }
 
-export async function markLocalStateUpdated(userId?: string | null) {
-  if (!userId) return;
-  const previous = await readSyncMeta();
-  await writeSyncMeta({
-    userId,
-    localUpdatedAt: new Date().toISOString(),
-    remoteUpdatedAt: previous?.userId === userId ? previous.remoteUpdatedAt : undefined,
-  });
+function userCacheKey(userId: string) {
+  return `${USER_CACHE_PREFIX}:${userId}`;
+}
+
+export async function readCachedStateForUser(userId: string): Promise<AppState | null> {
+  const raw = await AsyncStorage.getItem(userCacheKey(userId));
+  if (!raw) return null;
+  const parsed = JSON.parse(raw) as unknown;
+  return isAppState(parsed) ? parsed : null;
+}
+
+export async function writeCachedStateForUser(userId: string, state: AppState, syncedAt?: string) {
+  const updatedAt = syncedAt ?? new Date().toISOString();
+  await Promise.all([
+    AsyncStorage.setItem(userCacheKey(userId), JSON.stringify(state)),
+    writeSyncMeta({
+      userId,
+      localUpdatedAt: updatedAt,
+      remoteUpdatedAt: syncedAt,
+    }),
+  ]);
 }
 
 export async function getRemoteSnapshot(userId: string): Promise<RemoteSnapshot | null> {
@@ -66,24 +80,23 @@ export async function getRemoteSnapshot(userId: string): Promise<RemoteSnapshot 
   };
 }
 
-export async function chooseStateForUser(userId: string, localState: AppState) {
-  const [meta, remote] = await Promise.all([readSyncMeta(), getRemoteSnapshot(userId)]);
-  if (!remote) return { state: localState, shouldPushLocal: true, remoteUpdatedAt: undefined };
+export async function chooseStateForUser(userId: string) {
+  const [meta, remote, cached] = await Promise.all([
+    readSyncMeta(),
+    getRemoteSnapshot(userId),
+    readCachedStateForUser(userId),
+  ]);
 
-  const localKnownForUser = meta?.userId === userId;
-  const localUpdatedAt = localKnownForUser ? meta.localUpdatedAt : undefined;
-  const shouldUseRemote = !localUpdatedAt || remote.updatedAt > localUpdatedAt;
-
-  if (shouldUseRemote) {
-    await writeSyncMeta({
-      userId,
-      localUpdatedAt: remote.updatedAt,
-      remoteUpdatedAt: remote.updatedAt,
-    });
+  if (remote) {
+    await writeCachedStateForUser(userId, remote.state, remote.updatedAt);
     return { state: remote.state, shouldPushLocal: false, remoteUpdatedAt: remote.updatedAt };
   }
 
-  return { state: localState, shouldPushLocal: true, remoteUpdatedAt: remote.updatedAt };
+  if (meta?.userId === userId && cached) {
+    return { state: cached, shouldPushLocal: true, remoteUpdatedAt: undefined };
+  }
+
+  return { state: createInitialState(), shouldPushLocal: true, remoteUpdatedAt: undefined };
 }
 
 export async function pushRemoteState(userId: string, state: AppState) {
@@ -101,11 +114,7 @@ export async function pushRemoteState(userId: string, state: AppState) {
 
   if (error) throw error;
 
-  await writeSyncMeta({
-    userId,
-    localUpdatedAt: updatedAt,
-    remoteUpdatedAt: updatedAt,
-  });
+  await writeCachedStateForUser(userId, state, updatedAt);
 
   return updatedAt;
 }

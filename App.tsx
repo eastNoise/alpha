@@ -811,7 +811,7 @@ function SettingsScreen({
         ? '동기화 중'
         : syncStatus.mode === 'error'
           ? '확인 필요'
-          : '로컬';
+          : '로그인 필요';
   return (
     <AppScreen>
       <TopBar title="설정" onBack={onBack} />

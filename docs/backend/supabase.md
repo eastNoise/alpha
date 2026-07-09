@@ -2,7 +2,7 @@
 
 ## 목표
 
-ALPHA 앱은 로컬 우선으로 동작하고, Supabase 로그인이 활성화되면 같은 `AppState`를 사용자 계정에 동기화한다. 화면과 도메인 로직은 Supabase API를 직접 호출하지 않고 `src/backend` 저장소 계층만 통한다.
+ALPHA 앱은 로그인 사용자를 기본 전제로 두고 Supabase의 사용자별 상태를 정본으로 사용한다. 기기 저장소는 빠른 재시작, 오프라인 임시 사용, 네트워크 실패 복구를 위한 사용자별 캐시로만 둔다. 화면과 도메인 로직은 Supabase API를 직접 호출하지 않고 `src/backend` 저장소 계층만 통한다.
 
 ## 설정 순서
 
@@ -16,7 +16,7 @@ ALPHA 앱은 로컬 우선으로 동작하고, Supabase 로그인이 활성화�
 ## 현재 테이블
 
 - `profiles`: Supabase Auth 사용자에 붙는 앱 프로필.
-- `alpha_state_snapshots`: v19 앱 상태 전체 스냅샷. `schema_version`으로 마이그레이션 경계를 둔다.
+- `alpha_state_snapshots`: v19 앱 상태 전체 스냅샷. 로그인 사용자의 현재 진행 상태 정본이며, `schema_version`으로 마이그레이션 경계를 둔다.
 - `push_tokens`: 실제 원격 푸시 발송용 Expo push token 저장소. EAS project id가 없으면 앱은 토큰 저장을 건너뛰고 로컬 알림만 사용한다.
 
 ## 알림 정책

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { chooseStateForUser, pushRemoteState } from '../backend/alphaRemoteStore';
+import { chooseStateForUser, pushRemoteState, writeCachedStateForUser } from '../backend/alphaRemoteStore';
 import {
   STATE_SCHEMA_VERSION,
   STORAGE_KEY,
@@ -27,7 +27,7 @@ import { AppState, DayRecord, Routine, ScreenName } from '../types';
 
 export type OverlayName = 'finish' | 'reflection' | 'addRoutine' | 'dayDetail' | 'resetData' | 'appInfo' | null;
 export type AlphaSyncStatus = {
-  mode: 'local' | 'remote' | 'syncing' | 'error';
+  mode: 'signedOut' | 'remote' | 'syncing' | 'error';
   lastSyncedAt?: string;
   message: string;
 };
@@ -45,8 +45,8 @@ export function useAlphaController(syncUserId?: string | null) {
   const [selectedScope, setSelectedScope] = useState<(typeof scopes)[number]>('이번 과정 동안');
   const [toast, setToast] = useState('');
   const [syncStatus, setSyncStatus] = useState<AlphaSyncStatus>({
-    mode: 'local',
-    message: '로컬 저장 중',
+    mode: 'signedOut',
+    message: '로그인 대기 중',
   });
   const remoteHydratedForRef = useRef<string | null>(null);
 
@@ -147,11 +147,12 @@ export function useAlphaController(syncUserId?: string | null) {
       .then(async () => {
         if (!syncUserId || remoteHydratedForRef.current !== syncUserId) {
           setSyncStatus({
-            mode: 'local',
-            message: '로컬 저장 중',
+            mode: 'signedOut',
+            message: '로그인 후 서버 저장',
           });
           return;
         }
+        await writeCachedStateForUser(syncUserId, state);
         setSyncStatus((prev) => ({
           ...prev,
           mode: 'syncing',
@@ -166,8 +167,8 @@ export function useAlphaController(syncUserId?: string | null) {
       })
       .catch(() => {
         setSyncStatus({
-          mode: syncUserId ? 'error' : 'local',
-          message: syncUserId ? '서버 동기화 실패' : '로컬 저장 실패',
+          mode: 'error',
+          message: syncUserId ? '서버 동기화 실패' : '로그인이 필요합니다',
         });
         showToast('상태 저장에 실패했습니다.');
       });
@@ -178,8 +179,8 @@ export function useAlphaController(syncUserId?: string | null) {
     if (!syncUserId) {
       remoteHydratedForRef.current = null;
       setSyncStatus({
-        mode: 'local',
-        message: '로컬 저장 중',
+        mode: 'signedOut',
+        message: '로그인 후 서버 저장',
       });
       return undefined;
     }
@@ -190,7 +191,7 @@ export function useAlphaController(syncUserId?: string | null) {
       mode: 'syncing',
       message: '서버 상태 확인 중',
     });
-    chooseStateForUser(syncUserId, state)
+    chooseStateForUser(syncUserId)
       .then(async ({ remoteUpdatedAt, shouldPushLocal, state: nextState }) => {
         if (!mounted) return;
         remoteHydratedForRef.current = syncUserId;
@@ -219,7 +220,7 @@ export function useAlphaController(syncUserId?: string | null) {
           mode: 'error',
           message: '서버 동기화 실패',
         });
-        showToast('원격 동기화에 실패했습니다. 로컬 상태로 계속합니다.');
+        showToast('서버 상태를 불러오지 못했습니다. 다시 시도해 주세요.');
       });
 
     return () => {
