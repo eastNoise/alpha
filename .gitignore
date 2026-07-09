@@ -5,7 +5,9 @@ node_modules/
 
 # Expo
 .expo/
+/build/
 dist/
+dist-sdk*/
 web-build/
 expo-env.d.ts
 
@@ -36,6 +38,11 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# iOS generated dependency/build output
+/ios/Pods/
+/ios/build/
+/ios/DerivedData/
+ios/**/*.xcuserdata/
+
 # generated native folders
-/ios
 /android

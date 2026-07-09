@@ -1,13 +1,19 @@
 {
   "expo": {
     "name": "ALPHA",
-    "slug": "ALPHA",
+    "slug": "alpha",
+    "scheme": "alpha",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.eastnoise.alpha",
+      "buildNumber": "2",
+      "supportsTablet": false,
+      "infoPlist": {
+        "UIUserInterfaceStyle": "Dark"
+      }
     },
     "android": {
       "adaptiveIcon": {
