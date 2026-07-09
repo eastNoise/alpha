@@ -1,21 +1,38 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { chooseStateForUser, pushRemoteState } from '../backend/alphaRemoteStore';
 import {
   STATE_SCHEMA_VERSION,
   STORAGE_KEY,
-  basicRoutines,
   categories,
   createInitialState,
+  dateForCourseDay,
   getTodayKey,
   scopes,
 } from '../data';
-import { cloneRoutines, doneCount, sortRecords, streakCount } from '../domain/alpha';
+import {
+  courseStateFor,
+  createRecordForDay,
+  doneCount,
+  elapsedCourseDayForDate,
+  mergeRecord,
+  nextPhraseTone,
+  resetRoutineCompletion,
+  routinesForNewDay,
+  sortRecords,
+  streakCount,
+} from '../domain/alpha';
 import { AppState, DayRecord, Routine, ScreenName } from '../types';
 
-export type OverlayName = 'finish' | 'reflection' | 'addRoutine' | 'dayDetail' | null;
+export type OverlayName = 'finish' | 'reflection' | 'addRoutine' | 'dayDetail' | 'resetData' | 'appInfo' | null;
+export type AlphaSyncStatus = {
+  mode: 'local' | 'remote' | 'syncing' | 'error';
+  lastSyncedAt?: string;
+  message: string;
+};
 
-export function useAlphaController() {
+export function useAlphaController(syncUserId?: string | null) {
   const [state, setState] = useState<AppState>(() => createInitialState());
   const [ready, setReady] = useState(false);
   const [screen, setScreen] = useState<ScreenName>('onboarding');
@@ -27,9 +44,14 @@ export function useAlphaController() {
   const [selectedCat, setSelectedCat] = useState<(typeof categories)[number]>('몸');
   const [selectedScope, setSelectedScope] = useState<(typeof scopes)[number]>('이번 과정 동안');
   const [toast, setToast] = useState('');
+  const [syncStatus, setSyncStatus] = useState<AlphaSyncStatus>({
+    mode: 'local',
+    message: '로컬 저장 중',
+  });
+  const remoteHydratedForRef = useRef<string | null>(null);
 
   const todayKey = state.today.date || getTodayKey();
-  const routines = state.routinesByDate[todayKey] ?? basicRoutines;
+  const routines = state.routinesByDate[todayKey] ?? routinesForNewDay(state);
   const done = doneCount(routines);
   const total = routines.length || 1;
   const missed = total - done;
@@ -54,24 +76,59 @@ export function useAlphaController() {
             return;
           }
           const currentDate = getTodayKey();
-          const routinesForDate = parsed.routinesByDate?.[parsed.today.date] ?? basicRoutines;
           const hydrated: AppState = {
             ...createInitialState(),
             ...parsed,
             routinesByDate: {
-              ...parsed.routinesByDate,
-              [parsed.today.date]: routinesForDate,
+              ...(parsed.routinesByDate ?? {}),
             },
           };
+          hydrated.currentCourse = courseStateFor(hydrated, hydrated.today.date, hydrated.records);
+
           if (parsed.today.date !== currentDate) {
+            let records = hydrated.records;
+            let routinesByDate = hydrated.routinesByDate;
+
+            if (hydrated.hasOnboarded) {
+              const lastClosableDay = Math.min(30, elapsedCourseDayForDate(hydrated.currentCourse.startedAt, currentDate) - 1);
+              for (let day = hydrated.currentCourse.day; day <= lastClosableDay; day += 1) {
+                if (records.some((record) => record.day === day)) continue;
+                const date = day === hydrated.currentCourse.day
+                  ? hydrated.today.date
+                  : dateForCourseDay(hydrated.currentCourse.startedAt, day);
+                const dayRoutines = routinesByDate[date] ?? routinesForNewDay({ ...hydrated, records, routinesByDate });
+                const status = doneCount(dayRoutines) === dayRoutines.length ? 'complete' : 'incomplete';
+                records = mergeRecord(
+                  records,
+                  createRecordForDay({
+                    closedAt: new Date().toISOString(),
+                    date,
+                    day,
+                    level: hydrated.currentCourse.level,
+                    routines: dayRoutines,
+                    status,
+                  }),
+                );
+                routinesByDate = {
+                  ...routinesByDate,
+                  [date]: dayRoutines,
+                };
+              }
+            }
+
             hydrated.today = {
               date: currentDate,
               isClosed: false,
               hasReflection: false,
               result: null,
             };
-            hydrated.routinesByDate[currentDate] = cloneRoutines(basicRoutines);
+            hydrated.routinesByDate = {
+              ...routinesByDate,
+              [currentDate]: routinesByDate[currentDate] ?? routinesForNewDay({ ...hydrated, records, routinesByDate }),
+            };
+            hydrated.records = records;
           }
+          hydrated.currentCourse = courseStateFor(hydrated, currentDate, hydrated.records);
           setState(hydrated);
           setScreen(hydrated.hasOnboarded ? 'today' : 'onboarding');
         }
@@ -86,10 +143,89 @@ export function useAlphaController() {
 
   useEffect(() => {
     if (!ready) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {
-      showToast('상태 저장에 실패했습니다.');
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      .then(async () => {
+        if (!syncUserId || remoteHydratedForRef.current !== syncUserId) {
+          setSyncStatus({
+            mode: 'local',
+            message: '로컬 저장 중',
+          });
+          return;
+        }
+        setSyncStatus((prev) => ({
+          ...prev,
+          mode: 'syncing',
+          message: '서버 동기화 중',
+        }));
+        const lastSyncedAt = await pushRemoteState(syncUserId, state);
+        setSyncStatus({
+          mode: 'remote',
+          lastSyncedAt: lastSyncedAt ?? undefined,
+          message: '서버 동기화 완료',
+        });
+      })
+      .catch(() => {
+        setSyncStatus({
+          mode: syncUserId ? 'error' : 'local',
+          message: syncUserId ? '서버 동기화 실패' : '로컬 저장 실패',
+        });
+        showToast('상태 저장에 실패했습니다.');
+      });
+  }, [ready, state, syncUserId]);
+
+  useEffect(() => {
+    if (!ready) return undefined;
+    if (!syncUserId) {
+      remoteHydratedForRef.current = null;
+      setSyncStatus({
+        mode: 'local',
+        message: '로컬 저장 중',
+      });
+      return undefined;
+    }
+    if (remoteHydratedForRef.current === syncUserId) return undefined;
+
+    let mounted = true;
+    setSyncStatus({
+      mode: 'syncing',
+      message: '서버 상태 확인 중',
     });
-  }, [ready, state]);
+    chooseStateForUser(syncUserId, state)
+      .then(async ({ remoteUpdatedAt, shouldPushLocal, state: nextState }) => {
+        if (!mounted) return;
+        remoteHydratedForRef.current = syncUserId;
+        if (nextState !== state) {
+          setState(nextState);
+          setScreen(nextState.hasOnboarded ? 'today' : 'onboarding');
+        }
+        if (shouldPushLocal && !remoteUpdatedAt) {
+          const lastSyncedAt = await pushRemoteState(syncUserId, nextState);
+          setSyncStatus({
+            mode: 'remote',
+            lastSyncedAt: lastSyncedAt ?? undefined,
+            message: '서버 동기화 완료',
+          });
+        } else {
+          setSyncStatus({
+            mode: 'remote',
+            lastSyncedAt: remoteUpdatedAt,
+            message: '서버 상태 적용 완료',
+          });
+        }
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setSyncStatus({
+          mode: 'error',
+          message: '서버 동기화 실패',
+        });
+        showToast('원격 동기화에 실패했습니다. 로컬 상태로 계속합니다.');
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [ready, syncUserId]);
 
   useEffect(() => {
     if (!toast) return;
@@ -152,6 +288,14 @@ export function useAlphaController() {
     const status = done === total ? 'complete' : 'incomplete';
     const closedAt = new Date().toISOString();
     const record: DayRecord = {
+      ...createRecordForDay({
+        closedAt,
+        date: state.today.date,
+        day: state.currentCourse.day,
+        level: state.currentCourse.level,
+        routines,
+        status,
+      }),
       id: `day-${state.currentCourse.day}`,
       date: state.today.date,
       course: state.currentCourse.level,
@@ -164,17 +308,21 @@ export function useAlphaController() {
       reflection: todayRecord?.reflection,
     };
 
-    setState((prev) => ({
-      ...prev,
-      today: {
-        ...prev.today,
-        isClosed: true,
-        hasReflection: Boolean(todayRecord?.reflection),
-        result: status,
-        closedAt,
-      },
-      records: [record, ...prev.records.filter((item) => item.day !== prev.currentCourse.day)],
-    }));
+    setState((prev) => {
+      const records = mergeRecord(prev.records, record);
+      return {
+        ...prev,
+        currentCourse: courseStateFor(prev, prev.today.date, records),
+        today: {
+          ...prev.today,
+          isClosed: true,
+          hasReflection: Boolean(todayRecord?.reflection),
+          result: status,
+          closedAt,
+        },
+        records,
+      };
+    });
     setOverlay('finish');
   }
 
@@ -188,6 +336,14 @@ export function useAlphaController() {
     const closedAt = state.today.closedAt ?? new Date().toISOString();
     const status = state.today.result ?? (done === total ? 'complete' : 'incomplete');
     const record: DayRecord = {
+      ...createRecordForDay({
+        closedAt,
+        date: state.today.date,
+        day: state.currentCourse.day,
+        level: state.currentCourse.level,
+        routines,
+        status,
+      }),
       id: `day-${state.currentCourse.day}`,
       date: state.today.date,
       course: state.currentCourse.level,
@@ -200,17 +356,21 @@ export function useAlphaController() {
       closedAt,
     };
 
-    setState((prev) => ({
-      ...prev,
-      today: {
-        ...prev.today,
-        isClosed: true,
-        hasReflection: true,
-        result: status,
-        closedAt,
-      },
-      records: [record, ...prev.records.filter((item) => item.day !== prev.currentCourse.day)],
-    }));
+    setState((prev) => {
+      const records = mergeRecord(prev.records, record);
+      return {
+        ...prev,
+        currentCourse: courseStateFor(prev, prev.today.date, records),
+        today: {
+          ...prev.today,
+          isClosed: true,
+          hasReflection: true,
+          result: status,
+          closedAt,
+        },
+        records,
+      };
+    });
     setReflectionText('');
     setOverlay(null);
     showToast('하루 회고가 저장되었습니다.');
@@ -239,6 +399,15 @@ export function useAlphaController() {
     showToast('개인 루틴이 추가되었습니다.');
   }
 
+  function removePersonalRoutine(id: string) {
+    if (state.today.isClosed) {
+      showToast('마감 후에는 루틴을 삭제할 수 없습니다.');
+      return;
+    }
+    updateTodayRoutines(routines.filter((routine) => routine.id !== id));
+    showToast('개인 루틴이 삭제되었습니다.');
+  }
+
   function openAddRoutine() {
     if (state.today.isClosed) {
       showToast('마감 후에는 루틴을 추가할 수 없습니다.');
@@ -263,10 +432,56 @@ export function useAlphaController() {
     setScreen('onboarding');
   }
 
+  function cyclePhraseTone() {
+    setState((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        phraseTone: nextPhraseTone(prev.settings.phraseTone),
+      },
+    }));
+  }
+
+  function toggleNotifications() {
+    setState((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        notificationsEnabled: !prev.settings.notificationsEnabled,
+      },
+    }));
+  }
+
+  function toggleHaptics() {
+    setState((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        hapticsEnabled: !prev.settings.hapticsEnabled,
+      },
+    }));
+  }
+
+  function resetData() {
+    const fresh = createInitialState();
+    setState({
+      ...fresh,
+      hasOnboarded: true,
+      routinesByDate: {
+        [fresh.today.date]: resetRoutineCompletion(fresh.routinesByDate[fresh.today.date]),
+      },
+    });
+    setStack([]);
+    setScreen('today');
+    setOverlay(null);
+    showToast('기록이 초기화되었습니다.');
+  }
+
   return {
     addPersonalRoutine,
     back,
     closeDay,
+    cyclePhraseTone,
     done,
     go,
     logout,
@@ -277,6 +492,8 @@ export function useAlphaController() {
     rate,
     ready,
     reflectionText,
+    removePersonalRoutine,
+    resetData,
     routineName,
     routines,
     saveReflection,
@@ -297,7 +514,10 @@ export function useAlphaController() {
     startOnboarding,
     state,
     streak,
+    syncStatus,
     toast,
+    toggleHaptics,
+    toggleNotifications,
     toggleRoutine,
     total,
   };

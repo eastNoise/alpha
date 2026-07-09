@@ -82,7 +82,7 @@ export function createInitialState(): AppState {
       result: null,
     },
     routinesByDate: {
-      [todayKey]: basicRoutines,
+      [todayKey]: basicRoutines.map((routine) => ({ ...routine })),
     },
     records: [],
     settings: {

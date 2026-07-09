@@ -9,9 +9,10 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.eastnoise.alpha",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "supportsTablet": false,
       "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true,
         "UIUserInterfaceStyle": "Dark"
       }
     },
@@ -26,6 +27,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-apple-authentication",
+      "expo-notifications",
+      "expo-web-browser"
+    ]
   }
 }

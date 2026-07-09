@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -30,8 +31,13 @@ import {
   stageForDay,
   stageItems,
 } from './src/data';
+import { AuthUser } from './src/auth/types';
+import { useAlphaAuth } from './src/auth/useAlphaAuth';
+import { upsertPushToken } from './src/backend/pushTokenStore';
 import { doneCount, resultLabel, stageTitleForDay } from './src/domain/alpha';
-import { useAlphaController } from './src/state/useAlphaController';
+import { playHaptic } from './src/device/haptics';
+import { getExpoPushTokenIfAvailable, syncDailyCloseReminder } from './src/device/notifications';
+import { AlphaSyncStatus, useAlphaController } from './src/state/useAlphaController';
 import { colors, radius, spacing, typography } from './src/theme';
 import { AppState, DayRecord, Routine, ScreenName } from './src/types';
 import { visuals } from './src/visuals';
@@ -41,6 +47,36 @@ const mainTabs: Array<{ id: ScreenName; label: string; icon: string }> = [
   { id: 'records', label: '기록', icon: '▤' },
   { id: 'course', label: '과정', icon: '◷' },
 ];
+
+function stagePeriodForDay(day: number) {
+  const stage = stageForDay(day);
+  if (stage === 1) return 'Day 1 - 7';
+  if (stage === 2) return 'Day 8 - 14';
+  if (stage === 3) return 'Day 15 - 21';
+  return 'Day 22 - 30';
+}
+
+function stageQuoteForDay(day: number) {
+  const stage = stageForDay(day);
+  if (stage === 1) return '“너 자신을 깨워라.”';
+  if (stage === 2) return '“몸을 먼저 움직여라.”';
+  if (stage === 3) return '“기록은 기준을 만든다.”';
+  return '“흔들려도 기준으로 돌아와라.”';
+}
+
+function stageBulletsForDay(day: number) {
+  const stage = stageForDay(day);
+  if (stage === 1) return ['물 500ml', '침대 정리', '푸쉬업 30개'];
+  if (stage === 2) return ['기초 루틴 유지', '몸 깨우기 루틴 강화', '미완성도 기록'];
+  if (stage === 3) return ['하루 회고 고정', '기록 모음 확인', '개인 루틴 조정'];
+  return ['마감 기준 유지', '흔들린 날 복귀', '30일 기록 완성'];
+}
+
+function phraseForTone(tone: AppState['settings']['phraseTone']) {
+  if (tone === 'hard') return { first: '핑계 없이', second: '움직여라.' };
+  if (tone === 'cold') return { first: '기록은', second: '거짓말하지 않는다.' };
+  return { first: '흔들려도', second: '이어가라.' };
+}
 
 export default function App() {
   return (
@@ -52,11 +88,13 @@ export default function App() {
 
 function AlphaApp() {
   const insets = useSafeAreaInsets();
-  const alpha = useAlphaController();
+  const auth = useAlphaAuth();
+  const alpha = useAlphaController(auth.user?.remoteBacked ? auth.user.supabaseUserId : null);
   const {
     addPersonalRoutine,
     back,
     closeDay,
+    cyclePhraseTone,
     done,
     go,
     logout,
@@ -67,6 +105,8 @@ function AlphaApp() {
     rate,
     ready,
     reflectionText,
+    removePersonalRoutine,
+    resetData,
     routineName,
     routines,
     saveReflection,
@@ -87,7 +127,10 @@ function AlphaApp() {
     startOnboarding,
     state,
     streak,
+    syncStatus,
     toast,
+    toggleHaptics,
+    toggleNotifications,
     toggleRoutine,
     total,
   } = alpha;
@@ -95,11 +138,57 @@ function AlphaApp() {
   const calendarGap = 8;
   const calendarCellSize = Math.floor((windowWidth - spacing.screenX * 2 - calendarGap * 6) / 7);
   const calendarWidth = calendarCellSize * 7 + calendarGap * 6;
+  const hapticsEnabled = state.settings.hapticsEnabled;
+
+  useEffect(() => {
+    if (!ready) return;
+    syncDailyCloseReminder(state.settings.notificationsEnabled)
+      .then((result) => {
+        if (result === 'denied') showToast('알림 권한이 꺼져 있습니다.');
+      })
+      .catch(() => {
+        showToast('알림 설정에 실패했습니다.');
+      });
+  }, [ready, state.settings.notificationsEnabled]);
+
+  useEffect(() => {
+    const userId = auth.user?.remoteBacked ? auth.user.supabaseUserId : null;
+    if (!ready || !userId || !state.settings.notificationsEnabled) return;
+
+    getExpoPushTokenIfAvailable()
+      .then((token) => {
+        if (!token) return;
+        return upsertPushToken({
+          enabled: state.settings.notificationsEnabled,
+          token,
+          userId,
+        });
+      })
+      .catch(() => undefined);
+  }, [auth.user?.remoteBacked, auth.user?.supabaseUserId, ready, state.settings.notificationsEnabled]);
+
+  function withHaptic(type: Parameters<typeof playHaptic>[1], action: () => void) {
+    return () => {
+      playHaptic(hapticsEnabled, type);
+      action();
+    };
+  }
 
   function renderScreen() {
     switch (screen) {
       case 'onboarding':
-        return <OnboardingScreen onStart={startOnboarding} />;
+        return (
+          <OnboardingScreen
+            appleAvailable={auth.appleAvailable}
+            authMessage={auth.message}
+            authStatus={auth.status}
+            googleConfigured={auth.googleConfigured}
+            user={auth.user}
+            onAppleSignIn={withHaptic('light', auth.signInWithApple)}
+            onGoogleSignIn={withHaptic('light', auth.signInWithGoogle)}
+            onStart={withHaptic('success', startOnboarding)}
+          />
+        );
       case 'today':
         return (
           <TodayScreen
@@ -110,11 +199,18 @@ function AlphaApp() {
             state={state}
             streak={streak}
             total={total}
-            onAddRoutine={openAddRoutine}
-            onCloseDay={closeDay}
-            onOpenReflection={() => setOverlay('reflection')}
-            onSettings={() => go('settings')}
-            onToggleRoutine={toggleRoutine}
+            onAddRoutine={withHaptic('light', openAddRoutine)}
+            onCloseDay={withHaptic('success', closeDay)}
+            onOpenReflection={withHaptic('light', () => setOverlay('reflection'))}
+            onRemoveRoutine={(id) => {
+              playHaptic(hapticsEnabled, 'warning');
+              removePersonalRoutine(id);
+            }}
+            onSettings={withHaptic('selection', () => go('settings'))}
+            onToggleRoutine={(id) => {
+              playHaptic(hapticsEnabled, 'selection');
+              toggleRoutine(id);
+            }}
           />
         );
       case 'records':
@@ -127,39 +223,60 @@ function AlphaApp() {
             state={state}
             streak={streak}
             total={total}
-            onCollection={() => go('collection')}
-            onDetail={() => go('detail')}
-            onSettings={() => go('settings')}
+            onCollection={withHaptic('selection', () => go('collection'))}
+            onDetail={withHaptic('selection', () => go('detail'))}
+            onSettings={withHaptic('selection', () => go('settings'))}
           />
         );
       case 'course':
         return (
           <CourseScreen
             state={state}
-            onDetail={() => go('detail')}
-            onSettings={() => go('settings')}
+            onDetail={withHaptic('selection', () => go('detail'))}
+            onSettings={withHaptic('selection', () => go('settings'))}
           />
         );
       case 'settings':
-        return <SettingsScreen state={state} onBack={back} onLogout={logout} onToast={showToast} />;
+        return (
+          <SettingsScreen
+            state={state}
+            syncStatus={syncStatus}
+            user={auth.user}
+            onBack={withHaptic('selection', back)}
+            onCyclePhraseTone={withHaptic('selection', cyclePhraseTone)}
+            onDataReset={withHaptic('warning', () => setOverlay('resetData'))}
+            onHapticsToggle={withHaptic('selection', toggleHaptics)}
+            onInfo={withHaptic('selection', () => setOverlay('appInfo'))}
+            onLogout={() => {
+              playHaptic(hapticsEnabled, 'warning');
+              auth.signOut();
+              logout();
+            }}
+            onNotificationsToggle={withHaptic('selection', toggleNotifications)}
+            onToast={showToast}
+          />
+        );
       case 'detail':
         return (
           <DetailScreen
             calendarCellSize={calendarCellSize}
             calendarWidth={calendarWidth}
             state={state}
-            onBack={back}
-            onOpenDay={openDay}
+            onBack={withHaptic('selection', back)}
+            onOpenDay={(day) => {
+              playHaptic(hapticsEnabled, 'selection');
+              openDay(day);
+            }}
           />
         );
       case 'collection':
-        return <CollectionScreen records={sortedRecords} onBack={back} />;
+        return <CollectionScreen records={sortedRecords} onBack={withHaptic('selection', back)} />;
       default:
         return null;
     }
   }
 
-  if (!ready) {
+  if (!ready || !auth.ready) {
     return (
       <LinearGradient colors={['#020202', '#080808', '#030303']} style={styles.loading}>
         <StatusBar style="light" />
@@ -199,8 +316,9 @@ function AlphaApp() {
         open={overlay === 'finish'}
         result={state.today.result ?? (done === total ? 'complete' : 'incomplete')}
         streak={streak}
-        onClose={() => setOverlay(null)}
+        onClose={withHaptic('selection', () => setOverlay(null))}
         onReflection={() => {
+          playHaptic(hapticsEnabled, 'light');
           setOverlay('reflection');
         }}
       />
@@ -208,17 +326,17 @@ function AlphaApp() {
         open={overlay === 'reflection'}
         text={reflectionText}
         onChangeText={(text) => setReflectionText(text.slice(0, 160))}
-        onClose={() => setOverlay(null)}
-        onSave={saveReflection}
+        onClose={withHaptic('selection', () => setOverlay(null))}
+        onSave={withHaptic('success', saveReflection)}
       />
       <AddRoutineModal
         open={overlay === 'addRoutine'}
         routineName={routineName}
         selectedCat={selectedCat}
         selectedScope={selectedScope}
-        onAdd={addPersonalRoutine}
+        onAdd={withHaptic('success', addPersonalRoutine)}
         onChangeName={setRoutineName}
-        onClose={() => setOverlay(null)}
+        onClose={withHaptic('selection', () => setOverlay(null))}
         onSelectCat={setSelectedCat}
         onSelectScope={setSelectedScope}
       />
@@ -228,8 +346,14 @@ function AlphaApp() {
         records={state.records}
         routines={routines}
         state={state}
-        onClose={() => setOverlay(null)}
+        onClose={withHaptic('selection', () => setOverlay(null))}
       />
+      <ResetDataModal
+        open={overlay === 'resetData'}
+        onClose={withHaptic('selection', () => setOverlay(null))}
+        onReset={withHaptic('warning', resetData)}
+      />
+      <AppInfoModal open={overlay === 'appInfo'} onClose={withHaptic('selection', () => setOverlay(null))} />
     </View>
   );
 }
@@ -291,20 +415,107 @@ function TopBar({
   );
 }
 
-function OnboardingScreen({ onStart }: { onStart: () => void }) {
+function OnboardingScreen({
+  appleAvailable,
+  authMessage,
+  authStatus,
+  googleConfigured,
+  user,
+  onAppleSignIn,
+  onGoogleSignIn,
+  onStart,
+}: {
+  appleAvailable: boolean;
+  authMessage: string;
+  authStatus: 'idle' | 'loading' | 'error';
+  googleConfigured: boolean;
+  user: AuthUser | null;
+  onAppleSignIn: () => void;
+  onGoogleSignIn: () => void;
+  onStart: () => void;
+}) {
+  const signedIn = Boolean(user);
+  const providerLabel = user?.provider === 'apple' ? 'Apple' : user?.provider === 'google' ? 'Google' : '';
+
   return (
     <AppScreen>
       <Text style={styles.alphaTitle}>ALPHA</Text>
       <Text style={styles.subtitle}>흔들려도,{'\n'}이어가라.</Text>
       <Text style={styles.desc}>
-        ALPHA는 당신의 하루를 기록하고, 30일간의 과정을 통해 흔들리지 않는 자신을 만들어갑니다.
+        ALPHA는 오늘 루틴을 체크하고, 하루를 마감하고, 회고를 남기며 30일 과정을 이어가는 앱입니다.
       </Text>
       <VisualCard source={visuals.onboarding} style={styles.heroCard}>
         <Text style={styles.heroCaption}>BASIC 과정이 자동으로 시작됩니다.</Text>
       </VisualCard>
-      <PrimaryButton label="시작하기" onPress={onStart} />
-      <Text style={styles.onboardingNote}>처음 실행 시 BASIC 과정 Day 1/30이 자동 시작됩니다.</Text>
+      <Card style={styles.howToCard}>
+        <HowToStep index="01" text="오늘 루틴을 완료할 때마다 체크합니다." />
+        <HowToStep index="02" text="하루 마감으로 완료/미완성을 기록합니다." />
+        <HowToStep index="03" text="오늘의 기록에 직접 회고를 남깁니다." />
+        <HowToStep index="04" text="기록과 과정에서 30일 흐름을 확인합니다." last />
+      </Card>
+      <View style={styles.authBlock}>
+        {signedIn ? (
+          <View style={styles.authSignedCard}>
+            <Text style={styles.authSignedLabel}>{providerLabel} 계정으로 로그인됨</Text>
+            <Text style={styles.authSignedName}>{user?.name || user?.email || 'ALPHA 사용자'}</Text>
+          </View>
+        ) : (
+          <>
+            <AuthButton
+              disabled={!appleAvailable || authStatus === 'loading'}
+              label="Apple로 계속하기"
+              note={!appleAvailable ? '이 기기에서 사용할 수 없음' : undefined}
+              onPress={onAppleSignIn}
+            />
+            <AuthButton
+              disabled={!googleConfigured || authStatus === 'loading'}
+              label="Google로 계속하기"
+              note={!googleConfigured ? 'Google Client ID 설정 필요' : undefined}
+              onPress={onGoogleSignIn}
+            />
+          </>
+        )}
+        {authMessage ? <Text style={styles.authMessage}>{authMessage}</Text> : null}
+      </View>
+      <PrimaryButton disabled={!signedIn || authStatus === 'loading'} label="시작하기" onPress={onStart} />
+      <Text style={styles.onboardingNote}>로그인 후 BASIC 과정 Day 1/30이 시작됩니다.</Text>
     </AppScreen>
+  );
+}
+
+function HowToStep({ index, last, text }: { index: string; last?: boolean; text: string }) {
+  return (
+    <View style={[styles.howToStep, last && styles.howToLast]}>
+      <Text style={styles.howToIndex}>{index}</Text>
+      <Text style={styles.howToText}>{text}</Text>
+    </View>
+  );
+}
+
+function AuthButton({
+  disabled,
+  label,
+  note,
+  onPress,
+}: {
+  disabled?: boolean;
+  label: string;
+  note?: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
+      activeOpacity={disabled ? 1 : 0.82}
+      disabled={disabled}
+      style={[styles.authButton, disabled && styles.authButtonDisabled]}
+      onPress={onPress}
+    >
+      <Text style={[styles.authButtonText, disabled && styles.authButtonTextDisabled]}>{label}</Text>
+      {note ? <Text style={styles.authButtonNote}>{note}</Text> : null}
+    </TouchableOpacity>
   );
 }
 
@@ -319,6 +530,7 @@ function TodayScreen({
   onAddRoutine,
   onCloseDay,
   onOpenReflection,
+  onRemoveRoutine,
   onSettings,
   onToggleRoutine,
 }: {
@@ -332,6 +544,7 @@ function TodayScreen({
   onAddRoutine: () => void;
   onCloseDay: () => void;
   onOpenReflection: () => void;
+  onRemoveRoutine: (id: string) => void;
   onSettings: () => void;
   onToggleRoutine: (id: string) => void;
 }) {
@@ -342,6 +555,7 @@ function TodayScreen({
     : '하루 마감 ›';
   const actionDisabled = state.today.isClosed && state.today.hasReflection;
   const action = state.today.isClosed && !state.today.hasReflection ? onOpenReflection : onCloseDay;
+  const phrase = phraseForTone(state.settings.phraseTone);
 
   return (
     <AppScreen>
@@ -350,17 +564,22 @@ function TodayScreen({
         subtitle={`Day ${state.currentCourse.day} · ${state.currentCourse.level} 과정`}
         onSettings={onSettings}
       />
-      <FireCard source={visuals.todayFire} label="오늘의 불씨" first="흔들려도" second="이어가라." />
+      <FireCard source={visuals.todayFire} label="오늘의 불씨" first={phrase.first} second={phrase.second} />
       <SectionTitle right={`${done} / ${total} 완료`} title="오늘 요약" />
       <SummaryGrid
         items={[
           { label: '완료', value: String(done) },
           { label: '연속', value: String(streak) },
-          { label: '과정', value: `${rate}%` },
+          { label: '오늘', value: `${rate}%` },
         ]}
       />
       <SectionTitle right={`${done} / ${total} 완료`} title="오늘 루틴" />
-      <RoutineList locked={state.today.isClosed} routines={routines} onToggle={onToggleRoutine} />
+      <RoutineList
+        locked={state.today.isClosed}
+        routines={routines}
+        onRemove={onRemoveRoutine}
+        onToggle={onToggleRoutine}
+      />
       <LinkButton disabled={state.today.isClosed} label="+ 개인 루틴 추가" onPress={onAddRoutine} />
       <View style={styles.stickyButton}>
         <PrimaryButton disabled={actionDisabled} label={actionLabel} onPress={action} />
@@ -457,17 +676,19 @@ function CourseScreen({
       <SectionTitle title="현재 단계" />
       <VisualCard source={visuals.courseStage} style={styles.stepCard}>
         <View style={styles.visualTextLayer}>
-          <Text style={styles.stepTitle}>01 기초 통제</Text>
-          <Text style={styles.period}>Day 1 - 7</Text>
-          <Text style={styles.quote}>“너 자신을 깨워라.”</Text>
-          <Text style={styles.bullet}>이번 단계 신규 루틴</Text>
-          <Text style={styles.bullet}>- 물 500ml</Text>
-          <Text style={styles.bullet}>- 침대 정리</Text>
-          <Text style={styles.bullet}>- 푸쉬업 30개</Text>
+          <Text style={styles.stepTitle}>
+            {String(state.currentCourse.currentStage).padStart(2, '0')} {stageTitleForDay(state.currentCourse.day)}
+          </Text>
+          <Text style={styles.period}>{stagePeriodForDay(state.currentCourse.day)}</Text>
+          <Text style={styles.quote}>{stageQuoteForDay(state.currentCourse.day)}</Text>
+          <Text style={styles.bullet}>이번 단계 기준</Text>
+          {stageBulletsForDay(state.currentCourse.day).map((item) => (
+            <Text key={item} style={styles.bullet}>- {item}</Text>
+          ))}
         </View>
       </VisualCard>
       <SectionTitle title="과정 단계" />
-      <StageList />
+      <StageList currentDay={state.currentCourse.day} />
       <SectionTitle title="다음 과정" />
       <SettingLike label="STANDARD 과정" value="잠김" />
       <SettingLike label="HARD 과정" value="잠김" style={styles.settingGap} />
@@ -536,7 +757,7 @@ function DetailScreen({
         })}
       </View>
       <SectionTitle title="과정 단계" />
-      <StageList />
+      <StageList currentDay={state.currentCourse.day} />
     </AppScreen>
   );
 }
@@ -547,48 +768,75 @@ function CollectionScreen({ records, onBack }: { records: DayRecord[]; onBack: (
       <TopBar title="기록 모음" onBack={onBack} />
       <FireCard mini source={visuals.recordsHeader} first="남긴 기록 개수" second={`${records.length}개`} />
       <SectionTitle title="날짜별 기록" />
-      {records.map((record) => (
-        <RecordCard key={record.id} record={record} withDate />
-      ))}
+      {records.length ? (
+        records.map((record) => <RecordCard key={record.id} record={record} withDate />)
+      ) : (
+        <RecordCard empty />
+      )}
     </AppScreen>
   );
 }
 
 function SettingsScreen({
   state,
+  syncStatus,
+  user,
   onBack,
+  onCyclePhraseTone,
+  onDataReset,
+  onHapticsToggle,
+  onInfo,
   onLogout,
+  onNotificationsToggle,
   onToast,
 }: {
   state: AppState;
+  syncStatus: AlphaSyncStatus;
+  user: AuthUser | null;
   onBack: () => void;
+  onCyclePhraseTone: () => void;
+  onDataReset: () => void;
+  onHapticsToggle: () => void;
+  onInfo: () => void;
   onLogout: () => void;
+  onNotificationsToggle: () => void;
   onToast: (message: string) => void;
 }) {
+  const providerLabel = user?.provider === 'apple' ? 'Apple' : user?.provider === 'google' ? 'Google' : '로그인 없음';
+  const phraseLabel = state.settings.phraseTone === 'basic' ? '기본' : state.settings.phraseTone === 'hard' ? '하드' : '냉정';
+  const syncLabel =
+    syncStatus.mode === 'remote'
+      ? '서버 연결'
+      : syncStatus.mode === 'syncing'
+        ? '동기화 중'
+        : syncStatus.mode === 'error'
+          ? '확인 필요'
+          : '로컬';
   return (
     <AppScreen>
       <TopBar title="설정" onBack={onBack} />
       <Card style={styles.profile}>
         <Image source={visuals.avatar} style={styles.avatar as object} />
         <View>
-          <Text style={styles.profileTitle}>ALPHA</Text>
-          <Text style={styles.profileLevel}>LEVEL 1</Text>
+          <Text style={styles.profileTitle}>{user?.name || user?.email || 'ALPHA'}</Text>
+          <Text style={styles.profileLevel}>{providerLabel} · LEVEL 1</Text>
         </View>
       </Card>
       <View style={styles.settingsList}>
-        <SettingRow label="문구 톤 설정" value="기본" onPress={() => onToast('문구 톤: 기본 / 하드 / 냉정')} />
+        <SettingRow label="문구 톤 설정" value={phraseLabel} onPress={onCyclePhraseTone} />
         <SettingRow
           label="알림 설정"
           value={state.settings.notificationsEnabled ? 'ON' : 'OFF'}
-          onPress={() => onToast('알림 설정 시안')}
+          onPress={onNotificationsToggle}
         />
         <SettingRow
           label="탭 피드백 설정"
           value={state.settings.hapticsEnabled ? '진동' : 'OFF'}
-          onPress={() => onToast('탭 피드백: 진동 / 사운드')}
+          onPress={onHapticsToggle}
         />
-        <SettingRow label="데이터 관리" onPress={() => onToast('기록 백업, 복원, 초기화')} />
-        <SettingRow label="앱 정보" value="v19" onPress={() => onToast('버전, 약관, 문의')} />
+        <SettingRow label="동기화 상태" value={syncLabel} onPress={() => onToast(syncStatus.message)} />
+        <SettingRow label="데이터 초기화" onPress={onDataReset} />
+        <SettingRow label="앱 정보" value="v19" onPress={onInfo} />
       </View>
       <SecondaryButton label="로그아웃" danger onPress={onLogout} />
     </AppScreen>
@@ -768,10 +1016,12 @@ function SummaryGrid({
 function RoutineList({
   locked,
   routines,
+  onRemove,
   onToggle,
 }: {
   locked?: boolean;
   routines: Routine[];
+  onRemove?: (id: string) => void;
   onToggle?: (id: string) => void;
 }) {
   return (
@@ -791,7 +1041,19 @@ function RoutineList({
           </View>
           <Text style={[styles.routineText, locked && styles.lockedText]}>{routine.name}</Text>
           {routine.type === 'personal' ? <Text style={styles.personalBadge}>개인</Text> : null}
-          <Text style={styles.chev}>{locked ? '잠김' : routine.type === 'personal' ? '×' : '›'}</Text>
+          {routine.type === 'personal' && !locked ? (
+            <TouchableOpacity
+              accessibilityLabel={`${routine.name} 삭제`}
+              accessibilityRole="button"
+              activeOpacity={0.78}
+              style={styles.removeRoutineButton}
+              onPress={() => onRemove?.(routine.id)}
+            >
+              <Text style={styles.removeRoutineText}>×</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.chev}>{locked ? '잠김' : '›'}</Text>
+          )}
         </TouchableOpacity>
       ))}
     </View>
@@ -855,28 +1117,50 @@ function RecordCard({
   );
 }
 
-function StageList() {
+function StageList({ currentDay }: { currentDay: number }) {
+  const activeStage = stageForDay(currentDay);
   return (
     <View style={styles.stageList}>
       {stageItems.map((item, index) => (
-        <View
+        <StageItem
+          activeStage={activeStage}
+          index={index}
+          item={item}
           key={item.number}
-          style={[
-            styles.stageItem,
-            index === stageItems.length - 1 && styles.lastRow,
-            item.state === 'active' && styles.stageActive,
-            item.state === 'locked' && styles.stageLocked,
-          ]}
-        >
-          {item.state === 'active' ? <View pointerEvents="none" style={styles.stageActiveBorder} /> : null}
-          <Text style={[styles.stageNumber, item.state === 'active' && styles.stageActiveText]}>
-            {item.number}
-          </Text>
-          <Text style={[styles.stageTitle, item.state === 'active' && styles.stageActiveText]}>{item.title}</Text>
-          <Text style={styles.stagePeriod}>{item.period}</Text>
-          <Text style={styles.stageState}>{item.state === 'done' ? '✓' : item.state === 'active' ? '●' : '잠김'}</Text>
-        </View>
+        />
       ))}
+    </View>
+  );
+}
+
+function StageItem({
+  activeStage,
+  index,
+  item,
+}: {
+  activeStage: number;
+  index: number;
+  item: (typeof stageItems)[number];
+}) {
+  const stageNumber = index + 1;
+  const state = stageNumber < activeStage ? 'done' : stageNumber === activeStage ? 'active' : 'locked';
+
+  return (
+    <View
+      style={[
+        styles.stageItem,
+        index === stageItems.length - 1 && styles.lastRow,
+        state === 'active' && styles.stageActive,
+        state === 'locked' && styles.stageLocked,
+      ]}
+    >
+      {state === 'active' ? <View pointerEvents="none" style={styles.stageActiveBorder} /> : null}
+      <Text style={[styles.stageNumber, state === 'active' && styles.stageActiveText]}>
+        {item.number}
+      </Text>
+      <Text style={[styles.stageTitle, state === 'active' && styles.stageActiveText]}>{item.title}</Text>
+      <Text style={styles.stagePeriod}>{item.period}</Text>
+      <Text style={styles.stageState}>{state === 'done' ? '✓' : state === 'active' ? '●' : '잠김'}</Text>
     </View>
   );
 }
@@ -1146,6 +1430,56 @@ function AddRoutineModal({
   );
 }
 
+function ResetDataModal({
+  open,
+  onClose,
+  onReset,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onReset: () => void;
+}) {
+  return (
+    <BaseModal open={open} onClose={onClose}>
+      <View style={styles.centerModal}>
+        <View style={styles.modalHead}>
+          <Text style={styles.modalTitle}>데이터 초기화</Text>
+          <TouchableOpacity accessibilityLabel="닫기" accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
+            <Text style={styles.closeText}>×</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.resetCopy}>현재 루틴 체크, 마감 기록, 회고, 과정 진행률을 처음 상태로 되돌립니다.</Text>
+        <View style={styles.row2WithTop}>
+          <SecondaryButton label="취소" onPress={onClose} />
+          <PrimaryButton label="초기화" onPress={onReset} />
+        </View>
+      </View>
+    </BaseModal>
+  );
+}
+
+function AppInfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <BaseModal open={open} onClose={onClose}>
+      <View style={styles.centerModal}>
+        <View style={styles.modalHead}>
+          <Text style={styles.modalTitle}>앱 정보</Text>
+          <TouchableOpacity accessibilityLabel="닫기" accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
+            <Text style={styles.closeText}>×</Text>
+          </TouchableOpacity>
+        </View>
+        <DateRow label="앱" value="ALPHA: REFORGE" />
+        <DateRow label="버전" value="v19 · iOS 1.0.0" />
+        <DateRow label="과정" value="BASIC 30일" />
+        <DateRow label="저장" value="이 기기 AsyncStorage" />
+        <View style={styles.modalButtonGap}>
+          <SecondaryButton label="닫기" onPress={onClose} />
+        </View>
+      </View>
+    </BaseModal>
+  );
+}
+
 function DayDetailSheet({
   day,
   open,
@@ -1165,17 +1499,11 @@ function DayDetailSheet({
   const future = selected > state.currentCourse.day;
   const record = records.find((item) => item.day === selected);
   const today = selected === state.currentCourse.day;
-  const shownRoutines = today ? routines : basicRoutines;
-  const completed = today
-    ? doneCount(routines)
-    : record
-      ? record.completedRoutineIds.length
-      : future
-        ? 0
-        : 4;
   const date = future
     ? dateForCourseDay(state.currentCourse.startedAt, selected)
     : record?.date ?? (today ? state.today.date : dateForCourseDay(state.currentCourse.startedAt, selected));
+  const shownRoutines = today ? routines : state.routinesByDate[date] ?? basicRoutines;
+  const completed = today ? doneCount(routines) : record ? record.completedRoutineIds.length : 0;
   const status = future ? '예정' : record ? resultLabel(record.status) : today ? '진행 중' : '미완성';
   const note = future ? '아직 기록이 없습니다.' : record?.reflection || '기록을 남기지 않았다.';
 
@@ -1200,7 +1528,7 @@ function DayDetailSheet({
           locked
           routines={shownRoutines.map((routine, index) => ({
             ...routine,
-            done: future ? false : today ? routine.done : record ? record.completedRoutineIds.includes(routine.id) : index < 4,
+            done: future ? false : today ? routine.done : record ? record.completedRoutineIds.includes(routine.id) : false,
           }))}
         />
         <SectionTitle title="하루 회고" />
@@ -1379,6 +1707,91 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginTop: 16,
   },
+  howToCard: {
+    marginBottom: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 6,
+  },
+  howToStep: {
+    alignItems: 'center',
+    borderBottomColor: colors.lineSoft,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+    minHeight: 48,
+  },
+  howToLast: {
+    borderBottomWidth: 0,
+  },
+  howToIndex: {
+    color: colors.red,
+    fontSize: 12,
+    fontWeight: '900',
+    width: 24,
+  },
+  howToText: {
+    color: colors.soft,
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '800',
+    lineHeight: 18,
+  },
+  authBlock: {
+    gap: 8,
+    marginBottom: 12,
+  },
+  authButton: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: 'rgba(255,255,255,0.16)',
+    borderRadius: radius.button,
+    borderWidth: 1,
+    height: spacing.buttonHeight,
+    justifyContent: 'center',
+  },
+  authButtonDisabled: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  authButtonText: {
+    color: colors.black,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  authButtonTextDisabled: {
+    color: '#85858a',
+  },
+  authButtonNote: {
+    color: colors.muted,
+    fontSize: 10,
+    fontWeight: '800',
+    marginTop: 3,
+  },
+  authSignedCard: {
+    backgroundColor: 'rgba(241,25,25,0.12)',
+    borderColor: 'rgba(241,25,25,0.34)',
+    borderRadius: radius.button,
+    borderWidth: 1,
+    minHeight: spacing.buttonHeight,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  authSignedLabel: {
+    color: colors.red,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  authSignedName: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '900',
+    marginTop: 4,
+  },
+  authMessage: {
+    color: colors.red,
+    fontSize: 12,
+    fontWeight: '800',
+    lineHeight: 18,
+  },
   fireCard: {
     borderColor: 'rgba(241,25,25,0.42)',
     height: 150,
@@ -1530,6 +1943,21 @@ const styles = StyleSheet.create({
     color: '#777',
     fontSize: 12,
     fontWeight: '800',
+  },
+  removeRoutineButton: {
+    alignItems: 'center',
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 12,
+    borderWidth: 1,
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  removeRoutineText: {
+    color: colors.red,
+    fontSize: 18,
+    fontWeight: '900',
+    lineHeight: 20,
   },
   linkButton: {
     alignItems: 'center',
@@ -2087,6 +2515,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 6,
     textAlign: 'right',
+  },
+  resetCopy: {
+    color: colors.soft,
+    fontSize: 14,
+    fontWeight: '800',
+    lineHeight: 22,
   },
   input: {
     backgroundColor: 'rgba(255,255,255,0.06)',
