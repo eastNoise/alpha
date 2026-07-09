@@ -261,7 +261,13 @@ function TopBar({
     <View style={styles.topbar}>
       <View style={styles.backrow}>
         {onBack ? (
-          <TouchableOpacity activeOpacity={0.78} style={styles.iconButton} onPress={onBack}>
+          <TouchableOpacity
+            accessibilityLabel="뒤로가기"
+            accessibilityRole="button"
+            activeOpacity={0.78}
+            style={styles.iconButton}
+            onPress={onBack}
+          >
             <Text style={styles.iconText}>‹</Text>
           </TouchableOpacity>
         ) : null}
@@ -271,7 +277,13 @@ function TopBar({
         </View>
       </View>
       {onSettings ? (
-        <TouchableOpacity activeOpacity={0.78} style={styles.iconButton} onPress={onSettings}>
+        <TouchableOpacity
+          accessibilityLabel="설정"
+          accessibilityRole="button"
+          activeOpacity={0.78}
+          style={styles.iconButton}
+          onPress={onSettings}
+        >
           <Text style={styles.iconText}>⚙</Text>
         </TouchableOpacity>
       ) : null}
@@ -506,6 +518,8 @@ function DetailScreen({
                 : null;
           return (
             <TouchableOpacity
+              accessibilityLabel={`Day ${day}`}
+              accessibilityRole="button"
               activeOpacity={0.8}
               key={day}
               style={[
@@ -659,7 +673,14 @@ function PrimaryButton({
   onPress: () => void;
 }) {
   return (
-    <TouchableOpacity activeOpacity={disabled ? 1 : 0.82} disabled={disabled} onPress={onPress}>
+    <TouchableOpacity
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
+      activeOpacity={disabled ? 1 : 0.82}
+      disabled={disabled}
+      onPress={onPress}
+    >
       <LinearGradient
         colors={disabled ? ['#323236', '#171719'] : ['#f51c1c', '#a70707']}
         style={[styles.button, disabled && styles.buttonDisabled]}
@@ -680,7 +701,13 @@ function SecondaryButton({
   onPress: () => void;
 }) {
   return (
-    <TouchableOpacity activeOpacity={0.82} style={[styles.secondaryButton, danger && styles.dangerButton]} onPress={onPress}>
+    <TouchableOpacity
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      activeOpacity={0.82}
+      style={[styles.secondaryButton, danger && styles.dangerButton]}
+      onPress={onPress}
+    >
       <Text style={[styles.secondaryButtonText, danger && styles.dangerText]}>{label}</Text>
     </TouchableOpacity>
   );
@@ -697,6 +724,9 @@ function LinkButton({
 }) {
   return (
     <TouchableOpacity
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
       activeOpacity={disabled ? 1 : 0.82}
       disabled={disabled}
       style={[styles.linkButton, disabled && styles.disabledLink]}
@@ -748,6 +778,9 @@ function RoutineList({
     <View style={styles.routineList}>
       {routines.map((routine, index) => (
         <TouchableOpacity
+          accessibilityLabel={routine.name}
+          accessibilityRole="button"
+          accessibilityState={{ checked: routine.done, disabled: Boolean(locked) }}
           activeOpacity={locked ? 1 : 0.78}
           key={routine.id}
           style={[styles.routineRow, index === routines.length - 1 && styles.lastRow]}
@@ -868,7 +901,13 @@ function SettingRow({
   onPress: () => void;
 }) {
   return (
-    <TouchableOpacity activeOpacity={0.8} style={styles.settingRow} onPress={onPress}>
+    <TouchableOpacity
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      activeOpacity={0.8}
+      style={styles.settingRow}
+      onPress={onPress}
+    >
       <Text style={styles.settingLabel}>{label}</Text>
       {value ? <Text style={styles.settingValue}>{value}</Text> : null}
       <Text style={styles.settingArrow}>›</Text>
@@ -891,6 +930,9 @@ function BottomTabs({
         const selected = active === tab.id;
         return (
           <TouchableOpacity
+            accessibilityLabel={tab.label}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
             activeOpacity={0.82}
             key={tab.id}
             style={[styles.tab, selected && styles.tabActive]}
@@ -950,7 +992,13 @@ function FinishDayModal({
   return (
     <BaseModal open={open} onClose={onClose}>
       <View style={styles.finishModal}>
-        <TouchableOpacity activeOpacity={0.78} style={styles.closeButton} onPress={onClose}>
+        <TouchableOpacity
+          accessibilityLabel="닫기"
+          accessibilityRole="button"
+          activeOpacity={0.78}
+          style={styles.closeButton}
+          onPress={onClose}
+        >
           <Text style={styles.closeText}>×</Text>
         </TouchableOpacity>
         <View style={[styles.finishHero, !complete && styles.finishHeroFail]}>
@@ -994,7 +1042,7 @@ function ReflectionModal({
       <View style={styles.centerModal}>
         <View style={styles.modalHead}>
           <Text style={styles.modalTitle}>하루 회고</Text>
-          <TouchableOpacity activeOpacity={0.78} onPress={onClose}>
+          <TouchableOpacity accessibilityLabel="닫기" accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
             <Text style={styles.closeText}>×</Text>
           </TouchableOpacity>
         </View>
@@ -1045,7 +1093,7 @@ function AddRoutineModal({
       <View style={styles.centerModal}>
         <View style={styles.modalHead}>
           <Text style={styles.modalTitle}>개인 루틴 추가</Text>
-          <TouchableOpacity activeOpacity={0.78} onPress={onClose}>
+          <TouchableOpacity accessibilityLabel="닫기" accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
             <Text style={styles.closeText}>×</Text>
           </TouchableOpacity>
         </View>
@@ -1061,6 +1109,9 @@ function AddRoutineModal({
         <View style={styles.chips}>
           {categories.map((category) => (
             <TouchableOpacity
+              accessibilityLabel={category}
+              accessibilityRole="button"
+              accessibilityState={{ selected: selectedCat === category }}
               activeOpacity={0.8}
               key={category}
               style={[styles.chip, selectedCat === category && styles.chipActive]}
@@ -1074,6 +1125,9 @@ function AddRoutineModal({
         <View style={styles.row2}>
           {scopes.map((scope) => (
             <TouchableOpacity
+              accessibilityLabel={scope}
+              accessibilityRole="button"
+              accessibilityState={{ selected: selectedScope === scope }}
               activeOpacity={0.8}
               key={scope}
               style={[styles.seg, selectedScope === scope && styles.segActive]}
@@ -1130,7 +1184,7 @@ function DayDetailSheet({
       <View style={styles.bottomSheet}>
         <View style={styles.modalHead}>
           <Text style={styles.modalTitle}>Day {selected}</Text>
-          <TouchableOpacity activeOpacity={0.78} onPress={onClose}>
+          <TouchableOpacity accessibilityLabel="닫기" accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
             <Text style={styles.closeText}>×</Text>
           </TouchableOpacity>
         </View>
