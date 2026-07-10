@@ -172,6 +172,19 @@ Use for:
 
 - Day 12 room post.
 
+### M005: Pushup / basic body-control image
+
+Need:
+
+- Pushup setup, hands on floor, or basic bodyweight training.
+- Grounded and realistic, not a polished fitness influencer shoot.
+- No shirtless flexing or extreme physique emphasis.
+- Enough dark or neutral negative space for cover typography.
+
+Use for:
+
+- Day 6 body carousel.
+
 ## Production Rule
 
 Before final posting, every `mockup_only` asset must become either:
