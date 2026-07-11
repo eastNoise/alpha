@@ -1,13 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '@supabase/supabase-js';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Google from 'expo-auth-session/providers/google';
+import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { upsertProfile } from '../backend/profileStore';
 import { isSupabaseConfigured, supabase } from '../backend/supabaseClient';
-import { GOOGLE_AUTH_CONFIG } from './config';
 import { AuthUser } from './types';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -39,13 +38,7 @@ export function useAlphaAuth() {
   const [status, setStatus] = useState<AuthStatus>('idle');
   const [message, setMessage] = useState('');
   const [appleAvailable, setAppleAvailable] = useState(false);
-  const googleConfigured = Boolean(GOOGLE_AUTH_CONFIG.iosClientId || GOOGLE_AUTH_CONFIG.webClientId);
-
-  const [googleRequest, googleResponse, promptGoogleAsync] = Google.useAuthRequest({
-    iosClientId: GOOGLE_AUTH_CONFIG.iosClientId || 'alpha-placeholder.apps.googleusercontent.com',
-    webClientId: GOOGLE_AUTH_CONFIG.webClientId || 'alpha-placeholder.apps.googleusercontent.com',
-    scopes: ['profile', 'email'],
-  });
+  const googleConfigured = isSupabaseConfigured;
 
   useEffect(() => {
     let mounted = true;
@@ -154,89 +147,45 @@ export function useAlphaAuth() {
   }, [appleAvailable, persistUser]);
 
   const signInWithGoogle = useCallback(async () => {
-    if (!googleConfigured) {
+    if (!supabase || !isSupabaseConfigured) {
       setStatus('error');
-      setMessage('Google OAuth Client ID 설정이 필요합니다.');
-      return;
-    }
-    if (!googleRequest) {
-      setStatus('error');
-      setMessage('Google 로그인을 준비하는 중입니다.');
+      setMessage('로그인 서버 연결 설정이 필요합니다.');
       return;
     }
 
     setStatus('loading');
     setMessage('');
-    const result = await promptGoogleAsync();
-    if (result.type !== 'success') setStatus('idle');
-  }, [googleConfigured, googleRequest, promptGoogleAsync]);
+    try {
+      const redirectTo = Linking.createURL('auth/callback');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error || !data.url) throw error ?? new Error('Missing Google OAuth URL');
 
-  useEffect(() => {
-    if (googleResponse?.type !== 'success') return;
-    const accessToken = googleResponse.authentication?.accessToken;
-    const idToken = googleResponse.authentication?.idToken;
-    if (!accessToken) {
-      setStatus('error');
-      setMessage('Google 인증 토큰을 받지 못했습니다.');
-      return;
-    }
-
-    let mounted = true;
-    if (supabase && isSupabaseConfigured) {
-      if (!idToken) {
-        setStatus('error');
-        setMessage('Supabase Google 로그인을 위해 ID 토큰 설정이 필요합니다.');
-        return undefined;
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      if (result.type !== 'success') {
+        setStatus('idle');
+        return;
       }
 
-      supabase.auth
-        .signInWithIdToken({
-          provider: 'google',
-          token: idToken,
-        })
-        .then(async ({ data, error }) => {
-          if (!mounted) return;
-          if (error) throw error;
-          if (!data.user) throw new Error('Missing Supabase user');
-          await persistUser(authUserFromSupabaseUser(data.user));
-          setStatus('idle');
-        })
-        .catch(() => {
-          if (!mounted) return;
-          setStatus('error');
-          setMessage('Google 로그인에 실패했습니다.');
-        });
+      const { queryParams } = Linking.parse(result.url);
+      const code = queryParams?.code;
+      if (typeof code !== 'string') throw new Error('Missing OAuth authorization code');
 
-      return () => {
-        mounted = false;
-      };
+      const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+      if (sessionError || !sessionData.user) throw sessionError ?? new Error('Missing Google user');
+
+      await persistUser(authUserFromSupabaseUser(sessionData.user));
+      setStatus('idle');
+    } catch {
+      setStatus('error');
+      setMessage('Google 로그인에 실패했습니다. 다시 시도해 주세요.');
     }
-
-    fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then((response) => response.json())
-      .then(async (profile: { sub?: string; email?: string; name?: string }) => {
-        if (!mounted) return;
-        if (!profile.sub) throw new Error('Missing Google profile id');
-        await persistUser({
-          id: profile.sub,
-          provider: 'google',
-          email: profile.email,
-          name: profile.name || profile.email || 'Google 사용자',
-        });
-        setStatus('idle');
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setStatus('error');
-        setMessage('Google 로그인에 실패했습니다.');
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [googleResponse, persistUser]);
+  }, [persistUser]);
 
   const signOut = useCallback(async () => {
     if (supabase) await supabase.auth.signOut();

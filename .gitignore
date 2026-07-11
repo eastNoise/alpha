@@ -36,6 +36,9 @@ yarn-error.*
 .env
 .env*.local
 
+# Local OAuth credentials and API exports
+/docs/api/
+
 # typescript
 *.tsbuildinfo
 

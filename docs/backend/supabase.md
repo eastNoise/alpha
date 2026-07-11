@@ -10,8 +10,9 @@ ALPHA 앱은 로그인 사용자를 기본 전제로 두고 Supabase의 사용�
 2. SQL Editor에서 `supabase/schema.sql` 전체를 실행한다.
 3. Project Connect 또는 API Keys 화면에서 Project URL과 Publishable key를 복사한다.
 4. 루트에 `.env`를 만들고 `.env.example` 형식으로 값을 넣는다.
-5. Supabase Authentication Providers에서 Apple, Google을 켠다.
-6. 앱을 다시 빌드한다. Expo public env는 JS 번들에 포함되므로 값 변경 후 재시작/재빌드가 필요하다.
+5. Supabase Authentication Providers에서 Apple, Google을 켠다. Google OAuth Client ID와 Client Secret은 Supabase Dashboard에만 입력하고 앱 환경 변수에는 넣지 않는다.
+6. Authentication > URL Configuration의 Redirect URLs에 `alpha://auth/callback`을 추가한다. 모바일 Google 로그인은 이 딥링크로 돌아와 세션을 교환한다.
+7. 앱을 다시 빌드한다. Expo public env는 JS 번들에 포함되므로 값 변경 후 재시작/재빌드가 필요하다.
 
 ## 현재 테이블
 
@@ -35,6 +36,7 @@ ALPHA 앱은 로그인 사용자를 기본 전제로 두고 Supabase의 사용�
 
 - 앱에는 `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`만 넣는다.
 - `service_role` 또는 secret key는 절대 앱 코드/환경 변수에 넣지 않는다.
+- Google OAuth Client Secret은 Supabase Dashboard에만 보관하며, 내보낸 자격증명 파일은 Git에 커밋하지 않는다.
 - 모든 공개 스키마 테이블은 RLS를 켜고, 정책은 `(select auth.uid()) = user_id` 또는 `id` 소유권 조건을 사용한다.
 
 ## 확장 계획
