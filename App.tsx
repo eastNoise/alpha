@@ -249,8 +249,9 @@ function AlphaApp() {
             onInfo={withHaptic('selection', () => setOverlay('appInfo'))}
             onLogout={() => {
               playHaptic(hapticsEnabled, 'warning');
-              auth.signOut();
-              logout();
+              void auth.signOut().then((didSignOut) => {
+                if (didSignOut) logout();
+              });
             }}
             onNotificationsToggle={withHaptic('selection', toggleNotifications)}
             onToast={showToast}

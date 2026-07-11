@@ -143,8 +143,12 @@ export function useAlphaController(syncUserId?: string | null) {
 
   useEffect(() => {
     if (!ready) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-      .then(async () => {
+    let active = true;
+
+    const persistState = async () => {
+      try {
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        if (!active) return;
         if (!syncUserId || remoteHydratedForRef.current !== syncUserId) {
           setSyncStatus({
             mode: 'signedOut',
@@ -153,25 +157,33 @@ export function useAlphaController(syncUserId?: string | null) {
           return;
         }
         await writeCachedStateForUser(syncUserId, state);
+        if (!active) return;
         setSyncStatus((prev) => ({
           ...prev,
           mode: 'syncing',
           message: '서버 동기화 중',
         }));
         const lastSyncedAt = await pushRemoteState(syncUserId, state);
+        if (!active) return;
         setSyncStatus({
           mode: 'remote',
           lastSyncedAt: lastSyncedAt ?? undefined,
           message: '서버 동기화 완료',
         });
-      })
-      .catch(() => {
+      } catch {
+        if (!active) return;
         setSyncStatus({
           mode: 'error',
           message: syncUserId ? '서버 동기화 실패' : '로그인이 필요합니다',
         });
         showToast('상태 저장에 실패했습니다.');
-      });
+      }
+    };
+
+    void persistState();
+    return () => {
+      active = false;
+    };
   }, [ready, state, syncUserId]);
 
   useEffect(() => {

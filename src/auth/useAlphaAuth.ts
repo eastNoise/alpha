@@ -189,11 +189,23 @@ export function useAlphaAuth() {
   }, [persistUser]);
 
   const signOut = useCallback(async () => {
-    if (supabase) await supabase.auth.signOut();
-    setUser(null);
-    setStatus('idle');
+    setStatus('loading');
     setMessage('');
-    await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+    try {
+      if (supabase) {
+        const { error } = await supabase.auth.signOut({ scope: 'local' });
+        if (error) throw error;
+      }
+      await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+      setUser(null);
+      setStatus('idle');
+      return true;
+    } catch (error) {
+      console.error('Sign-out failed', error);
+      setStatus('error');
+      setMessage('로그아웃에 실패했습니다. 다시 시도해 주세요.');
+      return false;
+    }
   }, []);
 
   return useMemo(
