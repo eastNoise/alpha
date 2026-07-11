@@ -21,6 +21,8 @@ export const supabase = isSupabaseConfigured
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,
+        // Native OAuth returns to the app with a one-time code that we exchange in useAlphaAuth.
+        flowType: 'pkce',
         lock: processLock,
       },
     })

@@ -181,7 +181,8 @@ export function useAlphaAuth() {
 
       await persistUser(authUserFromSupabaseUser(sessionData.user));
       setStatus('idle');
-    } catch {
+    } catch (error) {
+      console.error('Google sign-in failed', error);
       setStatus('error');
       setMessage('Google 로그인에 실패했습니다. 다시 시도해 주세요.');
     }
