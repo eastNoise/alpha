@@ -1,38 +1,38 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useMemo, useRef, useState } from 'react';
-
-import { chooseStateForUser, pushRemoteState, writeCachedStateForUser } from '../backend/alphaRemoteStore';
+import { useEffect, useMemo, useState } from 'react';
+import { AppState as NativeAppState } from 'react-native';
 import {
   STATE_SCHEMA_VERSION,
   STORAGE_KEY,
   categories,
   createInitialState,
-  dateForCourseDay,
   getTodayKey,
   scopes,
 } from '../data';
 import {
   courseStateFor,
+  courseDoneCount,
+  courseResultForRoutines,
+  courseRoutineTotal,
   createRecordForDay,
-  doneCount,
-  elapsedCourseDayForDate,
   mergeRecord,
-  nextPhraseTone,
+  recordsForCourse,
   resetRoutineCompletion,
   routinesForNewDay,
   sortRecords,
   streakCount,
 } from '../domain/alpha';
-import { AppState, DayRecord, Routine, ScreenName } from '../types';
+import {
+  canStartNextCourse,
+  isCourseComplete,
+  reconcileStateForDate,
+  reopenTodayForEditing,
+  startNextCourse,
+} from '../domain/stateLifecycle';
+import { AppState, Routine, ScreenName } from '../types';
 
 export type OverlayName = 'finish' | 'reflection' | 'addRoutine' | 'dayDetail' | 'resetData' | 'appInfo' | null;
-export type AlphaSyncStatus = {
-  mode: 'signedOut' | 'remote' | 'syncing' | 'error';
-  lastSyncedAt?: string;
-  message: string;
-};
-
-export function useAlphaController(syncUserId?: string | null) {
+export function useAlphaController() {
   const [state, setState] = useState<AppState>(() => createInitialState());
   const [ready, setReady] = useState(false);
   const [screen, setScreen] = useState<ScreenName>('onboarding');
@@ -44,21 +44,23 @@ export function useAlphaController(syncUserId?: string | null) {
   const [selectedCat, setSelectedCat] = useState<(typeof categories)[number]>('몸');
   const [selectedScope, setSelectedScope] = useState<(typeof scopes)[number]>('이번 과정 동안');
   const [toast, setToast] = useState('');
-  const [syncStatus, setSyncStatus] = useState<AlphaSyncStatus>({
-    mode: 'signedOut',
-    message: '로그인 대기 중',
-  });
-  const remoteHydratedForRef = useRef<string | null>(null);
 
   const todayKey = state.today.date || getTodayKey();
   const routines = state.routinesByDate[todayKey] ?? routinesForNewDay(state);
-  const done = doneCount(routines);
-  const total = routines.length || 1;
+  const done = courseDoneCount(routines);
+  const total = courseRoutineTotal(routines) || 1;
   const missed = total - done;
   const rate = Math.round((done / total) * 100);
-  const sortedRecords = useMemo(() => sortRecords(state.records), [state.records]);
-  const todayRecord = state.records.find((record) => record.day === state.currentCourse.day);
-  const streak = streakCount(state.records);
+  const sortedRecords = useMemo(
+    () => sortRecords(recordsForCourse(state.records, state.currentCourse.level)),
+    [state.currentCourse.level, state.records],
+  );
+  const todayRecord = state.records.find(
+    (record) => record.course === state.currentCourse.level && record.day === state.currentCourse.day,
+  );
+  const streak = streakCount(sortedRecords);
+  const courseComplete = isCourseComplete(state);
+  const nextCourseAvailable = canStartNextCourse(state);
   const showTabs = screen === 'today' || screen === 'records' || screen === 'course';
 
   useEffect(() => {
@@ -76,62 +78,16 @@ export function useAlphaController(syncUserId?: string | null) {
             return;
           }
           const currentDate = getTodayKey();
-          const hydrated: AppState = {
-            ...createInitialState(),
-            ...parsed,
-            routinesByDate: {
-              ...(parsed.routinesByDate ?? {}),
-            },
-          };
-          hydrated.currentCourse = courseStateFor(hydrated, hydrated.today.date, hydrated.records);
-
-          if (parsed.today.date !== currentDate) {
-            let records = hydrated.records;
-            let routinesByDate = hydrated.routinesByDate;
-
-            if (hydrated.hasOnboarded) {
-              const lastClosableDay = Math.min(30, elapsedCourseDayForDate(hydrated.currentCourse.startedAt, currentDate) - 1);
-              for (let day = hydrated.currentCourse.day; day <= lastClosableDay; day += 1) {
-                if (records.some((record) => record.day === day)) continue;
-                const date = day === hydrated.currentCourse.day
-                  ? hydrated.today.date
-                  : dateForCourseDay(hydrated.currentCourse.startedAt, day);
-                const dayRoutines = routinesByDate[date] ?? routinesForNewDay({ ...hydrated, records, routinesByDate });
-                const status = doneCount(dayRoutines) === dayRoutines.length ? 'complete' : 'incomplete';
-                records = mergeRecord(
-                  records,
-                  createRecordForDay({
-                    closedAt: new Date().toISOString(),
-                    date,
-                    day,
-                    level: hydrated.currentCourse.level,
-                    routines: dayRoutines,
-                    status,
-                  }),
-                );
-                routinesByDate = {
-                  ...routinesByDate,
-                  [date]: dayRoutines,
-                };
-              }
-            }
-
-            hydrated.today = {
-              date: currentDate,
-              isClosed: false,
-              hasReflection: false,
-              result: null,
-            };
-            hydrated.routinesByDate = {
-              ...routinesByDate,
-              [currentDate]: routinesByDate[currentDate] ?? routinesForNewDay({ ...hydrated, records, routinesByDate }),
-            };
-            hydrated.records = records;
-          }
-          hydrated.currentCourse = courseStateFor(hydrated, currentDate, hydrated.records);
+          const hydrated = reconcileStateForDate(parsed, currentDate);
           setState(hydrated);
           setScreen(hydrated.hasOnboarded ? 'today' : 'onboarding');
         }
+      })
+      .catch(() => {
+        if (!mounted) return;
+        AsyncStorage.removeItem(STORAGE_KEY).catch(() => undefined);
+        setState(createInitialState());
+        setScreen('onboarding');
       })
       .finally(() => {
         if (mounted) setReady(true);
@@ -143,102 +99,23 @@ export function useAlphaController(syncUserId?: string | null) {
 
   useEffect(() => {
     if (!ready) return;
+    const subscription = NativeAppState.addEventListener('change', (nextStatus) => {
+      if (nextStatus === 'active') setState((prev) => reconcileStateForDate(prev, getTodayKey()));
+    });
+    return () => subscription.remove();
+  }, [ready]);
+
+  useEffect(() => {
+    if (!ready) return;
     let active = true;
 
-    const persistState = async () => {
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        if (!active) return;
-        if (!syncUserId || remoteHydratedForRef.current !== syncUserId) {
-          setSyncStatus({
-            mode: 'signedOut',
-            message: '로그인 후 서버 저장',
-          });
-          return;
-        }
-        await writeCachedStateForUser(syncUserId, state);
-        if (!active) return;
-        setSyncStatus((prev) => ({
-          ...prev,
-          mode: 'syncing',
-          message: '서버 동기화 중',
-        }));
-        const lastSyncedAt = await pushRemoteState(syncUserId, state);
-        if (!active) return;
-        setSyncStatus({
-          mode: 'remote',
-          lastSyncedAt: lastSyncedAt ?? undefined,
-          message: '서버 동기화 완료',
-        });
-      } catch {
-        if (!active) return;
-        setSyncStatus({
-          mode: 'error',
-          message: syncUserId ? '서버 동기화 실패' : '로그인이 필요합니다',
-        });
-        showToast('상태 저장에 실패했습니다.');
-      }
-    };
-
-    void persistState();
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {
+      if (active) showToast('상태 저장에 실패했습니다.');
+    });
     return () => {
       active = false;
     };
-  }, [ready, state, syncUserId]);
-
-  useEffect(() => {
-    if (!ready) return undefined;
-    if (!syncUserId) {
-      remoteHydratedForRef.current = null;
-      setSyncStatus({
-        mode: 'signedOut',
-        message: '로그인 후 서버 저장',
-      });
-      return undefined;
-    }
-    if (remoteHydratedForRef.current === syncUserId) return undefined;
-
-    let mounted = true;
-    setSyncStatus({
-      mode: 'syncing',
-      message: '서버 상태 확인 중',
-    });
-    chooseStateForUser(syncUserId)
-      .then(async ({ remoteUpdatedAt, shouldPushLocal, state: nextState }) => {
-        if (!mounted) return;
-        remoteHydratedForRef.current = syncUserId;
-        if (nextState !== state) {
-          setState(nextState);
-          setScreen(nextState.hasOnboarded ? 'today' : 'onboarding');
-        }
-        if (shouldPushLocal && !remoteUpdatedAt) {
-          const lastSyncedAt = await pushRemoteState(syncUserId, nextState);
-          setSyncStatus({
-            mode: 'remote',
-            lastSyncedAt: lastSyncedAt ?? undefined,
-            message: '서버 동기화 완료',
-          });
-        } else {
-          setSyncStatus({
-            mode: 'remote',
-            lastSyncedAt: remoteUpdatedAt,
-            message: '서버 상태 적용 완료',
-          });
-        }
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setSyncStatus({
-          mode: 'error',
-          message: '서버 동기화 실패',
-        });
-        showToast('서버 상태를 불러오지 못했습니다. 다시 시도해 주세요.');
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [ready, syncUserId]);
+  }, [ready, state]);
 
   useEffect(() => {
     if (!toast) return;
@@ -280,8 +157,8 @@ export function useAlphaController(syncUserId?: string | null) {
   }
 
   function toggleRoutine(id: string) {
-    if (state.today.isClosed) {
-      showToast('마감 후에는 루틴을 수정할 수 없습니다.');
+    if (state.today.isClosed || courseComplete) {
+      showToast(courseComplete ? `${state.currentCourse.level} 30일 과정을 완료했습니다.` : '마감 후에는 루틴을 수정할 수 없습니다.');
       return;
     }
     updateTodayRoutines(
@@ -292,34 +169,27 @@ export function useAlphaController(syncUserId?: string | null) {
   }
 
   function closeDay() {
+    if (courseComplete) {
+      showToast(`${state.currentCourse.level} 30일 과정을 완료했습니다.`);
+      return;
+    }
     if (state.today.isClosed) {
       if (!state.today.hasReflection) setOverlay('reflection');
       else showToast('이미 마감 완료된 하루입니다.');
       return;
     }
 
-    const status = done === total ? 'complete' : 'incomplete';
+    const status = courseResultForRoutines(routines);
     const closedAt = new Date().toISOString();
-    const record: DayRecord = {
-      ...createRecordForDay({
-        closedAt,
-        date: state.today.date,
-        day: state.currentCourse.day,
-        level: state.currentCourse.level,
-        routines,
-        status,
-      }),
-      id: `day-${state.currentCourse.day}`,
-      date: state.today.date,
-      course: state.currentCourse.level,
-      day: state.currentCourse.day,
-      stage: state.currentCourse.currentStage,
-      status,
-      completedRoutineIds: routines.filter((routine) => routine.done).map((routine) => routine.id),
-      missedRoutineIds: routines.filter((routine) => !routine.done).map((routine) => routine.id),
+    const record = createRecordForDay({
       closedAt,
+      date: state.today.date,
+      day: state.currentCourse.day,
+      level: state.currentCourse.level,
       reflection: todayRecord?.reflection,
-    };
+      routines,
+      status,
+    });
 
     setState((prev) => {
       const records = mergeRecord(prev.records, record);
@@ -339,6 +209,18 @@ export function useAlphaController(syncUserId?: string | null) {
     setOverlay('finish');
   }
 
+  function undoCloseDay() {
+    if (!state.today.isClosed) {
+      setOverlay(null);
+      return;
+    }
+    setState((prev) => reopenTodayForEditing(prev));
+    setReflectionText('');
+    setOverlay(null);
+    setScreen('today');
+    showToast('마감을 취소했습니다.');
+  }
+
   function saveReflection() {
     const text = reflectionText.trim();
     if (!text) {
@@ -347,27 +229,16 @@ export function useAlphaController(syncUserId?: string | null) {
     }
 
     const closedAt = state.today.closedAt ?? new Date().toISOString();
-    const status = state.today.result ?? (done === total ? 'complete' : 'incomplete');
-    const record: DayRecord = {
-      ...createRecordForDay({
-        closedAt,
-        date: state.today.date,
-        day: state.currentCourse.day,
-        level: state.currentCourse.level,
-        routines,
-        status,
-      }),
-      id: `day-${state.currentCourse.day}`,
-      date: state.today.date,
-      course: state.currentCourse.level,
-      day: state.currentCourse.day,
-      stage: state.currentCourse.currentStage,
-      status,
-      completedRoutineIds: routines.filter((routine) => routine.done).map((routine) => routine.id),
-      missedRoutineIds: routines.filter((routine) => !routine.done).map((routine) => routine.id),
-      reflection: text,
+    const status = state.today.result ?? courseResultForRoutines(routines);
+    const record = createRecordForDay({
       closedAt,
-    };
+      date: state.today.date,
+      day: state.currentCourse.day,
+      level: state.currentCourse.level,
+      reflection: text,
+      routines,
+      status,
+    });
 
     setState((prev) => {
       const records = mergeRecord(prev.records, record);
@@ -391,8 +262,8 @@ export function useAlphaController(syncUserId?: string | null) {
   }
 
   function addPersonalRoutine() {
-    if (state.today.isClosed) {
-      showToast('마감 후에는 루틴을 추가할 수 없습니다.');
+    if (state.today.isClosed || courseComplete) {
+      showToast(courseComplete ? `${state.currentCourse.level} 30일 과정을 완료했습니다.` : '마감 후에는 루틴을 추가할 수 없습니다.');
       setOverlay(null);
       return;
     }
@@ -406,24 +277,47 @@ export function useAlphaController(syncUserId?: string | null) {
       type: 'personal',
       scope: selectedScope === '오늘만' ? 'today' : 'course',
     };
-    updateTodayRoutines([...routines, nextRoutine]);
+    setState((prev) => {
+      const currentRoutines = prev.routinesByDate[prev.today.date] ?? routinesForNewDay(prev);
+      return {
+        ...prev,
+        courseRoutineTemplates:
+          nextRoutine.scope === 'course'
+            ? [...prev.courseRoutineTemplates, { ...nextRoutine, done: false }]
+            : prev.courseRoutineTemplates,
+        routinesByDate: {
+          ...prev.routinesByDate,
+          [prev.today.date]: [...currentRoutines, nextRoutine],
+        },
+      };
+    });
     setRoutineName('');
     setOverlay(null);
     showToast('개인 루틴이 추가되었습니다.');
   }
 
   function removePersonalRoutine(id: string) {
-    if (state.today.isClosed) {
-      showToast('마감 후에는 루틴을 삭제할 수 없습니다.');
+    if (state.today.isClosed || courseComplete) {
+      showToast(courseComplete ? `${state.currentCourse.level} 30일 과정을 완료했습니다.` : '마감 후에는 루틴을 삭제할 수 없습니다.');
       return;
     }
-    updateTodayRoutines(routines.filter((routine) => routine.id !== id));
+    setState((prev) => {
+      const currentRoutines = prev.routinesByDate[prev.today.date] ?? routinesForNewDay(prev);
+      return {
+        ...prev,
+        courseRoutineTemplates: prev.courseRoutineTemplates.filter((routine) => routine.id !== id),
+        routinesByDate: {
+          ...prev.routinesByDate,
+          [prev.today.date]: currentRoutines.filter((routine) => routine.id !== id),
+        },
+      };
+    });
     showToast('개인 루틴이 삭제되었습니다.');
   }
 
   function openAddRoutine() {
-    if (state.today.isClosed) {
-      showToast('마감 후에는 루틴을 추가할 수 없습니다.');
+    if (state.today.isClosed || courseComplete) {
+      showToast(courseComplete ? `${state.currentCourse.level} 30일 과정을 완료했습니다.` : '마감 후에는 루틴을 추가할 수 없습니다.');
       return;
     }
     setOverlay('addRoutine');
@@ -439,30 +333,18 @@ export function useAlphaController(syncUserId?: string | null) {
     setScreen(tab);
   }
 
-  function logout() {
-    setState((prev) => ({ ...prev, hasOnboarded: false }));
-    setStack([]);
-    setScreen('onboarding');
-  }
-
-  function cyclePhraseTone() {
+  function setNotificationsEnabled(enabled: boolean) {
     setState((prev) => ({
       ...prev,
       settings: {
         ...prev.settings,
-        phraseTone: nextPhraseTone(prev.settings.phraseTone),
+        notificationsEnabled: enabled,
       },
     }));
   }
 
   function toggleNotifications() {
-    setState((prev) => ({
-      ...prev,
-      settings: {
-        ...prev.settings,
-        notificationsEnabled: !prev.settings.notificationsEnabled,
-      },
-    }));
+    setNotificationsEnabled(!state.settings.notificationsEnabled);
   }
 
   function toggleHaptics() {
@@ -490,15 +372,27 @@ export function useAlphaController(syncUserId?: string | null) {
     showToast('기록이 초기화되었습니다.');
   }
 
+  function beginNextCourse() {
+    if (!canStartNextCourse(state)) {
+      showToast('현재 과정을 완료한 뒤 다음 과정을 시작할 수 있습니다.');
+      return;
+    }
+    setState((prev) => startNextCourse(prev));
+    setStack([]);
+    setScreen('today');
+    showToast('다음 과정을 시작합니다.');
+  }
+
   return {
     addPersonalRoutine,
     back,
+    beginNextCourse,
     closeDay,
-    cyclePhraseTone,
+    courseComplete,
     done,
     go,
-    logout,
     missed,
+    nextCourseAvailable,
     openAddRoutine,
     openDay,
     overlay,
@@ -516,6 +410,7 @@ export function useAlphaController(syncUserId?: string | null) {
     selectedDay,
     selectedScope,
     setOverlay,
+    setNotificationsEnabled,
     setReflectionText,
     setRoutineName,
     setScreen,
@@ -527,11 +422,11 @@ export function useAlphaController(syncUserId?: string | null) {
     startOnboarding,
     state,
     streak,
-    syncStatus,
     toast,
     toggleHaptics,
     toggleNotifications,
     toggleRoutine,
     total,
+    undoCloseDay,
   };
 }

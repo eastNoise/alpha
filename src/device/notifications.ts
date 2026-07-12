@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
@@ -72,23 +71,4 @@ export async function syncDailyCloseReminder(enabled: boolean): Promise<Reminder
   });
   await AsyncStorage.setItem(DAILY_CLOSE_REMINDER_STORAGE_KEY, identifier);
   return 'scheduled';
-}
-
-function getExpoProjectId() {
-  return (
-    Constants.easConfig?.projectId ??
-    Constants.expoConfig?.extra?.eas?.projectId ??
-    Constants.expoConfig?.extra?.projectId
-  );
-}
-
-export async function getExpoPushTokenIfAvailable() {
-  const projectId = getExpoProjectId();
-  if (!projectId) return null;
-
-  const granted = await ensureNotificationPermission();
-  if (!granted) return null;
-
-  const token = await Notifications.getExpoPushTokenAsync({ projectId });
-  return token.data;
 }

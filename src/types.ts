@@ -63,6 +63,7 @@ export interface AppState {
   hasOnboarded: boolean;
   currentCourse: CourseState;
   today: TodayState;
+  courseRoutineTemplates: Routine[];
   routinesByDate: Record<string, Routine[]>;
   records: DayRecord[];
   settings: SettingsState;

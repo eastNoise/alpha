@@ -10,11 +10,13 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  StyleProp,
   Text,
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
+  ViewStyle,
 } from 'react-native';
 import {
   SafeAreaProvider,
@@ -23,21 +25,20 @@ import {
 } from 'react-native-safe-area-context';
 
 import {
-  basicRoutines,
   categories,
+  courseRoutinesFor,
+  courseStageForDay,
+  courseStages,
   dateForCourseDay,
+  dailyMottoFor,
   displayDate,
   scopes,
   stageForDay,
-  stageItems,
 } from './src/data';
-import { AuthUser } from './src/auth/types';
-import { useAlphaAuth } from './src/auth/useAlphaAuth';
-import { upsertPushToken } from './src/backend/pushTokenStore';
-import { doneCount, resultLabel, stageTitleForDay } from './src/domain/alpha';
+import { courseDoneCount, courseRoutineTotal, resultLabel, stageTitleForDay } from './src/domain/alpha';
 import { playHaptic } from './src/device/haptics';
-import { getExpoPushTokenIfAvailable, syncDailyCloseReminder } from './src/device/notifications';
-import { AlphaSyncStatus, useAlphaController } from './src/state/useAlphaController';
+import { syncDailyCloseReminder } from './src/device/notifications';
+import { useAlphaController } from './src/state/useAlphaController';
 import { colors, radius, spacing, typography } from './src/theme';
 import { AppState, DayRecord, Routine, ScreenName } from './src/types';
 import { visuals } from './src/visuals';
@@ -47,36 +48,6 @@ const mainTabs: Array<{ id: ScreenName; label: string; icon: string }> = [
   { id: 'records', label: '기록', icon: '▤' },
   { id: 'course', label: '과정', icon: '◷' },
 ];
-
-function stagePeriodForDay(day: number) {
-  const stage = stageForDay(day);
-  if (stage === 1) return 'Day 1 - 7';
-  if (stage === 2) return 'Day 8 - 14';
-  if (stage === 3) return 'Day 15 - 21';
-  return 'Day 22 - 30';
-}
-
-function stageQuoteForDay(day: number) {
-  const stage = stageForDay(day);
-  if (stage === 1) return '“너 자신을 깨워라.”';
-  if (stage === 2) return '“몸을 먼저 움직여라.”';
-  if (stage === 3) return '“기록은 기준을 만든다.”';
-  return '“흔들려도 기준으로 돌아와라.”';
-}
-
-function stageBulletsForDay(day: number) {
-  const stage = stageForDay(day);
-  if (stage === 1) return ['물 500ml', '침대 정리', '푸쉬업 30개'];
-  if (stage === 2) return ['기초 루틴 유지', '몸 깨우기 루틴 강화', '미완성도 기록'];
-  if (stage === 3) return ['하루 회고 고정', '기록 모음 확인', '개인 루틴 조정'];
-  return ['마감 기준 유지', '흔들린 날 복귀', '30일 기록 완성'];
-}
-
-function phraseForTone(tone: AppState['settings']['phraseTone']) {
-  if (tone === 'hard') return { first: '핑계 없이', second: '움직여라.' };
-  if (tone === 'cold') return { first: '기록은', second: '거짓말하지 않는다.' };
-  return { first: '흔들려도', second: '이어가라.' };
-}
 
 export default function App() {
   return (
@@ -88,17 +59,17 @@ export default function App() {
 
 function AlphaApp() {
   const insets = useSafeAreaInsets();
-  const auth = useAlphaAuth();
-  const alpha = useAlphaController(auth.user?.remoteBacked ? auth.user.supabaseUserId : null);
+  const alpha = useAlphaController();
   const {
     addPersonalRoutine,
     back,
+    beginNextCourse,
     closeDay,
-    cyclePhraseTone,
+    courseComplete,
     done,
     go,
-    logout,
     missed,
+    nextCourseAvailable,
     openAddRoutine,
     openDay,
     overlay,
@@ -116,6 +87,7 @@ function AlphaApp() {
     selectedDay,
     selectedScope,
     setOverlay,
+    setNotificationsEnabled,
     setReflectionText,
     setRoutineName,
     setScreen,
@@ -127,12 +99,12 @@ function AlphaApp() {
     startOnboarding,
     state,
     streak,
-    syncStatus,
     toast,
     toggleHaptics,
     toggleNotifications,
     toggleRoutine,
     total,
+    undoCloseDay,
   } = alpha;
   const { width: windowWidth } = useWindowDimensions();
   const calendarGap = 8;
@@ -141,31 +113,18 @@ function AlphaApp() {
   const hapticsEnabled = state.settings.hapticsEnabled;
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !state.hasOnboarded) return;
     syncDailyCloseReminder(state.settings.notificationsEnabled)
       .then((result) => {
-        if (result === 'denied') showToast('알림 권한이 꺼져 있습니다.');
+        if (result === 'denied') {
+          setNotificationsEnabled(false);
+          showToast('알림 권한이 꺼져 있습니다.');
+        }
       })
       .catch(() => {
         showToast('알림 설정에 실패했습니다.');
       });
-  }, [ready, state.settings.notificationsEnabled]);
-
-  useEffect(() => {
-    const userId = auth.user?.remoteBacked ? auth.user.supabaseUserId : null;
-    if (!ready || !userId || !state.settings.notificationsEnabled) return;
-
-    getExpoPushTokenIfAvailable()
-      .then((token) => {
-        if (!token) return;
-        return upsertPushToken({
-          enabled: state.settings.notificationsEnabled,
-          token,
-          userId,
-        });
-      })
-      .catch(() => undefined);
-  }, [auth.user?.remoteBacked, auth.user?.supabaseUserId, ready, state.settings.notificationsEnabled]);
+  }, [ready, state.hasOnboarded, state.settings.notificationsEnabled]);
 
   function withHaptic(type: Parameters<typeof playHaptic>[1], action: () => void) {
     return () => {
@@ -179,13 +138,6 @@ function AlphaApp() {
       case 'onboarding':
         return (
           <OnboardingScreen
-            appleAvailable={auth.appleAvailable}
-            authMessage={auth.message}
-            authStatus={auth.status}
-            googleConfigured={auth.googleConfigured}
-            user={auth.user}
-            onAppleSignIn={withHaptic('light', auth.signInWithApple)}
-            onGoogleSignIn={withHaptic('light', auth.signInWithGoogle)}
             onStart={withHaptic('success', startOnboarding)}
           />
         );
@@ -195,6 +147,7 @@ function AlphaApp() {
             done={done}
             missed={missed}
             rate={rate}
+            courseComplete={courseComplete}
             routines={routines}
             state={state}
             streak={streak}
@@ -231,30 +184,23 @@ function AlphaApp() {
       case 'course':
         return (
           <CourseScreen
+            courseComplete={courseComplete}
+            nextCourseAvailable={nextCourseAvailable}
             state={state}
             onDetail={withHaptic('selection', () => go('detail'))}
             onSettings={withHaptic('selection', () => go('settings'))}
+            onStartNextCourse={withHaptic('success', beginNextCourse)}
           />
         );
       case 'settings':
         return (
           <SettingsScreen
             state={state}
-            syncStatus={syncStatus}
-            user={auth.user}
             onBack={withHaptic('selection', back)}
-            onCyclePhraseTone={withHaptic('selection', cyclePhraseTone)}
             onDataReset={withHaptic('warning', () => setOverlay('resetData'))}
             onHapticsToggle={withHaptic('selection', toggleHaptics)}
             onInfo={withHaptic('selection', () => setOverlay('appInfo'))}
-            onLogout={() => {
-              playHaptic(hapticsEnabled, 'warning');
-              void auth.signOut().then((didSignOut) => {
-                if (didSignOut) logout();
-              });
-            }}
             onNotificationsToggle={withHaptic('selection', toggleNotifications)}
-            onToast={showToast}
           />
         );
       case 'detail':
@@ -277,7 +223,7 @@ function AlphaApp() {
     }
   }
 
-  if (!ready || !auth.ready) {
+  if (!ready) {
     return (
       <LinearGradient colors={['#020202', '#080808', '#030303']} style={styles.loading}>
         <StatusBar style="light" />
@@ -294,7 +240,7 @@ function AlphaApp() {
           style={[
             styles.screenHost,
             {
-              paddingTop: Math.max(insets.top, 24),
+              paddingTop: screen === 'onboarding' ? 0 : Math.max(insets.top, 24),
               paddingBottom: showTabs ? Math.max(insets.bottom, 7) + spacing.tabHeight + 21 : 0,
             },
           ]}
@@ -317,6 +263,7 @@ function AlphaApp() {
         open={overlay === 'finish'}
         result={state.today.result ?? (done === total ? 'complete' : 'incomplete')}
         streak={streak}
+        onCancel={withHaptic('warning', undoCloseDay)}
         onClose={withHaptic('selection', () => setOverlay(null))}
         onReflection={() => {
           playHaptic(hapticsEnabled, 'light');
@@ -344,7 +291,7 @@ function AlphaApp() {
       <DayDetailSheet
         day={selectedDay}
         open={overlay === 'dayDetail'}
-        records={state.records}
+        records={sortedRecords}
         routines={routines}
         state={state}
         onClose={withHaptic('selection', () => setOverlay(null))}
@@ -354,16 +301,20 @@ function AlphaApp() {
         onClose={withHaptic('selection', () => setOverlay(null))}
         onReset={withHaptic('warning', resetData)}
       />
-      <AppInfoModal open={overlay === 'appInfo'} onClose={withHaptic('selection', () => setOverlay(null))} />
+      <AppInfoModal
+        level={state.currentCourse.level}
+        open={overlay === 'appInfo'}
+        onClose={withHaptic('selection', () => setOverlay(null))}
+      />
     </View>
   );
 }
 
-function AppScreen({ children }: { children: React.ReactNode }) {
+function AppScreen({ children, immersive = false }: { children: React.ReactNode; immersive?: boolean }) {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.scrollContent}
+      contentContainerStyle={[styles.scrollContent, immersive && styles.immersiveScrollContent]}
       style={styles.scroll}
     >
       {children}
@@ -416,111 +367,44 @@ function TopBar({
   );
 }
 
-function OnboardingScreen({
-  appleAvailable,
-  authMessage,
-  authStatus,
-  googleConfigured,
-  user,
-  onAppleSignIn,
-  onGoogleSignIn,
-  onStart,
-}: {
-  appleAvailable: boolean;
-  authMessage: string;
-  authStatus: 'idle' | 'loading' | 'error';
-  googleConfigured: boolean;
-  user: AuthUser | null;
-  onAppleSignIn: () => void;
-  onGoogleSignIn: () => void;
-  onStart: () => void;
-}) {
-  const signedIn = Boolean(user);
-  const providerLabel = user?.provider === 'apple' ? 'Apple' : user?.provider === 'google' ? 'Google' : '';
+function OnboardingScreen({ onStart }: { onStart: () => void }) {
+  const { height, width } = useWindowDimensions();
+  const surfaceHeight = Math.max(height, 690);
+  const wordmarkWidth = width * 0.435;
+  const alphaWidth = width * 0.59;
+  const taglineWidth = width * 0.49;
+  const buttonWidth = width * 0.675;
 
   return (
-    <AppScreen>
-      <Text style={styles.alphaTitle}>ALPHA</Text>
-      <Text style={styles.subtitle}>흔들려도,{'\n'}이어가라.</Text>
-      <Text style={styles.desc}>
-        ALPHA는 오늘 루틴을 체크하고, 하루를 마감하고, 회고를 남기며 30일 과정을 이어가는 앱입니다.
-      </Text>
-      <VisualCard source={visuals.onboarding} style={styles.heroCard}>
-        <Text style={styles.heroCaption}>BASIC 과정이 자동으로 시작됩니다.</Text>
-      </VisualCard>
-      <Card style={styles.howToCard}>
-        <HowToStep index="01" text="오늘 루틴을 완료할 때마다 체크합니다." />
-        <HowToStep index="02" text="하루 마감으로 완료/미완성을 기록합니다." />
-        <HowToStep index="03" text="오늘의 기록에 직접 회고를 남깁니다." />
-        <HowToStep index="04" text="기록과 과정에서 30일 흐름을 확인합니다." last />
-      </Card>
-      <View style={styles.authBlock}>
-        {signedIn ? (
-          <View style={styles.authSignedCard}>
-            <Text style={styles.authSignedLabel}>{providerLabel} 계정으로 로그인됨</Text>
-            <Text style={styles.authSignedName}>{user?.name || user?.email || 'ALPHA 사용자'}</Text>
-          </View>
-        ) : (
-          <>
-            <AuthButton
-              disabled={!appleAvailable || authStatus === 'loading'}
-              label="Apple로 계속하기"
-              note={!appleAvailable ? '이 기기에서 사용할 수 없음' : undefined}
-              onPress={onAppleSignIn}
-            />
-            <AuthButton
-              disabled={!googleConfigured || authStatus === 'loading'}
-              label="Google로 계속하기"
-              note={!googleConfigured ? 'Google Client ID 설정 필요' : undefined}
-              onPress={onGoogleSignIn}
-            />
-          </>
-        )}
-        {authMessage ? <Text style={styles.authMessage}>{authMessage}</Text> : null}
-      </View>
-      <PrimaryButton disabled={!signedIn || authStatus === 'loading'} label="시작하기" onPress={onStart} />
-      <Text style={styles.onboardingNote}>로그인 후 BASIC 과정 Day 1/30이 시작됩니다.</Text>
-    </AppScreen>
-  );
-}
-
-function HowToStep({ index, last, text }: { index: string; last?: boolean; text: string }) {
-  return (
-    <View style={[styles.howToStep, last && styles.howToLast]}>
-      <Text style={styles.howToIndex}>{index}</Text>
-      <Text style={styles.howToText}>{text}</Text>
+    <View style={[styles.onboardingSurface, { minHeight: surfaceHeight, width }]}>
+      <Image
+        source={visuals.onboardingWordmark}
+        style={[styles.onboardingWordmark, { height: wordmarkWidth * (115 / 450), top: surfaceHeight * 0.195, width: wordmarkWidth }]}
+      />
+      <Image
+        source={visuals.onboardingAlphaMark}
+        style={[styles.onboardingAlphaMark, { height: alphaWidth * (590 / 580), top: surfaceHeight * 0.28, width: alphaWidth }]}
+      />
+      <Image
+        source={visuals.onboardingTagline}
+        style={[styles.onboardingTagline, { height: taglineWidth * (130 / 480), top: surfaceHeight * 0.64, width: taglineWidth }]}
+      />
+      <View style={[styles.onboardingRule, { top: surfaceHeight * 0.718 }]} />
+      <TouchableOpacity
+        accessibilityLabel="시작하기"
+        accessibilityRole="button"
+        activeOpacity={0.76}
+        style={[styles.onboardingStartButton, { height: buttonWidth * (210 / 630), top: surfaceHeight * 0.78, width: buttonWidth }]}
+        onPress={onStart}
+      >
+        <Image source={visuals.onboardingStartButton} style={styles.onboardingStartButtonImage} />
+      </TouchableOpacity>
     </View>
   );
 }
 
-function AuthButton({
-  disabled,
-  label,
-  note,
-  onPress,
-}: {
-  disabled?: boolean;
-  label: string;
-  note?: string;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      accessibilityLabel={label}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: Boolean(disabled) }}
-      activeOpacity={disabled ? 1 : 0.82}
-      disabled={disabled}
-      style={[styles.authButton, disabled && styles.authButtonDisabled]}
-      onPress={onPress}
-    >
-      <Text style={[styles.authButtonText, disabled && styles.authButtonTextDisabled]}>{label}</Text>
-      {note ? <Text style={styles.authButtonNote}>{note}</Text> : null}
-    </TouchableOpacity>
-  );
-}
-
 function TodayScreen({
+  courseComplete,
   done,
   missed,
   rate,
@@ -535,6 +419,7 @@ function TodayScreen({
   onSettings,
   onToggleRoutine,
 }: {
+  courseComplete: boolean;
   done: number;
   missed: number;
   rate: number;
@@ -549,14 +434,17 @@ function TodayScreen({
   onSettings: () => void;
   onToggleRoutine: (id: string) => void;
 }) {
-  const actionLabel = state.today.isClosed
-    ? state.today.hasReflection
-      ? '마감 완료'
-      : '하루 회고 작성하기'
-    : '하루 마감 ›';
-  const actionDisabled = state.today.isClosed && state.today.hasReflection;
-  const action = state.today.isClosed && !state.today.hasReflection ? onOpenReflection : onCloseDay;
-  const phrase = phraseForTone(state.settings.phraseTone);
+  const needsReflection = state.today.isClosed && !state.today.hasReflection;
+  const actionLabel = needsReflection
+    ? '하루 회고 작성하기'
+    : courseComplete
+      ? `${state.currentCourse.level} 과정 완료`
+      : state.today.isClosed
+        ? '마감 완료'
+        : '완료';
+  const actionDisabled = !needsReflection && (courseComplete || state.today.isClosed);
+  const action = needsReflection ? onOpenReflection : onCloseDay;
+  const motto = dailyMottoFor(state.currentCourse.level, state.currentCourse.day);
 
   return (
     <AppScreen>
@@ -565,7 +453,7 @@ function TodayScreen({
         subtitle={`Day ${state.currentCourse.day} · ${state.currentCourse.level} 과정`}
         onSettings={onSettings}
       />
-      <FireCard source={visuals.todayFire} label="오늘의 불씨" first={phrase.first} second={phrase.second} />
+      <FireCard source={visuals.todayFire} label="오늘의 불씨" quote={motto} />
       <SectionTitle right={`${done} / ${total} 완료`} title="오늘 요약" />
       <SummaryGrid
         items={[
@@ -576,12 +464,12 @@ function TodayScreen({
       />
       <SectionTitle right={`${done} / ${total} 완료`} title="오늘 루틴" />
       <RoutineList
-        locked={state.today.isClosed}
+        locked={state.today.isClosed || courseComplete}
         routines={routines}
         onRemove={onRemoveRoutine}
         onToggle={onToggleRoutine}
       />
-      <LinkButton disabled={state.today.isClosed} label="+ 개인 루틴 추가" onPress={onAddRoutine} />
+      <LinkButton disabled={state.today.isClosed || courseComplete} label="+ 개인 루틴 추가" onPress={onAddRoutine} />
       <View style={styles.stickyButton}>
         <PrimaryButton disabled={actionDisabled} label={actionLabel} onPress={action} />
       </View>
@@ -616,12 +504,12 @@ function RecordsScreen({
   onSettings: () => void;
 }) {
   const recent = records.slice(0, 3);
-  const doneDays = state.records.filter((record) => record.status === 'complete').length;
-  const missDays = state.records.filter((record) => record.status === 'incomplete').length;
+  const doneDays = records.filter((record) => record.status === 'complete').length;
+  const missDays = records.filter((record) => record.status === 'incomplete').length;
 
   return (
     <AppScreen>
-      <TopBar title="기록" subtitle="쌓인 기록이 너를 본다" onSettings={onSettings} />
+      <TopBar title="기록" subtitle="쌓인 기록이 너를 만든다" onSettings={onSettings} />
       <FireCard mini source={visuals.recordsHeader} first="연속 완료" second={`${streak}일`} />
       <SectionTitle right={`${done} / ${total} 완료`} title="오늘 요약" />
       <Card style={styles.progressCard}>
@@ -641,6 +529,7 @@ function RecordsScreen({
       <ProcessCard
         caption={`완료 ${doneDays}일 · 미완성 ${missDays}일`}
         day={state.currentCourse.day}
+        level={state.currentCourse.level}
         progress={state.currentCourse.progress}
       />
       <LinkButton label="30일 기록 보기 ›" onPress={onDetail} />
@@ -656,14 +545,26 @@ function RecordsScreen({
 }
 
 function CourseScreen({
+  courseComplete,
+  nextCourseAvailable,
   state,
   onDetail,
   onSettings,
+  onStartNextCourse,
 }: {
+  courseComplete: boolean;
+  nextCourseAvailable: boolean;
   state: AppState;
   onDetail: () => void;
   onSettings: () => void;
+  onStartNextCourse: () => void;
 }) {
+  const currentStage = courseStageForDay(state.currentCourse.level, state.currentCourse.day);
+  const nextCourse = state.currentCourse.level === 'BASIC'
+    ? 'STANDARD'
+    : state.currentCourse.level === 'STANDARD'
+      ? 'HARD'
+      : null;
   return (
     <AppScreen>
       <TopBar title="과정" subtitle="현재 과정과 다음 단계" onSettings={onSettings} />
@@ -671,6 +572,7 @@ function CourseScreen({
         caption="현재 진행률"
         day={state.currentCourse.day}
         highlighted
+        level={state.currentCourse.level}
         progress={state.currentCourse.progress}
       />
       <LinkButton label="30일 기록 보기 ›" onPress={onDetail} />
@@ -678,21 +580,32 @@ function CourseScreen({
       <VisualCard source={visuals.courseStage} style={styles.stepCard}>
         <View style={styles.visualTextLayer}>
           <Text style={styles.stepTitle}>
-            {String(state.currentCourse.currentStage).padStart(2, '0')} {stageTitleForDay(state.currentCourse.day)}
+            {currentStage.number} {currentStage.title}
           </Text>
-          <Text style={styles.period}>{stagePeriodForDay(state.currentCourse.day)}</Text>
-          <Text style={styles.quote}>{stageQuoteForDay(state.currentCourse.day)}</Text>
+          <Text style={styles.period}>{currentStage.period}</Text>
+          <Text style={styles.quote}>{currentStage.quote}</Text>
           <Text style={styles.bullet}>이번 단계 기준</Text>
-          {stageBulletsForDay(state.currentCourse.day).map((item) => (
+          {currentStage.bullets.map((item) => (
             <Text key={item} style={styles.bullet}>- {item}</Text>
           ))}
         </View>
       </VisualCard>
       <SectionTitle title="과정 단계" />
-      <StageList currentDay={state.currentCourse.day} />
+      <StageList currentDay={state.currentCourse.day} level={state.currentCourse.level} />
       <SectionTitle title="다음 과정" />
-      <SettingLike label="STANDARD 과정" value="잠김" />
-      <SettingLike label="HARD 과정" value="잠김" style={styles.settingGap} />
+      {nextCourse ? (
+        <>
+          <SettingLike label={`${nextCourse} 과정`} value={nextCourseAvailable ? '시작 가능' : '잠김'} />
+          {nextCourseAvailable ? (
+            <View style={styles.nextCourseButton}>
+              <PrimaryButton label={`${nextCourse} 과정 시작`} onPress={onStartNextCourse} />
+            </View>
+          ) : null}
+        </>
+      ) : (
+        <SettingLike label="최종 과정 완료" value={courseComplete ? '완료' : '진행 중'} />
+      )}
+      {state.currentCourse.level === 'BASIC' ? <SettingLike label="HARD 과정" value="잠김" style={styles.settingGap} /> : null}
     </AppScreen>
   );
 }
@@ -711,10 +624,14 @@ function DetailScreen({
   onOpenDay: (day: number) => void;
 }) {
   const doneDays = new Set(
-    state.records.filter((record) => record.status === 'complete').map((record) => record.day),
+    state.records
+      .filter((record) => record.course === state.currentCourse.level && record.status === 'complete')
+      .map((record) => record.day),
   );
   const failDays = new Set(
-    state.records.filter((record) => record.status === 'incomplete').map((record) => record.day),
+    state.records
+      .filter((record) => record.course === state.currentCourse.level && record.status === 'incomplete')
+      .map((record) => record.day),
   );
 
   return (
@@ -723,6 +640,7 @@ function DetailScreen({
       <ProcessCard
         caption={`완료 ${doneDays.size}일 · 미완성 ${failDays.size}일`}
         day={state.currentCourse.day}
+        level={state.currentCourse.level}
         progress={state.currentCourse.progress}
       />
       <SectionTitle title="30일 기록" />
@@ -758,7 +676,7 @@ function DetailScreen({
         })}
       </View>
       <SectionTitle title="과정 단계" />
-      <StageList currentDay={state.currentCourse.day} />
+      <StageList currentDay={state.currentCourse.day} level={state.currentCourse.level} />
     </AppScreen>
   );
 }
@@ -780,51 +698,30 @@ function CollectionScreen({ records, onBack }: { records: DayRecord[]; onBack: (
 
 function SettingsScreen({
   state,
-  syncStatus,
-  user,
   onBack,
-  onCyclePhraseTone,
   onDataReset,
   onHapticsToggle,
   onInfo,
-  onLogout,
   onNotificationsToggle,
-  onToast,
 }: {
   state: AppState;
-  syncStatus: AlphaSyncStatus;
-  user: AuthUser | null;
   onBack: () => void;
-  onCyclePhraseTone: () => void;
   onDataReset: () => void;
   onHapticsToggle: () => void;
   onInfo: () => void;
-  onLogout: () => void;
   onNotificationsToggle: () => void;
-  onToast: (message: string) => void;
 }) {
-  const providerLabel = user?.provider === 'apple' ? 'Apple' : user?.provider === 'google' ? 'Google' : '로그인 없음';
-  const phraseLabel = state.settings.phraseTone === 'basic' ? '기본' : state.settings.phraseTone === 'hard' ? '하드' : '냉정';
-  const syncLabel =
-    syncStatus.mode === 'remote'
-      ? '서버 연결'
-      : syncStatus.mode === 'syncing'
-        ? '동기화 중'
-        : syncStatus.mode === 'error'
-          ? '확인 필요'
-          : '로그인 필요';
   return (
     <AppScreen>
       <TopBar title="설정" onBack={onBack} />
       <Card style={styles.profile}>
         <Image source={visuals.avatar} style={styles.avatar as object} />
         <View>
-          <Text style={styles.profileTitle}>{user?.name || user?.email || 'ALPHA'}</Text>
-          <Text style={styles.profileLevel}>{providerLabel} · LEVEL 1</Text>
+          <Text style={styles.profileTitle}>ALPHA</Text>
+          <Text style={styles.profileLevel}>{state.currentCourse.level} · DAY {state.currentCourse.day}</Text>
         </View>
       </Card>
       <View style={styles.settingsList}>
-        <SettingRow label="문구 톤 설정" value={phraseLabel} onPress={onCyclePhraseTone} />
         <SettingRow
           label="알림 설정"
           value={state.settings.notificationsEnabled ? 'ON' : 'OFF'}
@@ -835,11 +732,9 @@ function SettingsScreen({
           value={state.settings.hapticsEnabled ? '진동' : 'OFF'}
           onPress={onHapticsToggle}
         />
-        <SettingRow label="동기화 상태" value={syncLabel} onPress={() => onToast(syncStatus.message)} />
         <SettingRow label="데이터 초기화" onPress={onDataReset} />
         <SettingRow label="앱 정보" value="v19" onPress={onInfo} />
       </View>
-      <SecondaryButton label="로그아웃" danger onPress={onLogout} />
     </AppScreen>
   );
 }
@@ -877,15 +772,19 @@ function FireCard({
   first,
   label,
   mini,
+  quote,
   second,
   source,
 }: {
-  first: string;
+  first?: string;
   label?: string;
   mini?: boolean;
-  second: string;
+  quote?: string;
+  second?: string;
   source: number;
 }) {
+  const displayQuote = quote ? formatFireQuote(quote) : undefined;
+
   return (
     <ImageBackground
       imageStyle={styles.visualImage as object}
@@ -901,11 +800,40 @@ function FireCard({
       />
       {label ? <Text style={styles.fireLabel}>{label}</Text> : null}
       <View style={styles.fireTextWrap}>
-        <Text style={[styles.fireText, mini && styles.fireTextMini]}>{first}</Text>
-        <Text style={[styles.fireText, styles.fireAccent, mini && styles.fireTextMini]}>{second}</Text>
+        {displayQuote ? (
+          <Text style={styles.fireQuote}>{displayQuote}</Text>
+        ) : (
+          <>
+            <Text style={[styles.fireText, mini && styles.fireTextMini]}>{first}</Text>
+            <Text style={[styles.fireText, styles.fireAccent, mini && styles.fireTextMini]}>{second}</Text>
+          </>
+        )}
       </View>
     </ImageBackground>
   );
+}
+
+function formatFireQuote(quote: string) {
+  const sentences = quote.match(/[^.!?]+[.!?]?/g)?.map((sentence) => sentence.trim()).filter(Boolean) ?? [];
+
+  if (sentences.length > 1) return sentences.join('\n');
+  if (quote.length < 20) return quote;
+
+  const words = quote.split(/\s+/);
+  let splitAt = 1;
+  let shortestDistance = Number.POSITIVE_INFINITY;
+  const totalLength = quote.length;
+
+  for (let index = 1; index < words.length; index += 1) {
+    const firstLength = words.slice(0, index).join(' ').length;
+    const distance = Math.abs(totalLength * 0.6 - firstLength);
+    if (distance < shortestDistance) {
+      splitAt = index;
+      shortestDistance = distance;
+    }
+  }
+
+  return `${words.slice(0, splitAt).join(' ')}\n${words.slice(splitAt).join(' ')}`;
 }
 
 function Card({ children, style }: { children: React.ReactNode; style?: object }) {
@@ -916,10 +844,12 @@ function PrimaryButton({
   disabled,
   label,
   onPress,
+  style,
 }: {
   disabled?: boolean;
   label: string;
   onPress: () => void;
+  style?: StyleProp<ViewStyle>;
 }) {
   return (
     <TouchableOpacity
@@ -928,6 +858,7 @@ function PrimaryButton({
       accessibilityState={{ disabled: Boolean(disabled) }}
       activeOpacity={disabled ? 1 : 0.82}
       disabled={disabled}
+      style={style}
       onPress={onPress}
     >
       <LinearGradient
@@ -944,17 +875,19 @@ function SecondaryButton({
   danger,
   label,
   onPress,
+  style,
 }: {
   danger?: boolean;
   label: string;
   onPress: () => void;
+  style?: StyleProp<ViewStyle>;
 }) {
   return (
     <TouchableOpacity
       accessibilityLabel={label}
       accessibilityRole="button"
       activeOpacity={0.82}
-      style={[styles.secondaryButton, danger && styles.dangerButton]}
+      style={[styles.secondaryButton, danger && styles.dangerButton, style]}
       onPress={onPress}
     >
       <Text style={[styles.secondaryButtonText, danger && styles.dangerText]}>{label}</Text>
@@ -1033,6 +966,7 @@ function RoutineList({
           accessibilityRole="button"
           accessibilityState={{ checked: routine.done, disabled: Boolean(locked) }}
           activeOpacity={locked ? 1 : 0.78}
+          disabled={locked}
           key={routine.id}
           style={[styles.routineRow, index === routines.length - 1 && styles.lastRow]}
           onPress={() => onToggle?.(routine.id)}
@@ -1048,7 +982,10 @@ function RoutineList({
               accessibilityRole="button"
               activeOpacity={0.78}
               style={styles.removeRoutineButton}
-              onPress={() => onRemove?.(routine.id)}
+              onPress={(event) => {
+                event.stopPropagation();
+                onRemove?.(routine.id);
+              }}
             >
               <Text style={styles.removeRoutineText}>×</Text>
             </TouchableOpacity>
@@ -1065,17 +1002,19 @@ function ProcessCard({
   caption,
   day,
   highlighted,
+  level,
   progress,
 }: {
   caption: string;
   day: number;
   highlighted?: boolean;
+  level: AppState['currentCourse']['level'];
   progress: number;
 }) {
   return (
     <Card style={[styles.processCard, highlighted && styles.processHighlighted]}>
       <View>
-        <Text style={styles.processTitle}>BASIC 과정</Text>
+        <Text style={styles.processTitle}>{level} 과정</Text>
         <Text style={styles.processDay}>Day {day} / 30</Text>
         <Text style={styles.processCaption}>{caption}</Text>
       </View>
@@ -1100,8 +1039,7 @@ function RecordCard({
   if (empty || !record) {
     return (
       <Card style={styles.recordCard}>
-        <Text style={styles.recordDay}>아직 기록 없음</Text>
-        <Text style={styles.recordText}>기록을 남기지 않았다.</Text>
+        <Text style={styles.recordText}>기록 없음</Text>
       </Card>
     );
   }
@@ -1112,22 +1050,24 @@ function RecordCard({
         {withDate ? `${displayDate(record.date)} · ` : ''}Day {record.day} ·{' '}
         <Text style={styles.badge}>{resultLabel(record.status)}</Text>
       </Text>
-      <Text style={styles.recordText}>{record.reflection || '기록을 남기지 않았다.'}</Text>
+      <Text style={styles.recordText}>{record.reflection || '기록 없음'}</Text>
       <Text style={styles.recordArrow}>›</Text>
     </Card>
   );
 }
 
-function StageList({ currentDay }: { currentDay: number }) {
+function StageList({ currentDay, level }: { currentDay: number; level: AppState['currentCourse']['level'] }) {
   const activeStage = stageForDay(currentDay);
+  const stages = courseStages[level];
   return (
     <View style={styles.stageList}>
-      {stageItems.map((item, index) => (
+      {stages.map((item, index) => (
         <StageItem
           activeStage={activeStage}
           index={index}
           item={item}
           key={item.number}
+          last={index === stages.length - 1}
         />
       ))}
     </View>
@@ -1138,10 +1078,12 @@ function StageItem({
   activeStage,
   index,
   item,
+  last,
 }: {
   activeStage: number;
   index: number;
-  item: (typeof stageItems)[number];
+  item: (typeof courseStages.BASIC)[number];
+  last: boolean;
 }) {
   const stageNumber = index + 1;
   const state = stageNumber < activeStage ? 'done' : stageNumber === activeStage ? 'active' : 'locked';
@@ -1150,7 +1092,7 @@ function StageItem({
     <View
       style={[
         styles.stageItem,
-        index === stageItems.length - 1 && styles.lastRow,
+        last && styles.lastRow,
         state === 'active' && styles.stageActive,
         state === 'locked' && styles.stageLocked,
       ]}
@@ -1259,6 +1201,7 @@ function BaseModal({
 function FinishDayModal({
   done,
   missed,
+  onCancel,
   open,
   result,
   streak,
@@ -1267,6 +1210,7 @@ function FinishDayModal({
 }: {
   done: number;
   missed: number;
+  onCancel: () => void;
   open: boolean;
   result: 'complete' | 'incomplete';
   streak: number;
@@ -1300,9 +1244,9 @@ function FinishDayModal({
           <ResultRow label="미완성 루틴" value={`${missed}개`} />
           <ResultRow label="연속 완료" value={`${streak}일`} last />
         </View>
-        <PrimaryButton label="하루 회고 작성하기" onPress={onReflection} />
-        <View style={styles.modalButtonGap}>
-          <SecondaryButton label="닫기" onPress={onClose} />
+        <View style={styles.finishActions}>
+          <SecondaryButton label="취소" style={styles.finishActionButton} onPress={onCancel} />
+          <PrimaryButton label="하루 회고 작성하기" style={styles.finishReflectionButton} onPress={onReflection} />
         </View>
       </View>
     </BaseModal>
@@ -1344,8 +1288,8 @@ function ReflectionModal({
         />
         <Text style={styles.counter}>{text.length} / 160</Text>
         <View style={styles.row2}>
-          <SecondaryButton label="취소" onPress={onClose} />
-          <PrimaryButton label="저장" onPress={onSave} />
+          <SecondaryButton label="취소" style={styles.evenModalButton} onPress={onClose} />
+          <PrimaryButton label="저장" style={styles.evenModalButton} onPress={onSave} />
         </View>
       </View>
     </BaseModal>
@@ -1423,8 +1367,8 @@ function AddRoutineModal({
           ))}
         </View>
         <View style={styles.row2WithTop}>
-          <SecondaryButton label="취소" onPress={onClose} />
-          <PrimaryButton label="추가" onPress={onAdd} />
+          <SecondaryButton label="취소" style={styles.evenModalButton} onPress={onClose} />
+          <PrimaryButton label="추가" style={styles.evenModalButton} onPress={onAdd} />
         </View>
       </View>
     </BaseModal>
@@ -1451,15 +1395,23 @@ function ResetDataModal({
         </View>
         <Text style={styles.resetCopy}>현재 루틴 체크, 마감 기록, 회고, 과정 진행률을 처음 상태로 되돌립니다.</Text>
         <View style={styles.row2WithTop}>
-          <SecondaryButton label="취소" onPress={onClose} />
-          <PrimaryButton label="초기화" onPress={onReset} />
+          <SecondaryButton label="취소" style={styles.evenModalButton} onPress={onClose} />
+          <PrimaryButton label="초기화" style={styles.evenModalButton} onPress={onReset} />
         </View>
       </View>
     </BaseModal>
   );
 }
 
-function AppInfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function AppInfoModal({
+  level,
+  open,
+  onClose,
+}: {
+  level: AppState['currentCourse']['level'];
+  open: boolean;
+  onClose: () => void;
+}) {
   return (
     <BaseModal open={open} onClose={onClose}>
       <View style={styles.centerModal}>
@@ -1471,8 +1423,8 @@ function AppInfoModal({ open, onClose }: { open: boolean; onClose: () => void })
         </View>
         <DateRow label="앱" value="ALPHA: REFORGE" />
         <DateRow label="버전" value="v19 · iOS 1.0.0" />
-        <DateRow label="과정" value="BASIC 30일" />
-        <DateRow label="저장" value="이 기기 AsyncStorage" />
+        <DateRow label="과정" value={`${level} 30일`} />
+        <DateRow label="저장" value="이 기기에 저장" />
         <View style={styles.modalButtonGap}>
           <SecondaryButton label="닫기" onPress={onClose} />
         </View>
@@ -1498,15 +1450,19 @@ function DayDetailSheet({
 }) {
   const selected = day ?? state.currentCourse.day;
   const future = selected > state.currentCourse.day;
-  const record = records.find((item) => item.day === selected);
+  const record = records.find((item) => item.course === state.currentCourse.level && item.day === selected);
   const today = selected === state.currentCourse.day;
   const date = future
     ? dateForCourseDay(state.currentCourse.startedAt, selected)
     : record?.date ?? (today ? state.today.date : dateForCourseDay(state.currentCourse.startedAt, selected));
-  const shownRoutines = today ? routines : state.routinesByDate[date] ?? basicRoutines;
-  const completed = today ? doneCount(routines) : record ? record.completedRoutineIds.length : 0;
+  const shownRoutines = today ? routines : state.routinesByDate[date] ?? courseRoutinesFor(state.currentCourse.level, selected);
+  const completed = today
+    ? courseDoneCount(routines)
+    : record
+      ? shownRoutines.filter((routine) => routine.type === 'basic' && record.completedRoutineIds.includes(routine.id)).length
+      : 0;
   const status = future ? '예정' : record ? resultLabel(record.status) : today ? '진행 중' : '미완성';
-  const note = future ? '아직 기록이 없습니다.' : record?.reflection || '기록을 남기지 않았다.';
+  const note = future ? '아직 기록이 없습니다.' : record?.reflection || '기록 없음';
 
   return (
     <BaseModal alignBottom open={open} onClose={onClose}>
@@ -1521,10 +1477,10 @@ function DayDetailSheet({
         <DateRow accent={!future && status === '미완성'} label="상태" muted={future} value={status} />
         <DateRow
           label="단계"
-          value={`${String(stageForDay(selected)).padStart(2, '0')}. ${stageTitleForDay(selected)}`}
+          value={`${String(stageForDay(selected)).padStart(2, '0')}. ${stageTitleForDay(state.currentCourse.level, selected)}`}
         />
-        <DateRow label="루틴 완료" value={future ? '-' : `${completed} / ${shownRoutines.length}`} />
-        <SectionTitle title="기본 루틴" />
+        <DateRow label="루틴 완료" value={future ? '-' : `${completed} / ${courseRoutineTotal(shownRoutines)}`} />
+        <SectionTitle title="루틴" />
         <RoutineList
           locked
           routines={shownRoutines.map((routine, index) => ({
@@ -1607,6 +1563,11 @@ const styles = StyleSheet.create({
     paddingBottom: 36,
     paddingHorizontal: spacing.screenX,
   },
+  immersiveScrollContent: {
+    flexGrow: 1,
+    paddingBottom: 0,
+    paddingHorizontal: 0,
+  },
   topbar: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -1647,31 +1608,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '900',
   },
-  alphaTitle: {
-    color: colors.red,
-    fontSize: 62,
-    fontWeight: '900',
-    letterSpacing: 0,
-    lineHeight: 65,
-    marginTop: 2,
-    textShadowColor: 'rgba(241,25,25,0.45)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 28,
-  },
-  subtitle: {
-    color: colors.white,
-    fontSize: 25,
-    fontWeight: '900',
-    letterSpacing: 0,
-    lineHeight: 30,
-    marginBottom: 18,
-  },
-  desc: {
-    color: '#c7c7ca',
-    fontSize: 14,
-    lineHeight: 24,
-    marginBottom: 20,
-  },
   card: {
     backgroundColor: 'rgba(255,255,255,0.035)',
     borderColor: colors.line,
@@ -1689,109 +1625,39 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
-  heroCard: {
-    borderColor: 'rgba(241,25,25,0.36)',
-    height: 385,
-    justifyContent: 'flex-end',
-    marginBottom: 18,
-  },
-  heroCaption: {
-    color: colors.red,
-    fontSize: 13,
-    fontWeight: '900',
-    marginBottom: 60,
-    marginLeft: 18,
-  },
-  onboardingNote: {
-    color: '#777',
-    fontSize: 12,
-    lineHeight: 19,
-    marginTop: 16,
-  },
-  howToCard: {
-    marginBottom: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 6,
-  },
-  howToStep: {
-    alignItems: 'center',
-    borderBottomColor: colors.lineSoft,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    gap: 12,
-    minHeight: 48,
-  },
-  howToLast: {
-    borderBottomWidth: 0,
-  },
-  howToIndex: {
-    color: colors.red,
-    fontSize: 12,
-    fontWeight: '900',
-    width: 24,
-  },
-  howToText: {
-    color: colors.soft,
+  onboardingSurface: {
+    backgroundColor: colors.black,
     flex: 1,
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 18,
+    overflow: 'hidden',
+    position: 'relative',
+    width: '100%',
   },
-  authBlock: {
-    gap: 8,
-    marginBottom: 12,
+  onboardingWordmark: {
+    alignSelf: 'center',
+    position: 'absolute',
   },
-  authButton: {
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    borderColor: 'rgba(255,255,255,0.16)',
-    borderRadius: radius.button,
-    borderWidth: 1,
-    height: spacing.buttonHeight,
-    justifyContent: 'center',
+  onboardingAlphaMark: {
+    alignSelf: 'center',
+    position: 'absolute',
   },
-  authButtonDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
+  onboardingTagline: {
+    alignSelf: 'center',
+    position: 'absolute',
   },
-  authButtonText: {
-    color: colors.black,
-    fontSize: 14,
-    fontWeight: '900',
+  onboardingRule: {
+    alignSelf: 'center',
+    backgroundColor: colors.red,
+    height: 2,
+    position: 'absolute',
+    width: 42,
   },
-  authButtonTextDisabled: {
-    color: '#85858a',
+  onboardingStartButton: {
+    alignSelf: 'center',
+    position: 'absolute',
   },
-  authButtonNote: {
-    color: colors.muted,
-    fontSize: 10,
-    fontWeight: '800',
-    marginTop: 3,
-  },
-  authSignedCard: {
-    backgroundColor: 'rgba(241,25,25,0.12)',
-    borderColor: 'rgba(241,25,25,0.34)',
-    borderRadius: radius.button,
-    borderWidth: 1,
-    minHeight: spacing.buttonHeight,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-  },
-  authSignedLabel: {
-    color: colors.red,
-    fontSize: 11,
-    fontWeight: '900',
-  },
-  authSignedName: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: '900',
-    marginTop: 4,
-  },
-  authMessage: {
-    color: colors.red,
-    fontSize: 12,
-    fontWeight: '800',
-    lineHeight: 18,
+  onboardingStartButtonImage: {
+    height: '100%',
+    width: '100%',
   },
   fireCard: {
     borderColor: 'rgba(241,25,25,0.42)',
@@ -1831,6 +1697,16 @@ const styles = StyleSheet.create({
   },
   fireAccent: {
     color: colors.red,
+  },
+  fireQuote: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '900',
+    lineHeight: 27,
+    paddingRight: 2,
+    textShadowColor: 'rgba(0,0,0,0.65)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 0,
   },
   section: {
     alignItems: 'center',
@@ -2228,6 +2104,9 @@ const styles = StyleSheet.create({
   settingGap: {
     marginTop: 8,
   },
+  nextCourseButton: {
+    marginTop: 10,
+  },
   settingsList: {
     borderColor: 'rgba(255,255,255,0.1)',
     borderRadius: 19,
@@ -2471,6 +2350,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '900',
   },
+  finishActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  finishActionButton: {
+    flex: 0.44,
+  },
+  finishReflectionButton: {
+    flex: 1,
+  },
   modalButtonGap: {
     marginTop: 10,
   },
@@ -2542,6 +2431,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     marginTop: 18,
+  },
+  evenModalButton: {
+    flex: 1,
   },
   chips: {
     flexDirection: 'row',

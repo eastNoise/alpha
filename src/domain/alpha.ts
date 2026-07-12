@@ -1,9 +1,25 @@
-import { DayRecord, Routine } from '../types';
-import { basicRoutines, dateForCourseDay, getTodayKey, stageForDay } from '../data';
-import { AppState, SettingsState } from '../types';
+import { AppState, DayRecord, Routine } from '../types';
+import { courseRoutinesFor, courseStageForDay, dateForCourseDay, dateKeyToDayNumber, getTodayKey, stageForDay } from '../data';
 
 export function doneCount(routines: Routine[]) {
   return routines.filter((routine) => routine.done).length;
+}
+
+export function courseRoutinesOnly(routines: Routine[]) {
+  return routines.filter((routine) => routine.type === 'basic');
+}
+
+export function courseDoneCount(routines: Routine[]) {
+  return doneCount(courseRoutinesOnly(routines));
+}
+
+export function courseRoutineTotal(routines: Routine[]) {
+  return courseRoutinesOnly(routines).length;
+}
+
+export function courseResultForRoutines(routines: Routine[]) {
+  const total = courseRoutineTotal(routines);
+  return total > 0 && courseDoneCount(routines) === total ? 'complete' : 'incomplete';
 }
 
 export function resultLabel(status?: 'complete' | 'incomplete' | null) {
@@ -12,11 +28,8 @@ export function resultLabel(status?: 'complete' | 'incomplete' | null) {
   return '진행 중';
 }
 
-export function stageTitleForDay(day: number) {
-  if (day <= 7) return '기초 통제';
-  if (day <= 14) return '몸 깨우기';
-  if (day <= 21) return '기록 만들기';
-  return '기준 적응';
+export function stageTitleForDay(level: AppState['currentCourse']['level'], day: number) {
+  return courseStageForDay(level, day).title;
 }
 
 export function cloneRoutines(routines: Routine[]) {
@@ -24,7 +37,8 @@ export function cloneRoutines(routines: Routine[]) {
 }
 
 export function streakCount(records: DayRecord[]) {
-  const byDay = recordMapByDay(records);
+  const level = records[0]?.course;
+  const byDay = recordMapByDay(records, level);
   const latestDay = Math.max(0, ...Array.from(byDay.keys()));
   let streak = 0;
 
@@ -40,16 +54,21 @@ export function sortRecords(records: DayRecord[]) {
   return [...records].sort((a, b) => b.day - a.day);
 }
 
-export function recordMapByDay(records: DayRecord[]) {
-  return new Map(records.map((record) => [record.day, record]));
+export function recordsForCourse(records: DayRecord[], level: AppState['currentCourse']['level']) {
+  return records.filter((record) => record.course === level);
 }
 
-export function uniqueRecordCount(records: DayRecord[]) {
-  return recordMapByDay(records).size;
+export function recordMapByDay(records: DayRecord[], level?: AppState['currentCourse']['level']) {
+  const courseRecords = level ? recordsForCourse(records, level) : records;
+  return new Map(courseRecords.map((record) => [record.day, record]));
 }
 
-export function progressForRecords(records: DayRecord[]) {
-  return Math.min(100, Math.round((uniqueRecordCount(records) / 30) * 100));
+export function uniqueRecordCount(records: DayRecord[], level?: AppState['currentCourse']['level']) {
+  return recordMapByDay(records, level).size;
+}
+
+export function progressForRecords(records: DayRecord[], level?: AppState['currentCourse']['level']) {
+  return Math.min(100, Math.round((uniqueRecordCount(records, level) / 30) * 100));
 }
 
 export function courseDayForDate(startedAt: string, dateKey = getTodayKey()) {
@@ -58,9 +77,7 @@ export function courseDayForDate(startedAt: string, dateKey = getTodayKey()) {
 }
 
 export function elapsedCourseDayForDate(startedAt: string, dateKey = getTodayKey()) {
-  const start = new Date(`${startedAt}T00:00:00`);
-  const current = new Date(`${dateKey}T00:00:00`);
-  return Math.floor((current.getTime() - start.getTime()) / 86400000) + 1;
+  return dateKeyToDayNumber(dateKey) - dateKeyToDayNumber(startedAt) + 1;
 }
 
 export function courseStateFor(state: AppState, dateKey = getTodayKey(), records = state.records) {
@@ -69,7 +86,7 @@ export function courseStateFor(state: AppState, dateKey = getTodayKey(), records
     ...state.currentCourse,
     day,
     currentStage: stageForDay(day),
-    progress: progressForRecords(records),
+    progress: progressForRecords(records, state.currentCourse.level),
   };
 }
 
@@ -87,8 +104,12 @@ export function courseRoutineTemplates(state: AppState) {
   return Array.from(templates.values());
 }
 
-export function routinesForNewDay(state: AppState) {
-  return [...cloneRoutines(basicRoutines), ...courseRoutineTemplates(state)];
+export function routinesForNewDay(state: AppState, day = state.currentCourse.day) {
+  const templates = (state as Partial<AppState>).courseRoutineTemplates;
+  return [
+    ...cloneRoutines(courseRoutinesFor(state.currentCourse.level, day)),
+    ...(Array.isArray(templates) ? cloneRoutines(templates) : courseRoutineTemplates(state)),
+  ];
 }
 
 export function resetRoutineCompletion(routines: Routine[]) {
@@ -100,6 +121,7 @@ export function createRecordForDay({
   date,
   day,
   level,
+  reflection,
   routines,
   status,
 }: {
@@ -107,11 +129,12 @@ export function createRecordForDay({
   date: string;
   day: number;
   level: AppState['currentCourse']['level'];
+  reflection?: string;
   routines: Routine[];
   status: DayRecord['status'];
 }): DayRecord {
   return {
-    id: `day-${day}`,
+    id: `day-${level.toLowerCase()}-${day}`,
     date,
     course: level,
     day,
@@ -119,16 +142,11 @@ export function createRecordForDay({
     status,
     completedRoutineIds: routines.filter((routine) => routine.done).map((routine) => routine.id),
     missedRoutineIds: routines.filter((routine) => !routine.done).map((routine) => routine.id),
+    reflection,
     closedAt,
   };
 }
 
 export function mergeRecord(records: DayRecord[], record: DayRecord) {
-  return [record, ...records.filter((item) => item.day !== record.day)];
-}
-
-export function nextPhraseTone(tone: SettingsState['phraseTone']) {
-  if (tone === 'basic') return 'hard';
-  if (tone === 'hard') return 'cold';
-  return 'basic';
+  return [record, ...records.filter((item) => item.course !== record.course || item.day !== record.day)];
 }
