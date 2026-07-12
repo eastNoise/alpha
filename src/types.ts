@@ -1,4 +1,5 @@
 export type CourseLevel = 'BASIC' | 'STANDARD' | 'HARD';
+export type SupportedLanguage = 'system' | 'ko' | 'en' | 'ja' | 'es' | 'de' | 'fr' | 'zh';
 export type RoutineType = 'basic' | 'personal';
 export type DayResult = 'complete' | 'incomplete';
 export type ScreenName =
@@ -56,6 +57,7 @@ export interface SettingsState {
   phraseTone: 'basic' | 'hard' | 'cold';
   notificationsEnabled: boolean;
   hapticsEnabled: boolean;
+  language: SupportedLanguage;
 }
 
 export interface AppState {

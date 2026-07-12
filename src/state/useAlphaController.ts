@@ -11,10 +11,9 @@ import {
 } from '../data';
 import {
   courseStateFor,
-  courseDoneCount,
   courseResultForRoutines,
-  courseRoutineTotal,
   createRecordForDay,
+  doneCount,
   mergeRecord,
   recordsForCourse,
   resetRoutineCompletion,
@@ -24,14 +23,18 @@ import {
 } from '../domain/alpha';
 import {
   canStartNextCourse,
+  canRestartCurrentCourse,
+  hasPassedCurrentCourse,
   isCourseComplete,
   reconcileStateForDate,
   reopenTodayForEditing,
+  restartCurrentCourse,
   startNextCourse,
 } from '../domain/stateLifecycle';
-import { AppState, Routine, ScreenName } from '../types';
+import { createI18n } from '../i18n';
+import { AppState, Routine, ScreenName, SupportedLanguage } from '../types';
 
-export type OverlayName = 'finish' | 'reflection' | 'addRoutine' | 'dayDetail' | 'resetData' | 'appInfo' | null;
+export type OverlayName = 'finish' | 'reflection' | 'addRoutine' | 'dayDetail' | 'resetData' | 'appInfo' | 'language' | null;
 export function useAlphaController() {
   const [state, setState] = useState<AppState>(() => createInitialState());
   const [ready, setReady] = useState(false);
@@ -40,15 +43,17 @@ export function useAlphaController() {
   const [overlay, setOverlay] = useState<OverlayName>(null);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [reflectionText, setReflectionText] = useState('');
-  const [routineName, setRoutineName] = useState('명상 10분');
+  const [routineName, setRoutineName] = useState('');
   const [selectedCat, setSelectedCat] = useState<(typeof categories)[number]>('몸');
   const [selectedScope, setSelectedScope] = useState<(typeof scopes)[number]>('이번 과정 동안');
   const [toast, setToast] = useState('');
+  const [, setLocaleRevision] = useState(0);
+  const i18n = createI18n(state.settings.language ?? 'system');
 
   const todayKey = state.today.date || getTodayKey();
   const routines = state.routinesByDate[todayKey] ?? routinesForNewDay(state);
-  const done = courseDoneCount(routines);
-  const total = courseRoutineTotal(routines) || 1;
+  const done = doneCount(routines);
+  const total = routines.length || 1;
   const missed = total - done;
   const rate = Math.round((done / total) * 100);
   const sortedRecords = useMemo(
@@ -60,7 +65,9 @@ export function useAlphaController() {
   );
   const streak = streakCount(sortedRecords);
   const courseComplete = isCourseComplete(state);
+  const coursePassed = hasPassedCurrentCourse(state);
   const nextCourseAvailable = canStartNextCourse(state);
+  const courseRestartAvailable = canRestartCurrentCourse(state);
   const showTabs = screen === 'today' || screen === 'records' || screen === 'course';
 
   useEffect(() => {
@@ -78,7 +85,14 @@ export function useAlphaController() {
             return;
           }
           const currentDate = getTodayKey();
-          const hydrated = reconcileStateForDate(parsed, currentDate);
+          const hydrated = reconcileStateForDate({
+            ...parsed,
+            settings: {
+              ...createInitialState().settings,
+              ...parsed.settings,
+              language: parsed.settings?.language ?? 'system',
+            },
+          }, currentDate);
           setState(hydrated);
           setScreen(hydrated.hasOnboarded ? 'today' : 'onboarding');
         }
@@ -100,7 +114,10 @@ export function useAlphaController() {
   useEffect(() => {
     if (!ready) return;
     const subscription = NativeAppState.addEventListener('change', (nextStatus) => {
-      if (nextStatus === 'active') setState((prev) => reconcileStateForDate(prev, getTodayKey()));
+      if (nextStatus === 'active') {
+        setState((prev) => reconcileStateForDate(prev, getTodayKey()));
+        setLocaleRevision((revision) => revision + 1);
+      }
     });
     return () => subscription.remove();
   }, [ready]);
@@ -110,7 +127,7 @@ export function useAlphaController() {
     let active = true;
 
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {
-      if (active) showToast('상태 저장에 실패했습니다.');
+      if (active) showToast(i18n.t('saveFailed'));
     });
     return () => {
       active = false;
@@ -158,7 +175,9 @@ export function useAlphaController() {
 
   function toggleRoutine(id: string) {
     if (state.today.isClosed || courseComplete) {
-      showToast(courseComplete ? `${state.currentCourse.level} 30일 과정을 완료했습니다.` : '마감 후에는 루틴을 수정할 수 없습니다.');
+      showToast(courseComplete
+        ? i18n.t('finishCourseToast', { level: state.currentCourse.level })
+        : i18n.t('editLockedToast'));
       return;
     }
     updateTodayRoutines(
@@ -170,12 +189,12 @@ export function useAlphaController() {
 
   function closeDay() {
     if (courseComplete) {
-      showToast(`${state.currentCourse.level} 30일 과정을 완료했습니다.`);
+      showToast(i18n.t('finishCourseToast', { level: state.currentCourse.level }));
       return;
     }
     if (state.today.isClosed) {
       if (!state.today.hasReflection) setOverlay('reflection');
-      else showToast('이미 마감 완료된 하루입니다.');
+      else showToast(i18n.t('alreadyClosedToast'));
       return;
     }
 
@@ -218,13 +237,13 @@ export function useAlphaController() {
     setReflectionText('');
     setOverlay(null);
     setScreen('today');
-    showToast('마감을 취소했습니다.');
+    showToast(i18n.t('closeUndoneToast'));
   }
 
   function saveReflection() {
     const text = reflectionText.trim();
     if (!text) {
-      showToast('회고를 입력해라.');
+      showToast(i18n.t('enterReflectionToast'));
       return;
     }
 
@@ -257,18 +276,20 @@ export function useAlphaController() {
     });
     setReflectionText('');
     setOverlay(null);
-    showToast('하루 회고가 저장되었습니다.');
+    showToast(i18n.t('reflectionSavedToast'));
     go('records');
   }
 
   function addPersonalRoutine() {
     if (state.today.isClosed || courseComplete) {
-      showToast(courseComplete ? `${state.currentCourse.level} 30일 과정을 완료했습니다.` : '마감 후에는 루틴을 추가할 수 없습니다.');
+      showToast(courseComplete
+        ? i18n.t('finishCourseToast', { level: state.currentCourse.level })
+        : i18n.t('addLockedToast'));
       setOverlay(null);
       return;
     }
 
-    const cleanName = routineName.trim() || '개인 루틴';
+    const cleanName = routineName.trim() || i18n.t('personalRoutine');
     const nextRoutine: Routine = {
       id: `personal-${Date.now()}`,
       name: cleanName,
@@ -293,12 +314,14 @@ export function useAlphaController() {
     });
     setRoutineName('');
     setOverlay(null);
-    showToast('개인 루틴이 추가되었습니다.');
+    showToast(i18n.t('personalAddedToast'));
   }
 
   function removePersonalRoutine(id: string) {
     if (state.today.isClosed || courseComplete) {
-      showToast(courseComplete ? `${state.currentCourse.level} 30일 과정을 완료했습니다.` : '마감 후에는 루틴을 삭제할 수 없습니다.');
+      showToast(courseComplete
+        ? i18n.t('finishCourseToast', { level: state.currentCourse.level })
+        : i18n.t('deleteLockedToast'));
       return;
     }
     setState((prev) => {
@@ -312,12 +335,14 @@ export function useAlphaController() {
         },
       };
     });
-    showToast('개인 루틴이 삭제되었습니다.');
+    showToast(i18n.t('personalDeletedToast'));
   }
 
   function openAddRoutine() {
     if (state.today.isClosed || courseComplete) {
-      showToast(courseComplete ? `${state.currentCourse.level} 30일 과정을 완료했습니다.` : '마감 후에는 루틴을 추가할 수 없습니다.');
+      showToast(courseComplete
+        ? i18n.t('finishCourseToast', { level: state.currentCourse.level })
+        : i18n.t('addLockedToast'));
       return;
     }
     setOverlay('addRoutine');
@@ -357,11 +382,25 @@ export function useAlphaController() {
     }));
   }
 
+  function setLanguage(language: SupportedLanguage) {
+    setState((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        language,
+      },
+    }));
+  }
+
   function resetData() {
     const fresh = createInitialState();
     setState({
       ...fresh,
       hasOnboarded: true,
+      settings: {
+        ...fresh.settings,
+        language: state.settings.language ?? 'system',
+      },
       routinesByDate: {
         [fresh.today.date]: resetRoutineCompletion(fresh.routinesByDate[fresh.today.date]),
       },
@@ -369,18 +408,29 @@ export function useAlphaController() {
     setStack([]);
     setScreen('today');
     setOverlay(null);
-    showToast('기록이 초기화되었습니다.');
+    showToast(i18n.t('resetDoneToast'));
   }
 
   function beginNextCourse() {
     if (!canStartNextCourse(state)) {
-      showToast('현재 과정을 완료한 뒤 다음 과정을 시작할 수 있습니다.');
+      showToast(i18n.t('nextCourseBlockedToast'));
       return;
     }
     setState((prev) => startNextCourse(prev));
     setStack([]);
     setScreen('today');
-    showToast('다음 과정을 시작합니다.');
+    showToast(i18n.t('nextCourseStartedToast'));
+  }
+
+  function restartCourse() {
+    if (!canRestartCurrentCourse(state)) {
+      showToast(i18n.t('restartBlockedToast'));
+      return;
+    }
+    setState((prev) => restartCurrentCourse(prev));
+    setStack([]);
+    setScreen('today');
+    showToast(i18n.t('restartedToast', { level: state.currentCourse.level }));
   }
 
   return {
@@ -389,6 +439,8 @@ export function useAlphaController() {
     beginNextCourse,
     closeDay,
     courseComplete,
+    coursePassed,
+    courseRestartAvailable,
     done,
     go,
     missed,
@@ -401,6 +453,7 @@ export function useAlphaController() {
     reflectionText,
     removePersonalRoutine,
     resetData,
+    restartCourse,
     routineName,
     routines,
     saveReflection,
@@ -410,6 +463,7 @@ export function useAlphaController() {
     selectedDay,
     selectedScope,
     setOverlay,
+    setLanguage,
     setNotificationsEnabled,
     setReflectionText,
     setRoutineName,

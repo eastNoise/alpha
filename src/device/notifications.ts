@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { createI18n } from '../i18n';
+import { SupportedLanguage } from '../types';
 
 const DAILY_CLOSE_REMINDER_ID = 'alpha:daily-close-reminder';
 const DAILY_CLOSE_REMINDER_STORAGE_KEY = 'alpha:v19:daily-close-reminder-id';
@@ -25,10 +27,10 @@ async function ensureNotificationPermission() {
   return requested.granted;
 }
 
-async function ensureAndroidChannel() {
+async function ensureAndroidChannel(channelName: string) {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync('daily-close', {
-    name: '하루 마감',
+    name: channelName,
     importance: Notifications.AndroidImportance.DEFAULT,
     vibrationPattern: [0, 180, 120, 180],
     lightColor: '#FF1D1D',
@@ -44,7 +46,10 @@ export async function cancelDailyCloseReminder() {
   await AsyncStorage.removeItem(DAILY_CLOSE_REMINDER_STORAGE_KEY);
 }
 
-export async function syncDailyCloseReminder(enabled: boolean): Promise<ReminderSyncResult> {
+export async function syncDailyCloseReminder(
+  enabled: boolean,
+  language: SupportedLanguage = 'system',
+): Promise<ReminderSyncResult> {
   if (!enabled) {
     await cancelDailyCloseReminder();
     return 'disabled';
@@ -53,13 +58,14 @@ export async function syncDailyCloseReminder(enabled: boolean): Promise<Reminder
   const granted = await ensureNotificationPermission();
   if (!granted) return 'denied';
 
-  await ensureAndroidChannel();
+  const i18n = createI18n(language);
+  await ensureAndroidChannel(i18n.t('reminderChannel'));
   await cancelDailyCloseReminder();
   const identifier = await Notifications.scheduleNotificationAsync({
     identifier: DAILY_CLOSE_REMINDER_ID,
     content: {
       title: 'ALPHA',
-      body: '하루를 마감하고 오늘의 기록을 남겨라.',
+      body: i18n.t('reminderBody'),
       sound: false,
     },
     trigger: {

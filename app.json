@@ -13,6 +13,8 @@
       "supportsTablet": false,
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
+        "CFBundleDevelopmentRegion": "en",
+        "CFBundleLocalizations": ["en", "ko", "ja", "es", "de", "fr", "zh-Hans"],
         "UIUserInterfaceStyle": "Dark"
       }
     },
@@ -29,6 +31,17 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-notifications"]
+    "plugins": [
+      "expo-notifications",
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": ["en", "ko", "ja", "es", "de", "fr", "zh-Hans"],
+            "android": ["en", "ko", "ja", "es", "de", "fr", "zh-CN"]
+          }
+        }
+      ]
+    ]
   }
 }

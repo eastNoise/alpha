@@ -30,23 +30,22 @@ import {
   courseStageForDay,
   courseStages,
   dateForCourseDay,
-  dailyMottoFor,
-  displayDate,
   scopes,
   stageForDay,
 } from './src/data';
-import { courseDoneCount, courseRoutineTotal, resultLabel, stageTitleForDay } from './src/domain/alpha';
+import { courseDoneCount, courseRoutineTotal } from './src/domain/alpha';
 import { playHaptic } from './src/device/haptics';
 import { syncDailyCloseReminder } from './src/device/notifications';
+import { createI18n, I18nContext, supportedLanguages, useI18n } from './src/i18n';
 import { useAlphaController } from './src/state/useAlphaController';
 import { colors, radius, spacing, typography } from './src/theme';
-import { AppState, DayRecord, Routine, ScreenName } from './src/types';
+import { AppState, DayRecord, Routine, ScreenName, SupportedLanguage } from './src/types';
 import { visuals } from './src/visuals';
 
-const mainTabs: Array<{ id: ScreenName; label: string; icon: string }> = [
-  { id: 'today', label: '오늘', icon: '□' },
-  { id: 'records', label: '기록', icon: '▤' },
-  { id: 'course', label: '과정', icon: '◷' },
+const mainTabs: Array<{ id: 'today' | 'records' | 'course'; icon: string }> = [
+  { id: 'today', icon: '□' },
+  { id: 'records', icon: '▤' },
+  { id: 'course', icon: '◷' },
 ];
 
 export default function App() {
@@ -66,6 +65,8 @@ function AlphaApp() {
     beginNextCourse,
     closeDay,
     courseComplete,
+    coursePassed,
+    courseRestartAvailable,
     done,
     go,
     missed,
@@ -78,6 +79,7 @@ function AlphaApp() {
     reflectionText,
     removePersonalRoutine,
     resetData,
+    restartCourse,
     routineName,
     routines,
     saveReflection,
@@ -87,6 +89,7 @@ function AlphaApp() {
     selectedDay,
     selectedScope,
     setOverlay,
+    setLanguage,
     setNotificationsEnabled,
     setReflectionText,
     setRoutineName,
@@ -111,20 +114,22 @@ function AlphaApp() {
   const calendarCellSize = Math.floor((windowWidth - spacing.screenX * 2 - calendarGap * 6) / 7);
   const calendarWidth = calendarCellSize * 7 + calendarGap * 6;
   const hapticsEnabled = state.settings.hapticsEnabled;
+  const i18n = createI18n(state.settings.language ?? 'system');
+  const { t } = i18n;
 
   useEffect(() => {
     if (!ready || !state.hasOnboarded) return;
-    syncDailyCloseReminder(state.settings.notificationsEnabled)
+    syncDailyCloseReminder(state.settings.notificationsEnabled, state.settings.language)
       .then((result) => {
         if (result === 'denied') {
           setNotificationsEnabled(false);
-          showToast('알림 권한이 꺼져 있습니다.');
+          showToast(t('notificationDenied'));
         }
       })
       .catch(() => {
-        showToast('알림 설정에 실패했습니다.');
+        showToast(t('notificationFailed'));
       });
-  }, [ready, state.hasOnboarded, state.settings.notificationsEnabled]);
+  }, [ready, state.hasOnboarded, state.settings.language, state.settings.notificationsEnabled]);
 
   function withHaptic(type: Parameters<typeof playHaptic>[1], action: () => void) {
     return () => {
@@ -148,6 +153,7 @@ function AlphaApp() {
             missed={missed}
             rate={rate}
             courseComplete={courseComplete}
+            coursePassed={coursePassed}
             routines={routines}
             state={state}
             streak={streak}
@@ -185,11 +191,14 @@ function AlphaApp() {
         return (
           <CourseScreen
             courseComplete={courseComplete}
+            coursePassed={coursePassed}
+            courseRestartAvailable={courseRestartAvailable}
             nextCourseAvailable={nextCourseAvailable}
             state={state}
             onDetail={withHaptic('selection', () => go('detail'))}
             onSettings={withHaptic('selection', () => go('settings'))}
             onStartNextCourse={withHaptic('success', beginNextCourse)}
+            onRestartCourse={withHaptic('warning', restartCourse)}
           />
         );
       case 'settings':
@@ -200,6 +209,7 @@ function AlphaApp() {
             onDataReset={withHaptic('warning', () => setOverlay('resetData'))}
             onHapticsToggle={withHaptic('selection', toggleHaptics)}
             onInfo={withHaptic('selection', () => setOverlay('appInfo'))}
+            onLanguage={withHaptic('selection', () => setOverlay('language'))}
             onNotificationsToggle={withHaptic('selection', toggleNotifications)}
           />
         );
@@ -233,6 +243,7 @@ function AlphaApp() {
   }
 
   return (
+    <I18nContext.Provider value={i18n}>
     <View style={styles.root}>
       <StatusBar style="light" />
       <LinearGradient colors={['#020202', '#080808', '#030303']} style={styles.background}>
@@ -306,7 +317,18 @@ function AlphaApp() {
         open={overlay === 'appInfo'}
         onClose={withHaptic('selection', () => setOverlay(null))}
       />
+      <LanguageModal
+        language={state.settings.language ?? 'system'}
+        open={overlay === 'language'}
+        onClose={withHaptic('selection', () => setOverlay(null))}
+        onSelect={(language) => {
+          playHaptic(hapticsEnabled, 'selection');
+          setLanguage(language);
+          setOverlay(null);
+        }}
+      />
     </View>
+    </I18nContext.Provider>
   );
 }
 
@@ -333,12 +355,13 @@ function TopBar({
   onBack?: () => void;
   onSettings?: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <View style={styles.topbar}>
       <View style={styles.backrow}>
         {onBack ? (
           <TouchableOpacity
-            accessibilityLabel="뒤로가기"
+            accessibilityLabel={t('back')}
             accessibilityRole="button"
             activeOpacity={0.78}
             style={styles.iconButton}
@@ -354,7 +377,7 @@ function TopBar({
       </View>
       {onSettings ? (
         <TouchableOpacity
-          accessibilityLabel="설정"
+          accessibilityLabel={t('settings')}
           accessibilityRole="button"
           activeOpacity={0.78}
           style={styles.iconButton}
@@ -368,6 +391,7 @@ function TopBar({
 }
 
 function OnboardingScreen({ onStart }: { onStart: () => void }) {
+  const i18n = useI18n();
   const { height, width } = useWindowDimensions();
   const surfaceHeight = Math.max(height, 690);
   const wordmarkWidth = width * 0.435;
@@ -385,19 +409,29 @@ function OnboardingScreen({ onStart }: { onStart: () => void }) {
         source={visuals.onboardingAlphaMark}
         style={[styles.onboardingAlphaMark, { height: alphaWidth * (590 / 580), top: surfaceHeight * 0.28, width: alphaWidth }]}
       />
-      <Image
-        source={visuals.onboardingTagline}
-        style={[styles.onboardingTagline, { height: taglineWidth * (130 / 480), top: surfaceHeight * 0.64, width: taglineWidth }]}
-      />
+      {i18n.locale === 'ko' ? (
+        <Image
+          source={visuals.onboardingTagline}
+          style={[styles.onboardingTagline, { height: taglineWidth * (130 / 480), top: surfaceHeight * 0.64, width: taglineWidth }]}
+        />
+      ) : (
+        <Text style={[styles.onboardingTaglineText, { top: surfaceHeight * 0.64, width: width * 0.78 }]}>
+          {i18n.tagline}
+        </Text>
+      )}
       <View style={[styles.onboardingRule, { top: surfaceHeight * 0.718 }]} />
       <TouchableOpacity
-        accessibilityLabel="시작하기"
+        accessibilityLabel={i18n.t('start')}
         accessibilityRole="button"
         activeOpacity={0.76}
         style={[styles.onboardingStartButton, { height: buttonWidth * (210 / 630), top: surfaceHeight * 0.78, width: buttonWidth }]}
         onPress={onStart}
       >
-        <Image source={visuals.onboardingStartButton} style={styles.onboardingStartButtonImage} />
+        {i18n.locale === 'ko' ? (
+          <Image source={visuals.onboardingStartButton} style={styles.onboardingStartButtonImage} />
+        ) : (
+          <Text style={styles.onboardingStartButtonText}>{i18n.t('start')}</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -405,6 +439,7 @@ function OnboardingScreen({ onStart }: { onStart: () => void }) {
 
 function TodayScreen({
   courseComplete,
+  coursePassed,
   done,
   missed,
   rate,
@@ -420,6 +455,7 @@ function TodayScreen({
   onToggleRoutine,
 }: {
   courseComplete: boolean;
+  coursePassed: boolean;
   done: number;
   missed: number;
   rate: number;
@@ -434,42 +470,44 @@ function TodayScreen({
   onSettings: () => void;
   onToggleRoutine: (id: string) => void;
 }) {
+  const i18n = useI18n();
+  const { t } = i18n;
   const needsReflection = state.today.isClosed && !state.today.hasReflection;
   const actionLabel = needsReflection
-    ? '하루 회고 작성하기'
+    ? t('writeReflection')
     : courseComplete
-      ? `${state.currentCourse.level} 과정 완료`
+      ? t('courseState', { level: state.currentCourse.level, state: t(coursePassed ? 'complete' : 'ended') })
       : state.today.isClosed
-        ? '마감 완료'
-        : '완료';
+        ? t('closeComplete')
+        : t('complete');
   const actionDisabled = !needsReflection && (courseComplete || state.today.isClosed);
   const action = needsReflection ? onOpenReflection : onCloseDay;
-  const motto = dailyMottoFor(state.currentCourse.level, state.currentCourse.day);
+  const motto = i18n.motto(state.currentCourse.level, state.currentCourse.day);
 
   return (
     <AppScreen>
       <TopBar
-        title="오늘"
-        subtitle={`Day ${state.currentCourse.day} · ${state.currentCourse.level} 과정`}
+        title={t('today')}
+        subtitle={`${i18n.day(state.currentCourse.day)} · ${i18n.courseName(state.currentCourse.level)}`}
         onSettings={onSettings}
       />
-      <FireCard source={visuals.todayFire} label="오늘의 불씨" quote={motto} />
-      <SectionTitle right={`${done} / ${total} 완료`} title="오늘 요약" />
+      <FireCard source={visuals.todayFire} label={t('todayFire')} quote={motto} />
+      <SectionTitle right={t('completedCount', { done, total })} title={t('todaySummary')} />
       <SummaryGrid
         items={[
-          { label: '완료', value: String(done) },
-          { label: '연속', value: String(streak) },
-          { label: '오늘', value: `${rate}%` },
+          { label: t('complete'), value: String(done) },
+          { label: t('streak'), value: String(streak) },
+          { label: t('today'), value: `${rate}%` },
         ]}
       />
-      <SectionTitle right={`${done} / ${total} 완료`} title="오늘 루틴" />
+      <SectionTitle right={t('completedCount', { done, total })} title={t('todayRoutines')} />
       <RoutineList
         locked={state.today.isClosed || courseComplete}
         routines={routines}
         onRemove={onRemoveRoutine}
         onToggle={onToggleRoutine}
       />
-      <LinkButton disabled={state.today.isClosed || courseComplete} label="+ 개인 루틴 추가" onPress={onAddRoutine} />
+      <LinkButton disabled={state.today.isClosed || courseComplete} label={t('addPersonalRoutine')} onPress={onAddRoutine} />
       <View style={styles.stickyButton}>
         <PrimaryButton disabled={actionDisabled} label={actionLabel} onPress={action} />
       </View>
@@ -503,15 +541,16 @@ function RecordsScreen({
   onDetail: () => void;
   onSettings: () => void;
 }) {
+  const { t } = useI18n();
   const recent = records.slice(0, 3);
   const doneDays = records.filter((record) => record.status === 'complete').length;
   const missDays = records.filter((record) => record.status === 'incomplete').length;
 
   return (
     <AppScreen>
-      <TopBar title="기록" subtitle="쌓인 기록이 너를 만든다" onSettings={onSettings} />
-      <FireCard mini source={visuals.recordsHeader} first="연속 완료" second={`${streak}일`} />
-      <SectionTitle right={`${done} / ${total} 완료`} title="오늘 요약" />
+      <TopBar title={t('records')} subtitle={t('recordsSubtitle')} onSettings={onSettings} />
+      <FireCard mini source={visuals.recordsHeader} first={t('completionStreak')} second={t('days', { count: streak })} />
+      <SectionTitle right={t('completedCount', { done, total })} title={t('todaySummary')} />
       <Card style={styles.progressCard}>
         <View style={styles.progress}>
           <View style={[styles.progressFill, { width: `${rate}%` }]} />
@@ -519,47 +558,57 @@ function RecordsScreen({
         <SummaryGrid
           compact
           items={[
-            { label: '완료', value: String(done) },
-            { label: '미완성', value: String(missed) },
-            { label: '달성률', value: `${rate}%`, accent: true },
+            { label: t('complete'), value: String(done) },
+            { label: t('incomplete'), value: String(missed) },
+            { label: t('achievement'), value: `${rate}%`, accent: true },
           ]}
         />
       </Card>
-      <SectionTitle title="30일 과정 요약" />
+      <SectionTitle title={t('course30Summary')} />
       <ProcessCard
-        caption={`완료 ${doneDays}일 · 미완성 ${missDays}일`}
+        caption={t('courseSummaryCaption', { done: doneDays, missed: missDays })}
         day={state.currentCourse.day}
         level={state.currentCourse.level}
         progress={state.currentCourse.progress}
       />
-      <LinkButton label="30일 기록 보기 ›" onPress={onDetail} />
-      <SectionTitle title="최근 기록" />
+      <LinkButton label={t('view30Records')} onPress={onDetail} />
+      <SectionTitle title={t('recentRecords')} />
       {recent.length ? (
         recent.map((record) => <RecordCard key={record.id} record={record} />)
       ) : (
         <RecordCard empty />
       )}
-      <LinkButton label="기록 모음 ›" onPress={onCollection} />
+      <LinkButton label={t('recordCollectionLink')} onPress={onCollection} />
     </AppScreen>
   );
 }
 
 function CourseScreen({
   courseComplete,
+  coursePassed,
+  courseRestartAvailable,
   nextCourseAvailable,
   state,
   onDetail,
   onSettings,
+  onRestartCourse,
   onStartNextCourse,
 }: {
   courseComplete: boolean;
+  coursePassed: boolean;
+  courseRestartAvailable: boolean;
   nextCourseAvailable: boolean;
   state: AppState;
   onDetail: () => void;
   onSettings: () => void;
+  onRestartCourse: () => void;
   onStartNextCourse: () => void;
 }) {
-  const currentStage = courseStageForDay(state.currentCourse.level, state.currentCourse.day);
+  const i18n = useI18n();
+  const { t } = i18n;
+  const stageIndex = stageForDay(state.currentCourse.day) - 1;
+  const stageMeta = courseStageForDay(state.currentCourse.level, state.currentCourse.day);
+  const currentStage = i18n.stage(state.currentCourse.level, stageIndex);
   const nextCourse = state.currentCourse.level === 'BASIC'
     ? 'STANDARD'
     : state.currentCourse.level === 'STANDARD'
@@ -567,45 +616,50 @@ function CourseScreen({
       : null;
   return (
     <AppScreen>
-      <TopBar title="과정" subtitle="현재 과정과 다음 단계" onSettings={onSettings} />
+      <TopBar title={t('course')} subtitle={t('currentAndNext')} onSettings={onSettings} />
       <ProcessCard
-        caption="현재 진행률"
+        caption={t('currentProgress')}
         day={state.currentCourse.day}
         highlighted
         level={state.currentCourse.level}
         progress={state.currentCourse.progress}
       />
-      <LinkButton label="30일 기록 보기 ›" onPress={onDetail} />
-      <SectionTitle title="현재 단계" />
+      <LinkButton label={t('view30Records')} onPress={onDetail} />
+      <SectionTitle title={t('currentStage')} />
       <VisualCard source={visuals.courseStage} style={styles.stepCard}>
         <View style={styles.visualTextLayer}>
           <Text style={styles.stepTitle}>
-            {currentStage.number} {currentStage.title}
+            {stageMeta.number} {currentStage.title}
           </Text>
-          <Text style={styles.period}>{currentStage.period}</Text>
+          <Text style={styles.period}>{i18n.dayRange(stageIndex * 7 + 1, stageIndex === 3 ? 30 : stageIndex * 7 + 7)}</Text>
           <Text style={styles.quote}>{currentStage.quote}</Text>
-          <Text style={styles.bullet}>이번 단계 기준</Text>
+          <Text style={styles.bullet}>{t('stageStandards')}</Text>
           {currentStage.bullets.map((item) => (
             <Text key={item} style={styles.bullet}>- {item}</Text>
           ))}
         </View>
       </VisualCard>
-      <SectionTitle title="과정 단계" />
+      <SectionTitle title={t('courseStages')} />
       <StageList currentDay={state.currentCourse.day} level={state.currentCourse.level} />
-      <SectionTitle title="다음 과정" />
+      <SectionTitle title={t('nextCourse')} />
       {nextCourse ? (
         <>
-          <SettingLike label={`${nextCourse} 과정`} value={nextCourseAvailable ? '시작 가능' : '잠김'} />
+          <SettingLike label={i18n.courseName(nextCourse)} value={t(nextCourseAvailable ? 'available' : 'locked')} />
           {nextCourseAvailable ? (
             <View style={styles.nextCourseButton}>
-              <PrimaryButton label={`${nextCourse} 과정 시작`} onPress={onStartNextCourse} />
+              <PrimaryButton label={t('startCourse', { level: nextCourse })} onPress={onStartNextCourse} />
             </View>
           ) : null}
         </>
       ) : (
-        <SettingLike label="최종 과정 완료" value={courseComplete ? '완료' : '진행 중'} />
+        <SettingLike label={t('finalCourse')} value={t(coursePassed ? 'complete' : courseComplete ? 'retryNeeded' : 'inProgress')} />
       )}
-      {state.currentCourse.level === 'BASIC' ? <SettingLike label="HARD 과정" value="잠김" style={styles.settingGap} /> : null}
+      {courseRestartAvailable ? (
+        <View style={styles.nextCourseButton}>
+          <PrimaryButton label={t('restartCourse', { level: state.currentCourse.level })} onPress={onRestartCourse} />
+        </View>
+      ) : null}
+      {state.currentCourse.level === 'BASIC' ? <SettingLike label={i18n.courseName('HARD')} value={t('locked')} style={styles.settingGap} /> : null}
     </AppScreen>
   );
 }
@@ -623,6 +677,8 @@ function DetailScreen({
   onBack: () => void;
   onOpenDay: (day: number) => void;
 }) {
+  const i18n = useI18n();
+  const { t } = i18n;
   const doneDays = new Set(
     state.records
       .filter((record) => record.course === state.currentCourse.level && record.status === 'complete')
@@ -636,14 +692,14 @@ function DetailScreen({
 
   return (
     <AppScreen>
-      <TopBar title="30일 기록" onBack={onBack} />
+      <TopBar title={t('records30')} onBack={onBack} />
       <ProcessCard
-        caption={`완료 ${doneDays.size}일 · 미완성 ${failDays.size}일`}
+        caption={t('courseSummaryCaption', { done: doneDays.size, missed: failDays.size })}
         day={state.currentCourse.day}
         level={state.currentCourse.level}
         progress={state.currentCourse.progress}
       />
-      <SectionTitle title="30일 기록" />
+      <SectionTitle title={t('records30')} />
       <View style={[styles.grid30, { width: calendarWidth }]}>
         {Array.from({ length: 30 }, (_, index) => {
           const day = index + 1;
@@ -658,7 +714,7 @@ function DetailScreen({
                 : null;
           return (
             <TouchableOpacity
-              accessibilityLabel={`Day ${day}`}
+              accessibilityLabel={i18n.day(day)}
               accessibilityRole="button"
               activeOpacity={0.8}
               key={day}
@@ -675,18 +731,19 @@ function DetailScreen({
           );
         })}
       </View>
-      <SectionTitle title="과정 단계" />
+      <SectionTitle title={t('courseStages')} />
       <StageList currentDay={state.currentCourse.day} level={state.currentCourse.level} />
     </AppScreen>
   );
 }
 
 function CollectionScreen({ records, onBack }: { records: DayRecord[]; onBack: () => void }) {
+  const { t } = useI18n();
   return (
     <AppScreen>
-      <TopBar title="기록 모음" onBack={onBack} />
-      <FireCard mini source={visuals.recordsHeader} first="남긴 기록 개수" second={`${records.length}개`} />
-      <SectionTitle title="날짜별 기록" />
+      <TopBar title={t('recordCollection')} onBack={onBack} />
+      <FireCard mini source={visuals.recordsHeader} first={t('recordsLeft')} second={t('countItems', { count: records.length })} />
+      <SectionTitle title={t('recordsByDate')} />
       {records.length ? (
         records.map((record) => <RecordCard key={record.id} record={record} withDate />)
       ) : (
@@ -702,6 +759,7 @@ function SettingsScreen({
   onDataReset,
   onHapticsToggle,
   onInfo,
+  onLanguage,
   onNotificationsToggle,
 }: {
   state: AppState;
@@ -709,31 +767,35 @@ function SettingsScreen({
   onDataReset: () => void;
   onHapticsToggle: () => void;
   onInfo: () => void;
+  onLanguage: () => void;
   onNotificationsToggle: () => void;
 }) {
+  const i18n = useI18n();
+  const { t } = i18n;
   return (
     <AppScreen>
-      <TopBar title="설정" onBack={onBack} />
+      <TopBar title={t('settings')} onBack={onBack} />
       <Card style={styles.profile}>
         <Image source={visuals.avatar} style={styles.avatar as object} />
         <View>
           <Text style={styles.profileTitle}>ALPHA</Text>
-          <Text style={styles.profileLevel}>{state.currentCourse.level} · DAY {state.currentCourse.day}</Text>
+          <Text style={styles.profileLevel}>{state.currentCourse.level} · {i18n.day(state.currentCourse.day)}</Text>
         </View>
       </Card>
       <View style={styles.settingsList}>
         <SettingRow
-          label="알림 설정"
+          label={t('notificationSettings')}
           value={state.settings.notificationsEnabled ? 'ON' : 'OFF'}
           onPress={onNotificationsToggle}
         />
         <SettingRow
-          label="탭 피드백 설정"
-          value={state.settings.hapticsEnabled ? '진동' : 'OFF'}
+          label={t('hapticSettings')}
+          value={state.settings.hapticsEnabled ? t('vibration') : 'OFF'}
           onPress={onHapticsToggle}
         />
-        <SettingRow label="데이터 초기화" onPress={onDataReset} />
-        <SettingRow label="앱 정보" value="v19" onPress={onInfo} />
+        <SettingRow label={t('language')} value={i18n.languageName(state.settings.language ?? 'system')} onPress={onLanguage} />
+        <SettingRow label={t('dataReset')} onPress={onDataReset} />
+        <SettingRow label={t('appInfo')} value="v19" onPress={onInfo} />
       </View>
     </AppScreen>
   );
@@ -958,11 +1020,12 @@ function RoutineList({
   onRemove?: (id: string) => void;
   onToggle?: (id: string) => void;
 }) {
+  const i18n = useI18n();
   return (
     <View style={styles.routineList}>
       {routines.map((routine, index) => (
         <TouchableOpacity
-          accessibilityLabel={routine.name}
+          accessibilityLabel={routine.type === 'personal' ? routine.name : i18n.routine(routine.id, routine.name)}
           accessibilityRole="button"
           accessibilityState={{ checked: routine.done, disabled: Boolean(locked) }}
           activeOpacity={locked ? 1 : 0.78}
@@ -974,11 +1037,13 @@ function RoutineList({
           <View style={[styles.check, routine.done && styles.checkDone]}>
             <Text style={styles.checkText}>{routine.done ? '✓' : ''}</Text>
           </View>
-          <Text style={[styles.routineText, locked && styles.lockedText]}>{routine.name}</Text>
-          {routine.type === 'personal' ? <Text style={styles.personalBadge}>개인</Text> : null}
+          <Text style={[styles.routineText, locked && styles.lockedText]}>
+            {routine.type === 'personal' ? routine.name : i18n.routine(routine.id, routine.name)}
+          </Text>
+          {routine.type === 'personal' ? <Text style={styles.personalBadge}>{i18n.t('personal')}</Text> : null}
           {routine.type === 'personal' && !locked ? (
             <TouchableOpacity
-              accessibilityLabel={`${routine.name} 삭제`}
+              accessibilityLabel={i18n.t('deleteRoutine', { name: routine.name })}
               accessibilityRole="button"
               activeOpacity={0.78}
               style={styles.removeRoutineButton}
@@ -990,7 +1055,7 @@ function RoutineList({
               <Text style={styles.removeRoutineText}>×</Text>
             </TouchableOpacity>
           ) : (
-            <Text style={styles.chev}>{locked ? '잠김' : '›'}</Text>
+            <Text style={styles.chev}>{locked ? i18n.t('locked') : '›'}</Text>
           )}
         </TouchableOpacity>
       ))}
@@ -1011,11 +1076,13 @@ function ProcessCard({
   level: AppState['currentCourse']['level'];
   progress: number;
 }) {
+  const i18n = useI18n();
+  const { t } = i18n;
   return (
     <Card style={[styles.processCard, highlighted && styles.processHighlighted]}>
       <View>
-        <Text style={styles.processTitle}>{level} 과정</Text>
-        <Text style={styles.processDay}>Day {day} / 30</Text>
+        <Text style={styles.processTitle}>{i18n.courseName(level)}</Text>
+        <Text style={styles.processDay}>{i18n.day(day)} / 30</Text>
         <Text style={styles.processCaption}>{caption}</Text>
       </View>
       <View style={styles.ring}>
@@ -1036,10 +1103,12 @@ function RecordCard({
   record?: DayRecord;
   withDate?: boolean;
 }) {
+  const i18n = useI18n();
+  const { t } = i18n;
   if (empty || !record) {
     return (
       <Card style={styles.recordCard}>
-        <Text style={styles.recordText}>기록 없음</Text>
+        <Text style={styles.recordText}>{t('noRecord')}</Text>
       </Card>
     );
   }
@@ -1047,10 +1116,10 @@ function RecordCard({
   return (
     <Card style={styles.recordCard}>
       <Text style={styles.recordDay}>
-        {withDate ? `${displayDate(record.date)} · ` : ''}Day {record.day} ·{' '}
-        <Text style={styles.badge}>{resultLabel(record.status)}</Text>
+        {withDate ? `${i18n.date(record.date)} · ` : ''}{i18n.day(record.day)} ·{' '}
+        <Text style={styles.badge}>{t(record.status === 'complete' ? 'complete' : 'incomplete')}</Text>
       </Text>
-      <Text style={styles.recordText}>{record.reflection || '기록 없음'}</Text>
+      <Text style={styles.recordText}>{record.reflection || t('noRecord')}</Text>
       <Text style={styles.recordArrow}>›</Text>
     </Card>
   );
@@ -1068,6 +1137,7 @@ function StageList({ currentDay, level }: { currentDay: number; level: AppState[
           item={item}
           key={item.number}
           last={index === stages.length - 1}
+          level={level}
         />
       ))}
     </View>
@@ -1079,14 +1149,18 @@ function StageItem({
   index,
   item,
   last,
+  level,
 }: {
   activeStage: number;
   index: number;
   item: (typeof courseStages.BASIC)[number];
   last: boolean;
+  level: AppState['currentCourse']['level'];
 }) {
+  const i18n = useI18n();
   const stageNumber = index + 1;
   const state = stageNumber < activeStage ? 'done' : stageNumber === activeStage ? 'active' : 'locked';
+  const localizedStage = i18n.stage(level, index);
 
   return (
     <View
@@ -1101,9 +1175,18 @@ function StageItem({
       <Text style={[styles.stageNumber, state === 'active' && styles.stageActiveText]}>
         {item.number}
       </Text>
-      <Text style={[styles.stageTitle, state === 'active' && styles.stageActiveText]}>{item.title}</Text>
-      <Text style={styles.stagePeriod}>{item.period}</Text>
-      <Text style={styles.stageState}>{state === 'done' ? '✓' : state === 'active' ? '●' : '잠김'}</Text>
+      <Text
+        adjustsFontSizeToFit
+        minimumFontScale={0.76}
+        numberOfLines={2}
+        style={[styles.stageTitle, state === 'active' && styles.stageActiveText]}
+      >
+        {localizedStage.title}
+      </Text>
+      <Text style={styles.stagePeriod}>{i18n.dayRange(index * 7 + 1, index === 3 ? 30 : index * 7 + 7)}</Text>
+      <Text accessibilityLabel={state === 'locked' ? i18n.t('locked') : undefined} style={styles.stageState}>
+        {state === 'done' ? '✓' : state === 'active' ? '●' : '🔒'}
+      </Text>
     </View>
   );
 }
@@ -1151,13 +1234,14 @@ function BottomTabs({
   bottomInset: number;
   onPress: (screen: ScreenName) => void;
 }) {
+  const { t } = useI18n();
   return (
     <View style={[styles.tabs, { bottom: Math.max(bottomInset, 7) + 13 }]}>
       {mainTabs.map((tab) => {
         const selected = active === tab.id;
         return (
           <TouchableOpacity
-            accessibilityLabel={tab.label}
+            accessibilityLabel={t(tab.id)}
             accessibilityRole="button"
             accessibilityState={{ selected }}
             activeOpacity={0.82}
@@ -1166,7 +1250,7 @@ function BottomTabs({
             onPress={() => onPress(tab.id)}
           >
             <Text style={[styles.tabIcon, selected && styles.tabActiveText]}>{tab.icon}</Text>
-            <Text style={[styles.tabText, selected && styles.tabActiveText]}>{tab.label}</Text>
+            <Text style={[styles.tabText, selected && styles.tabActiveText]}>{t(tab.id)}</Text>
           </TouchableOpacity>
         );
       })}
@@ -1217,12 +1301,13 @@ function FinishDayModal({
   onClose: () => void;
   onReflection: () => void;
 }) {
+  const { t } = useI18n();
   const complete = result === 'complete';
   return (
     <BaseModal open={open} onClose={onClose}>
       <View style={styles.finishModal}>
         <TouchableOpacity
-          accessibilityLabel="닫기"
+          accessibilityLabel={t('close')}
           accessibilityRole="button"
           activeOpacity={0.78}
           style={styles.closeButton}
@@ -1234,19 +1319,19 @@ function FinishDayModal({
           <View style={styles.resultIcon}>
             <Text style={styles.resultIconText}>{complete ? '✓' : '!'}</Text>
           </View>
-          <Text style={[styles.finishTitle, !complete && styles.failTitle]}>{complete ? '완료.' : '미완성.'}</Text>
+          <Text style={[styles.finishTitle, !complete && styles.failTitle]}>{t(complete ? 'resultCompleteTitle' : 'resultIncompleteTitle')}</Text>
           <Text style={styles.finishCopy}>
-            {complete ? '오늘은 도망치지 않았다.' : '남은 루틴은 기록에 남았다.'}
+            {t(complete ? 'resultCompleteCopy' : 'resultIncompleteCopy')}
           </Text>
         </View>
         <View style={styles.resultTable}>
-          <ResultRow label="완료 루틴" value={`${done}개`} />
-          <ResultRow label="미완성 루틴" value={`${missed}개`} />
-          <ResultRow label="연속 완료" value={`${streak}일`} last />
+          <ResultRow label={t('completedRoutines')} value={t('countItems', { count: done })} />
+          <ResultRow label={t('incompleteRoutines')} value={t('countItems', { count: missed })} />
+          <ResultRow label={t('completionStreakLabel')} value={t('days', { count: streak })} last />
         </View>
         <View style={styles.finishActions}>
-          <SecondaryButton label="취소" style={styles.finishActionButton} onPress={onCancel} />
-          <PrimaryButton label="하루 회고 작성하기" style={styles.finishReflectionButton} onPress={onReflection} />
+          <SecondaryButton label={t('cancel')} style={styles.finishActionButton} onPress={onCancel} />
+          <PrimaryButton label={t('writeReflection')} style={styles.finishReflectionButton} onPress={onReflection} />
         </View>
       </View>
     </BaseModal>
@@ -1266,16 +1351,17 @@ function ReflectionModal({
   onClose: () => void;
   onSave: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <BaseModal open={open} onClose={onClose}>
       <View style={styles.centerModal}>
         <View style={styles.modalHead}>
-          <Text style={styles.modalTitle}>하루 회고</Text>
-          <TouchableOpacity accessibilityLabel="닫기" accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
+          <Text style={styles.modalTitle}>{t('reflection')}</Text>
+          <TouchableOpacity accessibilityLabel={t('close')} accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
             <Text style={styles.closeText}>×</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.field}>오늘의 기록</Text>
+        <Text style={styles.field}>{t('todayRecord')}</Text>
         <TextInput
           maxLength={160}
           multiline
@@ -1288,8 +1374,8 @@ function ReflectionModal({
         />
         <Text style={styles.counter}>{text.length} / 160</Text>
         <View style={styles.row2}>
-          <SecondaryButton label="취소" style={styles.evenModalButton} onPress={onClose} />
-          <PrimaryButton label="저장" style={styles.evenModalButton} onPress={onSave} />
+          <SecondaryButton label={t('cancel')} style={styles.evenModalButton} onPress={onClose} />
+          <PrimaryButton label={t('save')} style={styles.evenModalButton} onPress={onSave} />
         </View>
       </View>
     </BaseModal>
@@ -1317,28 +1403,30 @@ function AddRoutineModal({
   onSelectCat: (category: (typeof categories)[number]) => void;
   onSelectScope: (scope: (typeof scopes)[number]) => void;
 }) {
+  const i18n = useI18n();
+  const { t } = i18n;
   return (
     <BaseModal open={open} onClose={onClose}>
       <View style={styles.centerModal}>
         <View style={styles.modalHead}>
-          <Text style={styles.modalTitle}>개인 루틴 추가</Text>
-          <TouchableOpacity accessibilityLabel="닫기" accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
+          <Text style={styles.modalTitle}>{t('personalRoutineAdd')}</Text>
+          <TouchableOpacity accessibilityLabel={t('close')} accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
             <Text style={styles.closeText}>×</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.field}>루틴명</Text>
+        <Text style={styles.field}>{t('routineName')}</Text>
         <TextInput
-          placeholder="예) 턱걸이 10개"
+          placeholder={t('routinePlaceholder')}
           placeholderTextColor={colors.muted}
           style={styles.input}
           value={routineName}
           onChangeText={onChangeName}
         />
-        <Text style={styles.field}>카테고리</Text>
+        <Text style={styles.field}>{t('category')}</Text>
         <View style={styles.chips}>
           {categories.map((category) => (
             <TouchableOpacity
-              accessibilityLabel={category}
+              accessibilityLabel={i18n.category(category)}
               accessibilityRole="button"
               accessibilityState={{ selected: selectedCat === category }}
               activeOpacity={0.8}
@@ -1346,15 +1434,15 @@ function AddRoutineModal({
               style={[styles.chip, selectedCat === category && styles.chipActive]}
               onPress={() => onSelectCat(category)}
             >
-              <Text style={[styles.chipText, selectedCat === category && styles.chipActiveText]}>{category}</Text>
+              <Text style={[styles.chipText, selectedCat === category && styles.chipActiveText]}>{i18n.category(category)}</Text>
             </TouchableOpacity>
           ))}
         </View>
-        <Text style={styles.field}>적용 범위</Text>
+        <Text style={styles.field}>{t('scope')}</Text>
         <View style={styles.row2}>
           {scopes.map((scope) => (
             <TouchableOpacity
-              accessibilityLabel={scope}
+              accessibilityLabel={i18n.scope(scope)}
               accessibilityRole="button"
               accessibilityState={{ selected: selectedScope === scope }}
               activeOpacity={0.8}
@@ -1362,13 +1450,13 @@ function AddRoutineModal({
               style={[styles.seg, selectedScope === scope && styles.segActive]}
               onPress={() => onSelectScope(scope)}
             >
-              <Text style={[styles.segText, selectedScope === scope && styles.segActiveText]}>{scope}</Text>
+              <Text style={[styles.segText, selectedScope === scope && styles.segActiveText]}>{i18n.scope(scope)}</Text>
             </TouchableOpacity>
           ))}
         </View>
         <View style={styles.row2WithTop}>
-          <SecondaryButton label="취소" style={styles.evenModalButton} onPress={onClose} />
-          <PrimaryButton label="추가" style={styles.evenModalButton} onPress={onAdd} />
+          <SecondaryButton label={t('cancel')} style={styles.evenModalButton} onPress={onClose} />
+          <PrimaryButton label={t('add')} style={styles.evenModalButton} onPress={onAdd} />
         </View>
       </View>
     </BaseModal>
@@ -1384,19 +1472,20 @@ function ResetDataModal({
   onClose: () => void;
   onReset: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <BaseModal open={open} onClose={onClose}>
       <View style={styles.centerModal}>
         <View style={styles.modalHead}>
-          <Text style={styles.modalTitle}>데이터 초기화</Text>
-          <TouchableOpacity accessibilityLabel="닫기" accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
+          <Text style={styles.modalTitle}>{t('dataReset')}</Text>
+          <TouchableOpacity accessibilityLabel={t('close')} accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
             <Text style={styles.closeText}>×</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.resetCopy}>현재 루틴 체크, 마감 기록, 회고, 과정 진행률을 처음 상태로 되돌립니다.</Text>
+        <Text style={styles.resetCopy}>{t('resetCopy')}</Text>
         <View style={styles.row2WithTop}>
-          <SecondaryButton label="취소" style={styles.evenModalButton} onPress={onClose} />
-          <PrimaryButton label="초기화" style={styles.evenModalButton} onPress={onReset} />
+          <SecondaryButton label={t('cancel')} style={styles.evenModalButton} onPress={onClose} />
+          <PrimaryButton label={t('reset')} style={styles.evenModalButton} onPress={onReset} />
         </View>
       </View>
     </BaseModal>
@@ -1412,21 +1501,22 @@ function AppInfoModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <BaseModal open={open} onClose={onClose}>
       <View style={styles.centerModal}>
         <View style={styles.modalHead}>
-          <Text style={styles.modalTitle}>앱 정보</Text>
-          <TouchableOpacity accessibilityLabel="닫기" accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
+          <Text style={styles.modalTitle}>{t('appInfo')}</Text>
+          <TouchableOpacity accessibilityLabel={t('close')} accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
             <Text style={styles.closeText}>×</Text>
           </TouchableOpacity>
         </View>
-        <DateRow label="앱" value="ALPHA: REFORGE" />
-        <DateRow label="버전" value="v19 · iOS 1.0.0" />
-        <DateRow label="과정" value={`${level} 30일`} />
-        <DateRow label="저장" value="이 기기에 저장" />
+        <DateRow label={t('app')} value="ALPHA: REFORGE" />
+        <DateRow label={t('version')} value="v19 · 1.0.0" />
+        <DateRow label={t('course')} value={t('course30Days', { level })} />
+        <DateRow label={t('storage')} value={t('storedOnDevice')} />
         <View style={styles.modalButtonGap}>
-          <SecondaryButton label="닫기" onPress={onClose} />
+          <SecondaryButton label={t('close')} onPress={onClose} />
         </View>
       </View>
     </BaseModal>
@@ -1448,6 +1538,8 @@ function DayDetailSheet({
   state: AppState;
   onClose: () => void;
 }) {
+  const i18n = useI18n();
+  const { t } = i18n;
   const selected = day ?? state.currentCourse.day;
   const future = selected > state.currentCourse.day;
   const record = records.find((item) => item.course === state.currentCourse.level && item.day === selected);
@@ -1461,26 +1553,26 @@ function DayDetailSheet({
     : record
       ? shownRoutines.filter((routine) => routine.type === 'basic' && record.completedRoutineIds.includes(routine.id)).length
       : 0;
-  const status = future ? '예정' : record ? resultLabel(record.status) : today ? '진행 중' : '미완성';
-  const note = future ? '아직 기록이 없습니다.' : record?.reflection || '기록 없음';
+  const statusKey = future ? 'scheduled' : record ? (record.status === 'complete' ? 'complete' : 'incomplete') : today ? 'inProgress' : 'incomplete';
+  const note = future ? t('noRecordYet') : record?.reflection || t('noRecord');
 
   return (
     <BaseModal alignBottom open={open} onClose={onClose}>
       <View style={styles.bottomSheet}>
         <View style={styles.modalHead}>
-          <Text style={styles.modalTitle}>Day {selected}</Text>
-          <TouchableOpacity accessibilityLabel="닫기" accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
+          <Text style={styles.modalTitle}>{i18n.day(selected)}</Text>
+          <TouchableOpacity accessibilityLabel={t('close')} accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
             <Text style={styles.closeText}>×</Text>
           </TouchableOpacity>
         </View>
-        <DateRow label="날짜" value={displayDate(date)} />
-        <DateRow accent={!future && status === '미완성'} label="상태" muted={future} value={status} />
+        <DateRow label={t('date')} value={i18n.date(date)} />
+        <DateRow accent={!future && statusKey === 'incomplete'} label={t('status')} muted={future} value={t(statusKey)} />
         <DateRow
-          label="단계"
-          value={`${String(stageForDay(selected)).padStart(2, '0')}. ${stageTitleForDay(state.currentCourse.level, selected)}`}
+          label={t('stage')}
+          value={`${String(stageForDay(selected)).padStart(2, '0')}. ${i18n.stage(state.currentCourse.level, stageForDay(selected) - 1).title}`}
         />
-        <DateRow label="루틴 완료" value={future ? '-' : `${completed} / ${courseRoutineTotal(shownRoutines)}`} />
-        <SectionTitle title="루틴" />
+        <DateRow label={t('routineCompletion')} value={future ? '-' : `${completed} / ${courseRoutineTotal(shownRoutines)}`} />
+        <SectionTitle title={t('routines')} />
         <RoutineList
           locked
           routines={shownRoutines.map((routine, index) => ({
@@ -1488,10 +1580,56 @@ function DayDetailSheet({
             done: future ? false : today ? routine.done : record ? record.completedRoutineIds.includes(routine.id) : false,
           }))}
         />
-        <SectionTitle title="하루 회고" />
+        <SectionTitle title={t('reflection')} />
         <View style={styles.noteBox}>
           <Text style={styles.noteText}>{note}</Text>
         </View>
+      </View>
+    </BaseModal>
+  );
+}
+
+function LanguageModal({
+  language,
+  open,
+  onClose,
+  onSelect,
+}: {
+  language: SupportedLanguage;
+  open: boolean;
+  onClose: () => void;
+  onSelect: (language: SupportedLanguage) => void;
+}) {
+  const i18n = useI18n();
+  const { t } = i18n;
+  return (
+    <BaseModal open={open} onClose={onClose}>
+      <View style={styles.centerModal}>
+        <View style={styles.modalHead}>
+          <Text style={styles.modalTitle}>{t('languageTitle')}</Text>
+          <TouchableOpacity accessibilityLabel={t('close')} accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
+            <Text style={styles.closeText}>×</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView style={styles.languageList} showsVerticalScrollIndicator={false}>
+          {supportedLanguages.map((item) => {
+            const selected = language === item;
+            return (
+              <TouchableOpacity
+                accessibilityLabel={i18n.languageName(item)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: selected }}
+                activeOpacity={0.8}
+                key={item}
+                style={[styles.languageRow, selected && styles.languageRowSelected]}
+                onPress={() => onSelect(item)}
+              >
+                <Text style={[styles.languageText, selected && styles.languageTextSelected]}>{i18n.languageName(item)}</Text>
+                <Text style={[styles.languageCheck, selected && styles.languageTextSelected]}>{selected ? '●' : '○'}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
     </BaseModal>
   );
@@ -1644,6 +1782,15 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     position: 'absolute',
   },
+  onboardingTaglineText: {
+    alignSelf: 'center',
+    color: '#b9b9bd',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    fontSize: 21,
+    lineHeight: 28,
+    position: 'absolute',
+    textAlign: 'center',
+  },
   onboardingRule: {
     alignSelf: 'center',
     backgroundColor: colors.red,
@@ -1652,12 +1799,23 @@ const styles = StyleSheet.create({
     width: 42,
   },
   onboardingStartButton: {
+    alignItems: 'center',
     alignSelf: 'center',
+    borderColor: colors.red,
+    borderRadius: 18,
+    borderWidth: 1,
+    justifyContent: 'center',
     position: 'absolute',
   },
   onboardingStartButtonImage: {
     height: '100%',
     width: '100%',
+  },
+  onboardingStartButtonText: {
+    color: colors.white,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    fontSize: 21,
+    textAlign: 'center',
   },
   fireCard: {
     borderColor: 'rgba(241,25,25,0.42)',
@@ -1879,8 +2037,11 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: colors.white,
+    flexShrink: 1,
     fontSize: 15,
     fontWeight: '900',
+    paddingHorizontal: 8,
+    textAlign: 'center',
   },
   buttonDisabledText: {
     color: '#aaa',
@@ -1897,8 +2058,11 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: colors.white,
+    flexShrink: 1,
     fontSize: 15,
     fontWeight: '900',
+    paddingHorizontal: 8,
+    textAlign: 'center',
   },
   dangerButton: {
     flex: 0,
@@ -2043,7 +2207,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,255,255,0.075)',
     borderBottomWidth: 1,
     flexDirection: 'row',
-    height: 47,
+    height: 56,
     paddingHorizontal: 12,
     position: 'relative',
   },
@@ -2371,6 +2535,33 @@ const styles = StyleSheet.create({
     padding: 18,
     width: '100%',
   },
+  languageList: {
+    maxHeight: 430,
+  },
+  languageRow: {
+    alignItems: 'center',
+    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    minHeight: 52,
+    paddingHorizontal: 8,
+  },
+  languageRowSelected: {
+    backgroundColor: 'rgba(241,25,25,0.1)',
+  },
+  languageText: {
+    color: colors.soft,
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  languageTextSelected: {
+    color: colors.red,
+  },
+  languageCheck: {
+    color: '#777',
+    fontSize: 15,
+  },
   modalHead: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -2437,6 +2628,7 @@ const styles = StyleSheet.create({
   },
   chips: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   chip: {
@@ -2457,6 +2649,8 @@ const styles = StyleSheet.create({
     color: '#ddd',
     fontSize: 11,
     fontWeight: '900',
+    paddingHorizontal: 5,
+    textAlign: 'center',
   },
   chipActiveText: {
     color: colors.white,
@@ -2477,8 +2671,11 @@ const styles = StyleSheet.create({
   },
   segText: {
     color: '#ddd',
+    flexShrink: 1,
     fontSize: 13,
     fontWeight: '900',
+    paddingHorizontal: 6,
+    textAlign: 'center',
   },
   segActiveText: {
     color: colors.white,

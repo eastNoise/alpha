@@ -266,6 +266,7 @@ export function createInitialState(): AppState {
       phraseTone: 'basic',
       notificationsEnabled: true,
       hapticsEnabled: true,
+      language: 'system',
     },
   };
 }

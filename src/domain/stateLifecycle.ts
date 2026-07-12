@@ -10,6 +10,12 @@ import {
   routinesForNewDay,
 } from './alpha';
 
+const COURSE_PASS_THRESHOLD = {
+  BASIC: 50,
+  STANDARD: 70,
+  HARD: 90,
+} as const;
+
 export function courseRoutineTemplatesFor(state: AppState): Routine[] {
   const templates = (state as Partial<AppState>).courseRoutineTemplates;
   if (Array.isArray(templates)) return templates.map((routine) => ({ ...routine, done: false }));
@@ -28,13 +34,31 @@ export function nextCourseLevel(level: AppState['currentCourse']['level']) {
   return null;
 }
 
+export function courseCompletionRate(state: AppState) {
+  const completedDays = new Set(
+    state.records
+      .filter((record) => record.course === state.currentCourse.level && record.status === 'complete')
+      .map((record) => record.day),
+  ).size;
+  return Math.round((completedDays / 30) * 100);
+}
+
+export function hasPassedCurrentCourse(state: AppState) {
+  return isCourseComplete(state)
+    && courseCompletionRate(state) >= COURSE_PASS_THRESHOLD[state.currentCourse.level];
+}
+
 export function canStartNextCourse(state: AppState) {
-  return isCourseComplete(state) && nextCourseLevel(state.currentCourse.level) !== null;
+  return hasPassedCurrentCourse(state) && nextCourseLevel(state.currentCourse.level) !== null;
+}
+
+export function canRestartCurrentCourse(state: AppState) {
+  return isCourseComplete(state) && !hasPassedCurrentCourse(state);
 }
 
 export function startNextCourse(state: AppState, startedAt = state.today.date): AppState {
   const level = nextCourseLevel(state.currentCourse.level);
-  if (!level || !isCourseComplete(state)) return state;
+  if (!level || !canStartNextCourse(state)) return state;
 
   const nextState: AppState = {
     ...state,
@@ -56,6 +80,40 @@ export function startNextCourse(state: AppState, startedAt = state.today.date): 
       result: null,
     },
     courseRoutineTemplates: [],
+    routinesByDate: {
+      ...state.routinesByDate,
+      [startedAt]: [],
+    },
+  };
+  nextState.routinesByDate[startedAt] = routinesForNewDay(nextState);
+  return nextState;
+}
+
+export function restartCurrentCourse(state: AppState, startedAt = state.today.date): AppState {
+  if (!canRestartCurrentCourse(state)) return state;
+
+  const level = state.currentCourse.level;
+  const nextState: AppState = {
+    ...state,
+    currentCourse: {
+      level,
+      day: 1,
+      startedAt,
+      currentStage: 1,
+      progress: 0,
+      next: {
+        standardLocked: level === 'BASIC',
+        hardLocked: level !== 'HARD',
+      },
+    },
+    today: {
+      date: startedAt,
+      hasReflection: false,
+      isClosed: false,
+      result: null,
+    },
+    courseRoutineTemplates: [],
+    records: state.records.filter((record) => record.course !== level),
     routinesByDate: {
       ...state.routinesByDate,
       [startedAt]: [],

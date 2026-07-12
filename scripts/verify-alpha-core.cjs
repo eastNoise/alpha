@@ -20,9 +20,9 @@ try {
     'src/domain/stateLifecycle.ts',
   ], { stdio: 'inherit' });
 
-  const { basicRoutines, courseRoutinesFor, courseStageForDay, createInitialState, dailyMottos, dailyMottoFor } = require(join(outputDirectory, 'data.js'));
-  const { courseResultForRoutines, courseStateFor, createRecordForDay, elapsedCourseDayForDate, mergeRecord, progressForRecords, recordsForCourse, routinesForNewDay, streakCount } = require(join(outputDirectory, 'domain/alpha.js'));
-  const { canStartNextCourse, courseRoutineTemplatesFor, isCourseComplete, nextCourseLevel, reconcileStateForDate, reopenTodayForEditing, startNextCourse } = require(join(outputDirectory, 'domain/stateLifecycle.js'));
+  const { basicRoutines, courseRoutinesFor, courseStageForDay, createInitialState, dailyMottos, dailyMottoFor, dateForCourseDay } = require(join(outputDirectory, 'data.js'));
+  const { courseResultForRoutines, courseStateFor, createRecordForDay, doneCount, elapsedCourseDayForDate, mergeRecord, progressForRecords, recordsForCourse, routinesForNewDay, streakCount } = require(join(outputDirectory, 'domain/alpha.js'));
+  const { canRestartCurrentCourse, canStartNextCourse, courseCompletionRate, courseRoutineTemplatesFor, hasPassedCurrentCourse, isCourseComplete, nextCourseLevel, reconcileStateForDate, reopenTodayForEditing, restartCurrentCourse, startNextCourse } = require(join(outputDirectory, 'domain/stateLifecycle.js'));
   const appSource = readFileSync(resolve('App.tsx'), 'utf8');
 
   assert.equal(appSource.includes('>BASIC 과정</Text>'), false);
@@ -74,6 +74,52 @@ try {
     };
   }
 
+  function completedRecordsFor(level, count, startedAt) {
+    return Array.from({ length: count }, (_, index) => {
+      const day = index + 1;
+      const routines = courseRoutinesFor(level, day).map((routine) => ({ ...routine, done: true }));
+      const date = dateForCourseDay(startedAt, day);
+      return createRecordForDay({
+        closedAt: `${date}T20:00:00.000Z`,
+        date,
+        day,
+        level,
+        routines,
+        status: 'complete',
+      });
+    });
+  }
+
+  function endedCourseState(level, completedDays) {
+    const state = stateFor('2026-07-30', '2026-07-01');
+    state.currentCourse = {
+      ...state.currentCourse,
+      level,
+      day: 30,
+      currentStage: 4,
+      progress: 100,
+    };
+    const dayThirtyRoutines = courseRoutinesFor(level, 30);
+    const dayThirtyRecord = createRecordForDay({
+      closedAt: '2026-07-30T20:00:00.000Z',
+      date: '2026-07-30',
+      day: 30,
+      level,
+      routines: dayThirtyRoutines,
+      status: 'incomplete',
+    });
+    state.today = {
+      date: '2026-07-30',
+      hasReflection: false,
+      isClosed: true,
+      result: 'incomplete',
+      closedAt: dayThirtyRecord.closedAt,
+    };
+    state.records = [dayThirtyRecord, ...completedRecordsFor(level, completedDays, '2026-07-01')];
+    state.routinesByDate = { '2026-07-30': dayThirtyRoutines };
+    return state;
+  }
+
   const template = {
     id: 'personal-course',
     name: '독서 10분',
@@ -100,6 +146,22 @@ try {
   }
   assert.equal(dailyMottoFor('STANDARD', 30), '너는 버틴 게 아니라 더 높은 기준에 적응한 것이다.');
 
+  const thresholdCases = [
+    ['BASIC', 14, 47, false],
+    ['BASIC', 15, 50, true],
+    ['STANDARD', 20, 67, false],
+    ['STANDARD', 21, 70, true],
+    ['HARD', 26, 87, false],
+    ['HARD', 27, 90, true],
+  ];
+  for (const [level, completedDays, expectedRate, expectedPass] of thresholdCases) {
+    const ended = endedCourseState(level, completedDays);
+    assert.equal(courseCompletionRate(ended), expectedRate);
+    assert.equal(hasPassedCurrentCourse(ended), expectedPass);
+    assert.equal(canRestartCurrentCourse(ended), !expectedPass);
+    assert.equal(canStartNextCourse(ended), expectedPass && level !== 'HARD');
+  }
+
   const templated = stateFor('2026-07-01');
   templated.courseRoutineTemplates = [template];
   assert.equal(routinesForNewDay(templated).some((routine) => routine.id === template.id), true);
@@ -111,6 +173,7 @@ try {
     { ...template, done: false },
   ];
   assert.equal(courseResultForRoutines(completeCourseWithOpenPersonalRoutine), 'complete');
+  assert.equal(doneCount(completeCourseWithOpenPersonalRoutine), completeCourseWithOpenPersonalRoutine.length - 1);
 
   const legacy = stateFor('2026-07-01');
   legacy.routinesByDate['2026-07-01'].push(template);
@@ -181,6 +244,7 @@ try {
   // Persona 4: Day 30까지 진행해 BASIC -> STANDARD -> HARD로 전환한다.
   let progressionUser = stateFor('2026-07-30', '2026-07-01');
   progressionUser.currentCourse = courseStateFor(progressionUser, '2026-07-30', progressionUser.records);
+  progressionUser.records = completedRecordsFor('BASIC', 14, '2026-07-01');
   progressionUser.routinesByDate['2026-07-30'] = courseRoutinesFor('BASIC', 30);
   progressionUser = closeCourseDay(progressionUser, { complete: true, reflection: 'BASIC 완료' });
   assert.equal(isCourseComplete(progressionUser), true);
@@ -188,7 +252,7 @@ try {
   assert.equal(progressionUser.currentCourse.level, 'STANDARD');
   assert.equal(progressionUser.currentCourse.day, 1);
   assert.equal(progressionUser.courseRoutineTemplates.length, 0);
-  assert.equal(recordsForCourse(progressionUser.records, 'BASIC').length, 1);
+  assert.equal(recordsForCourse(progressionUser.records, 'BASIC').length, 15);
   assert.deepEqual(
     progressionUser.routinesByDate['2026-07-30'].map((routine) => routine.id),
     courseRoutinesFor('STANDARD', 1).map((routine) => routine.id),
@@ -201,13 +265,17 @@ try {
     currentStage: 4,
   };
   progressionUser.today = { date: '2026-08-28', isClosed: false, hasReflection: false, result: null };
+  progressionUser.records = [
+    ...progressionUser.records,
+    ...completedRecordsFor('STANDARD', 20, '2026-07-30'),
+  ];
   progressionUser.routinesByDate['2026-08-28'] = courseRoutinesFor('STANDARD', 30);
-  progressionUser = closeCourseDay(progressionUser, { complete: false, date: '2026-08-28' });
+  progressionUser = closeCourseDay(progressionUser, { complete: true, date: '2026-08-28' });
   assert.equal(isCourseComplete(progressionUser), true);
   progressionUser = startNextCourse(progressionUser, '2026-08-28');
   assert.equal(progressionUser.currentCourse.level, 'HARD');
-  assert.equal(recordsForCourse(progressionUser.records, 'STANDARD').length, 1);
-  assert.equal(recordsForCourse(progressionUser.records, 'BASIC').length, 1);
+  assert.equal(recordsForCourse(progressionUser.records, 'STANDARD').length, 21);
+  assert.equal(recordsForCourse(progressionUser.records, 'BASIC').length, 15);
 
   // Persona 5: HARD 종료 사용자. 다음 과정이 없고 상태가 Day 30에 고정된다.
   progressionUser.currentCourse = {
@@ -217,9 +285,15 @@ try {
     currentStage: 4,
   };
   progressionUser.today = { date: '2026-09-26', isClosed: false, hasReflection: false, result: null };
+  progressionUser.records = [
+    ...progressionUser.records,
+    ...completedRecordsFor('HARD', 26, '2026-08-28'),
+  ];
   progressionUser.routinesByDate['2026-09-26'] = courseRoutinesFor('HARD', 30);
   progressionUser = closeCourseDay(progressionUser, { complete: true, date: '2026-09-26' });
   assert.equal(isCourseComplete(progressionUser), true);
+  assert.equal(courseCompletionRate(progressionUser), 90);
+  assert.equal(hasPassedCurrentCourse(progressionUser), true);
   assert.equal(nextCourseLevel('HARD'), null);
   assert.equal(canStartNextCourse(progressionUser), false);
   assert.equal(startNextCourse(progressionUser), progressionUser);
@@ -284,17 +358,32 @@ try {
     status: 'incomplete',
   })];
   assert.equal(isCourseComplete(completed), true);
+  assert.equal(courseCompletionRate(completed), 0);
+  assert.equal(hasPassedCurrentCourse(completed), false);
+  assert.equal(canStartNextCourse(completed), false);
+  assert.equal(canRestartCurrentCourse(completed), true);
   const afterCompletion = reconcileStateForDate(completed, '2026-08-01');
   assert.equal(afterCompletion.records.length, 1);
   assert.equal(afterCompletion.currentCourse.day, 30);
 
-  const standardStart = startNextCourse(completed, '2026-07-30');
-  assert.equal(canStartNextCourse(completed), true);
+  const blockedStandardStart = startNextCourse(completed, '2026-07-30');
+  assert.equal(blockedStandardStart, completed);
+  const basicRestart = restartCurrentCourse(completed, '2026-08-01');
+  assert.equal(basicRestart.currentCourse.level, 'BASIC');
+  assert.equal(basicRestart.currentCourse.day, 1);
+  assert.equal(basicRestart.records.some((record) => record.course === 'BASIC'), false);
+
+  const passingBasicRecords = completedRecordsFor('BASIC', 15, '2026-07-01');
+  const passingBasic = { ...completed, records: [completed.records[0], ...passingBasicRecords] };
+  assert.equal(courseCompletionRate(passingBasic), 50);
+  assert.equal(hasPassedCurrentCourse(passingBasic), true);
+  assert.equal(canStartNextCourse(passingBasic), true);
+  const standardStart = startNextCourse(passingBasic, '2026-07-30');
   assert.equal(standardStart.currentCourse.level, 'STANDARD');
   assert.equal(standardStart.currentCourse.day, 1);
   assert.equal(standardStart.currentCourse.progress, 0);
   assert.equal(isCourseComplete(standardStart), false);
-  assert.equal(recordsForCourse(standardStart.records, 'BASIC').length, 1);
+  assert.equal(recordsForCourse(standardStart.records, 'BASIC').length, 16);
   assert.equal(recordsForCourse(standardStart.records, 'STANDARD').length, 0);
   assert.deepEqual(
     standardStart.routinesByDate['2026-07-30'].map((routine) => routine.id),
@@ -323,7 +412,7 @@ try {
     status: 'complete',
   });
   const mixedRecords = mergeRecord(standardStart.records, standardDayOne);
-  assert.equal(mixedRecords.length, 2);
+  assert.equal(mixedRecords.length, 17);
   assert.equal(recordsForCourse(mixedRecords, 'STANDARD').length, 1);
   assert.equal(progressForRecords(mixedRecords, 'STANDARD'), 3);
 
@@ -348,7 +437,11 @@ try {
       isClosed: true,
       result: 'complete',
     },
-    records: mergeRecord(standardStart.records, standardCompletion),
+    records: [
+      ...standardStart.records,
+      ...completedRecordsFor('STANDARD', 20, '2026-07-30'),
+      standardCompletion,
+    ],
     routinesByDate: {
       ...standardStart.routinesByDate,
       '2026-08-28': courseRoutinesFor('STANDARD', 30),
