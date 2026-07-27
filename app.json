@@ -3,28 +3,34 @@
     "name": "ALPHA",
     "slug": "alpha",
     "scheme": "alpha",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.eastnoise.alpha",
-      "buildNumber": "6",
+      "buildNumber": "17",
       "supportsTablet": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
         "CFBundleDevelopmentRegion": "en",
-        "CFBundleLocalizations": ["en", "ko", "ja", "es", "de", "fr", "zh-Hans"],
+        "CFBundleLocalizations": ["en", "ko", "ja", "es", "de", "fr", "zh-Hans", "pt-BR", "zh-Hant", "it"],
         "UIUserInterfaceStyle": "Dark"
       }
     },
     "android": {
       "package": "com.eastnoise.alpha",
+      "versionCode": 3,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/icon.png"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -34,11 +40,19 @@
     "plugins": [
       "expo-notifications",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow ALPHA to access your photos so you can personalize card images.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
         "expo-localization",
         {
           "supportedLocales": {
-            "ios": ["en", "ko", "ja", "es", "de", "fr", "zh-Hans"],
-            "android": ["en", "ko", "ja", "es", "de", "fr", "zh-CN"]
+            "ios": ["en", "ko", "ja", "es", "de", "fr", "zh-Hans", "pt-BR", "zh-Hant", "it"],
+            "android": ["en", "ko", "ja", "es", "de", "fr", "zh-CN", "pt-BR", "zh-TW", "it"]
           }
         }
       ]

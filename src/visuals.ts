@@ -1,4 +1,5 @@
 export const visuals = {
+  settingsIcon: require('../assets/ui/settings.png'),
   onboardingAlphaMark: require('../assets/visuals/onboarding_alpha_mark.png'),
   onboardingStartButton: require('../assets/visuals/onboarding_start_button.png'),
   onboardingTagline: require('../assets/visuals/onboarding_tagline.png'),

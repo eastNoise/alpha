@@ -1,0 +1,55 @@
+{
+  "defaultLocale": "en-US",
+  "localizations": {
+    "ko-KR": {
+      "title": "ALPHA: REFORGE",
+      "shortDescription": "알파가 되어라.",
+      "fullDescription": "ALPHA는 말이 아니라 반복으로 자신을 다시 만드는 30일 루틴 프로그램이다.\n\nBASIC에서 몸과 생활의 기본을 세우고, STANDARD에서 강도와 정확성을 높이며, HARD에서 집중과 절제를 끝까지 밀어붙인다. 매일 루틴을 체크하고 하루를 마감한 뒤 솔직한 회고를 남겨라. 완료한 날과 무너진 날 모두 기록된다.\n\n기분은 늦게 따라온다. 먼저 움직여라. 쌓인 기록이 너를 만든다."
+    },
+    "en-US": {
+      "title": "ALPHA: REFORGE",
+      "shortDescription": "Keep the routine. Close the day. Build your standard from BASIC to HARD.",
+      "fullDescription": "ALPHA is a 30-day discipline program for rebuilding yourself through action, not promises.\n\nEstablish the fundamentals in BASIC. Raise the intensity and precision in STANDARD. Push focus and restraint to the end in HARD. Check each routine, close the day, and leave an honest reflection. Both the days you win and the days you fall short remain in the record.\n\nMotivation arrives late. Move first. The records you stack become the person you are."
+    },
+    "ja-JP": {
+      "title": "ALPHA: REFORGE",
+      "shortDescription": "毎日のルーティンを守り、記録し、BASICからHARDまで自分の基準を築け。",
+      "fullDescription": "ALPHAは、言葉ではなく行動で自分をつくり直す30日間の規律プログラムです。\n\nBASICで身体と生活の土台を整え、STANDARDで強度と精度を上げ、HARDで集中と自制を最後まで貫きます。毎日のルーティンを確認し、一日を締め、正直な振り返りを残してください。できた日も、崩れた日も、すべて記録に残ります。\n\nやる気はあとからついてくる。まず動け。積み上げた記録が自分をつくる。"
+    },
+    "es-ES": {
+      "title": "ALPHA: REFORGE",
+      "shortDescription": "Cumple la rutina, cierra el día y eleva tu estándar de BASIC a HARD.",
+      "fullDescription": "ALPHA es un programa de disciplina de 30 días para reconstruirte con acciones, no con promesas.\n\nCrea los fundamentos en BASIC. Eleva la intensidad y la precisión en STANDARD. Lleva el enfoque y el autocontrol hasta el final en HARD. Marca cada rutina, cierra el día y deja una reflexión sincera. Tanto las victorias como los días incompletos permanecen en el registro.\n\nLa motivación llega tarde. Muévete primero. Los registros que acumulas se convierten en quien eres."
+    },
+    "de-DE": {
+      "title": "ALPHA: REFORGE",
+      "shortDescription": "Halte deine Routinen ein und steigere deinen Maßstab von BASIC bis HARD.",
+      "fullDescription": "ALPHA ist ein 30-Tage-Programm, mit dem du dich durch Handlungen statt durch Versprechen neu aufbaust.\n\nLege in BASIC das Fundament. Erhöhe in STANDARD Intensität und Präzision. Bring in HARD Fokus und Selbstkontrolle bis zum Ende. Hake jede Routine ab, schließe den Tag und hinterlasse eine ehrliche Reflexion. Erfolge und unvollständige Tage bleiben gleichermaßen sichtbar.\n\nMotivation kommt später. Beweg dich zuerst. Die Aufzeichnungen, die du sammelst, formen dich."
+    },
+    "fr-FR": {
+      "title": "ALPHA: REFORGE",
+      "shortDescription": "Tiens tes routines et élève ton standard de BASIC jusqu’à HARD.",
+      "fullDescription": "ALPHA est un programme de discipline de 30 jours pour te reconstruire par les actes, pas par les promesses.\n\nPose les fondations en BASIC. Augmente l'intensité et la précision en STANDARD. Pousse la concentration et la maîtrise jusqu'au bout en HARD. Coche chaque routine, clôture la journée et laisse une réflexion honnête. Les victoires comme les journées incomplètes restent dans le journal.\n\nLa motivation arrive en retard. Bouge d'abord. Les traces que tu accumules façonnent la personne que tu deviens."
+    },
+    "pt-BR": {
+      "title": "ALPHA: REFORGE",
+      "shortDescription": "Cumpra a rotina e construa seu padrão do BASIC ao HARD em 30 dias.",
+      "fullDescription": "ALPHA é um programa de disciplina de 30 dias para reconstruir você por meio de ações, não de promessas.\n\nEstabeleça a base no BASIC. Eleve a intensidade e a precisão no STANDARD. Leve o foco e o autocontrole até o fim no HARD. Marque cada rotina, encerre o dia e escreva uma reflexão sincera. Tanto os dias completos quanto os incompletos permanecem no registro.\n\nA motivação chega depois. Mova-se primeiro. Os registros que você acumula moldam quem você se torna."
+    },
+    "zh-TW": {
+      "title": "ALPHA: REFORGE",
+      "shortDescription": "堅守每日習慣，從BASIC走到HARD，建立屬於自己的標準。",
+      "fullDescription": "ALPHA是一套為期30天的自律計畫。它不靠承諾，而是用行動重新塑造自己。\n\n在BASIC建立身體與生活的基礎，在STANDARD提高強度與準確度，在HARD把專注與克制堅持到底。完成每日習慣，結束今天，並留下誠實的反思。無論完整完成或有所缺漏，每一天都會如實記錄。\n\n動力總會晚一步。先行動。你累積的記錄，最後會塑造你。"
+    },
+    "it-IT": {
+      "title": "ALPHA: REFORGE",
+      "shortDescription": "Segui la routine e costruisci il tuo standard da BASIC a HARD in 30 giorni.",
+      "fullDescription": "ALPHA è un programma di disciplina di 30 giorni per ricostruire te stesso con le azioni, non con le promesse.\n\nCrea le fondamenta in BASIC. Aumenta intensità e precisione in STANDARD. Porta concentrazione e autocontrollo fino in fondo in HARD. Completa ogni routine, chiudi la giornata e lascia una riflessione sincera. Sia i giorni completati sia quelli incompleti restano nel registro.\n\nLa motivazione arriva dopo. Muoviti prima. Le tracce che accumuli plasmano la persona che diventi."
+    },
+    "zh-CN": {
+      "title": "ALPHA: REFORGE",
+      "shortDescription": "坚持每日习惯，从BASIC走到HARD，建立属于自己的标准。",
+      "fullDescription": "ALPHA是一套为期30天的自律计划。它不靠承诺，而靠行动重塑自己。\n\n在BASIC建立身体与生活的基础，在STANDARD提高强度与准确度，在HARD把专注和克制坚持到底。完成每日习惯，结束今天，并留下诚实的复盘。无论胜利还是未完成，都会被如实记录。\n\n动力总会晚一步。先行动。你累积的记录，最终会成为你。"
+    }
+  }
+}

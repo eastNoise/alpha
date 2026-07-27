@@ -1,5 +1,16 @@
 export type CourseLevel = 'BASIC' | 'STANDARD' | 'HARD';
-export type SupportedLanguage = 'system' | 'ko' | 'en' | 'ja' | 'es' | 'de' | 'fr' | 'zh';
+export type SupportedLanguage =
+  | 'system'
+  | 'ko'
+  | 'en'
+  | 'ja'
+  | 'es'
+  | 'de'
+  | 'fr'
+  | 'zh'
+  | 'pt-BR'
+  | 'zh-Hant'
+  | 'it';
 export type RoutineType = 'basic' | 'personal';
 export type DayResult = 'complete' | 'incomplete';
 export type ScreenName =

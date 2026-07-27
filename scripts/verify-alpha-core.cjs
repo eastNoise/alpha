@@ -31,6 +31,35 @@ try {
   assert.equal(appSource.includes('stageItems'), false);
   assert.equal(appSource.includes('<SectionTitle title="기본 루틴" />'), false);
 
+  const chooseCardImageSource = appSource.slice(
+    appSource.indexOf('async function chooseCardImage'),
+    appSource.indexOf('async function saveCroppedCardImage'),
+  );
+  assert.ok(chooseCardImageSource.indexOf('launchImageLibraryAsync') >= 0);
+  assert.ok(
+    chooseCardImageSource.indexOf('launchImageLibraryAsync') <
+      chooseCardImageSource.lastIndexOf('setCardVisualSelection(null)'),
+    'The card image sheet must stay mounted until the native image picker finishes.',
+  );
+  assert.ok(
+    chooseCardImageSource.includes('setCardCropSelection'),
+    'A selected card image must open the crop editor before it is saved.',
+  );
+  assert.equal(
+    chooseCardImageSource.includes('cardVisuals.save'),
+    false,
+    'The original camera image must not be persisted before crop confirmation.',
+  );
+  assert.ok(appSource.includes('<CardImageCropEditor'));
+  assert.ok(
+    appSource.includes('frame.width / frame.height'),
+    'Card image cropping must use the dimensions of the card the user actually tapped.',
+  );
+  assert.ok(
+    appSource.includes('aspectRatio={cardCropSelection.aspectRatio}'),
+    'The measured card aspect ratio must reach the crop editor.',
+  );
+
   function stateFor(date, startedAt = date) {
     const state = createInitialState();
     state.hasOnboarded = true;
@@ -144,7 +173,13 @@ try {
       assert.equal(courseRoutinesFor(level, day).length, routineCountsByStage[level][index]);
     });
   }
-  assert.equal(dailyMottoFor('STANDARD', 30), '너는 버틴 게 아니라 더 높은 기준에 적응한 것이다.');
+  assert.equal(dailyMottoFor('STANDARD', 30), '좋은 사람을 논하지 마라.\n이제 그런 사람이 되어라.');
+  assert.equal(dailyMottoFor('HARD', 26), '자신을 돌아보아 옳다면\n천만 명이 막아서도\n나아가라.');
+  for (const level of ['BASIC', 'STANDARD', 'HARD']) {
+    for (const motto of dailyMottos[level]) {
+      assert.ok(motto.split('\n').length <= 3, `${level} motto exceeds three deliberate lines: ${motto}`);
+    }
+  }
 
   const thresholdCases = [
     ['BASIC', 14, 47, false],

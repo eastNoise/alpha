@@ -1,0 +1,15 @@
+{
+  "versionName": "1.0.1",
+  "localizations": {
+    "ko-KR": "스토어 소개 문구를 다듬고 앱 안정성을 개선했습니다.",
+    "en-US": "Refined the store description and improved app stability.",
+    "ja-JP": "ストアの紹介文を整え、アプリの安定性を改善しました。",
+    "es-ES": "Hemos mejorado la descripción de la tienda y la estabilidad de la aplicación.",
+    "de-DE": "Die Store-Beschreibung wurde überarbeitet und die App-Stabilität verbessert.",
+    "fr-FR": "La présentation sur le store a été affinée et la stabilité de l’application améliorée.",
+    "pt-BR": "A descrição na loja foi aprimorada e a estabilidade do app foi melhorada.",
+    "zh-TW": "優化了商店介紹文字，並提升應用程式穩定性。",
+    "it-IT": "Abbiamo perfezionato la descrizione sullo store e migliorato la stabilità dell’app.",
+    "zh-CN": "优化了商店介绍文案，并提升了应用稳定性。"
+  }
+}

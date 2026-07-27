@@ -7,7 +7,19 @@ import { localizedMottos } from './mottos';
 
 export type AppLocale = Exclude<SupportedLanguage, 'system'>;
 
-export const supportedLanguages: SupportedLanguage[] = ['system', 'ko', 'en', 'ja', 'es', 'de', 'fr', 'zh'];
+export const supportedLanguages: SupportedLanguage[] = [
+  'system',
+  'ko',
+  'en',
+  'ja',
+  'es',
+  'de',
+  'fr',
+  'zh',
+  'pt-BR',
+  'zh-Hant',
+  'it',
+];
 
 const localeTags: Record<AppLocale, string> = {
   ko: 'ko-KR',
@@ -17,16 +29,22 @@ const localeTags: Record<AppLocale, string> = {
   de: 'de-DE',
   fr: 'fr-FR',
   zh: 'zh-CN',
+  'pt-BR': 'pt-BR',
+  'zh-Hant': 'zh-TW',
+  it: 'it-IT',
 };
 
 const taglines: Record<AppLocale, string> = {
   ko: '흔들려도, 이어가라.',
-  en: 'Waver. Keep going.',
-  ja: '揺れても、進み続けろ。',
-  es: 'Aunque dudes, sigue.',
-  de: 'Wanke. Geh weiter.',
-  fr: 'Vacille. Continue.',
-  zh: '可以动摇，但要继续。',
+  en: 'Waver, but do not stop.',
+  ja: '揺れても、止まるな。',
+  es: 'Aunque vaciles, no te detengas.',
+  de: 'Auch wenn du wankst, bleib nicht stehen.',
+  fr: 'Même si tu vacilles, ne t’arrête pas.',
+  zh: '即使动摇，也不要停下。',
+  'pt-BR': 'Mesmo que vacile, não pare.',
+  'zh-Hant': '即使動搖，也不要停下。',
+  it: 'Anche se vacilli, non fermarti.',
 };
 
 const courseNames: Record<AppLocale, (level: CourseLevel) => string> = {
@@ -37,6 +55,9 @@ const courseNames: Record<AppLocale, (level: CourseLevel) => string> = {
   de: (level) => `${level}-Kurs`,
   fr: (level) => `Parcours ${level}`,
   zh: (level) => `${level}课程`,
+  'pt-BR': (level) => `Curso ${level}`,
+  'zh-Hant': (level) => `${level}課程`,
+  it: (level) => `Corso ${level}`,
 };
 
 const dayLabels: Record<AppLocale, (day: number) => string> = {
@@ -47,21 +68,36 @@ const dayLabels: Record<AppLocale, (day: number) => string> = {
   de: (day) => `Tag ${day}`,
   fr: (day) => `Jour ${day}`,
   zh: (day) => `第${day}天`,
+  'pt-BR': (day) => `Dia ${day}`,
+  'zh-Hant': (day) => `第${day}天`,
+  it: (day) => `Giorno ${day}`,
 };
 
-function supportedLocaleFor(languageCode?: string | null): AppLocale {
+type DeviceLocale = ReturnType<typeof getLocales>[number];
+
+function supportedLocaleFor(deviceLocale?: DeviceLocale): AppLocale {
+  const languageCode = deviceLocale?.languageCode;
   if (languageCode === 'ko') return 'ko';
   if (languageCode === 'ja') return 'ja';
   if (languageCode === 'es') return 'es';
   if (languageCode === 'de') return 'de';
   if (languageCode === 'fr') return 'fr';
-  if (languageCode === 'zh') return 'zh';
+  if (languageCode === 'pt') return 'pt-BR';
+  if (languageCode === 'it') return 'it';
+  if (languageCode === 'zh') {
+    const traditionalRegions = new Set(['TW', 'HK', 'MO']);
+    const isTraditional =
+      deviceLocale?.languageScriptCode === 'Hant' ||
+      traditionalRegions.has(deviceLocale?.regionCode ?? '') ||
+      deviceLocale?.languageTag.includes('Hant');
+    return isTraditional ? 'zh-Hant' : 'zh';
+  }
   return 'en';
 }
 
 export function resolveLocale(language: SupportedLanguage = 'system'): AppLocale {
   if (language !== 'system') return language;
-  return supportedLocaleFor(getLocales()[0]?.languageCode);
+  return supportedLocaleFor(getLocales()[0]);
 }
 
 export function interpolate(template: string, values: Record<string, string | number> = {}) {
@@ -82,11 +118,17 @@ export function createI18n(language: SupportedLanguage = 'system') {
       return dayLabels[locale](day);
     },
     dayRange(start: number, end: number) {
-      if (locale === 'zh') return `第${start}-${end}天`;
+      if (locale === 'zh' || locale === 'zh-Hant') return `第${start}-${end}天`;
       if (locale === 'es') return `Días ${start}-${end}`;
       if (locale === 'de') return `Tag ${start}-${end}`;
       if (locale === 'fr') return `Jours ${start}-${end}`;
+      if (locale === 'pt-BR') return `Dias ${start}-${end}`;
+      if (locale === 'it') return `Giorni ${start}-${end}`;
       return `Day ${start} - ${end}`;
+    },
+    dayCount(count: number) {
+      const key = count === 1 ? 'dayOne' : 'days';
+      return interpolate(content.ui[key] ?? localizedContent.en.ui[key], { count });
     },
     t(key: keyof typeof localizedContent.en.ui, values?: Record<string, string | number>) {
       return interpolate(content.ui[key] ?? localizedContent.en.ui[key], values);

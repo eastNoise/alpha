@@ -1,9 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+import type { ImageResult } from 'expo-image-manipulator';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import {
   Image,
   ImageBackground,
+  ImageSourcePropType,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -12,6 +15,7 @@ import {
   StyleSheet,
   StyleProp,
   Text,
+  TextStyle,
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
@@ -33,11 +37,13 @@ import {
   scopes,
   stageForDay,
 } from './src/data';
+import { CardImageCropEditor } from './src/components/CardImageCropEditor';
 import { courseDoneCount, courseRoutineTotal } from './src/domain/alpha';
 import { playHaptic } from './src/device/haptics';
 import { syncDailyCloseReminder } from './src/device/notifications';
 import { createI18n, I18nContext, supportedLanguages, useI18n } from './src/i18n';
 import { useAlphaController } from './src/state/useAlphaController';
+import { CardVisualTarget, useCardVisuals } from './src/state/useCardVisuals';
 import { colors, radius, spacing, typography } from './src/theme';
 import { AppState, DayRecord, Routine, ScreenName, SupportedLanguage } from './src/types';
 import { visuals } from './src/visuals';
@@ -47,6 +53,22 @@ const mainTabs: Array<{ id: 'today' | 'records' | 'course'; icon: string }> = [
   { id: 'records', icon: '▤' },
   { id: 'course', icon: '◷' },
 ];
+
+type CardVisualFrame = {
+  height: number;
+  width: number;
+};
+
+type CardVisualSelection = {
+  aspectRatio: number;
+  target: CardVisualTarget;
+};
+
+const fallbackCardAspectRatios: Record<CardVisualTarget, number> = {
+  today: 358 / 150,
+  records: 358 / 108,
+  course: 358 / 200,
+};
 
 export default function App() {
   return (
@@ -59,6 +81,13 @@ export default function App() {
 function AlphaApp() {
   const insets = useSafeAreaInsets();
   const alpha = useAlphaController();
+  const cardVisuals = useCardVisuals();
+  const [cardVisualSelection, setCardVisualSelection] = useState<CardVisualSelection | null>(null);
+  const [cardCropSelection, setCardCropSelection] = useState<{
+    aspectRatio: number;
+    asset: ImagePicker.ImagePickerAsset;
+    target: CardVisualTarget;
+  } | null>(null);
   const {
     addPersonalRoutine,
     back,
@@ -116,6 +145,11 @@ function AlphaApp() {
   const hapticsEnabled = state.settings.hapticsEnabled;
   const i18n = createI18n(state.settings.language ?? 'system');
   const { t } = i18n;
+  const cardSources: Record<CardVisualTarget, ImageSourcePropType> = {
+    today: cardVisuals.uris.today ? { uri: cardVisuals.uris.today } : visuals.todayFire,
+    records: cardVisuals.uris.records ? { uri: cardVisuals.uris.records } : visuals.recordsHeader,
+    course: cardVisuals.uris.course ? { uri: cardVisuals.uris.course } : visuals.courseStage,
+  };
 
   useEffect(() => {
     if (!ready || !state.hasOnboarded) return;
@@ -138,6 +172,64 @@ function AlphaApp() {
     };
   }
 
+  function openCardVisual(target: CardVisualTarget, frame: CardVisualFrame | null) {
+    const measuredAspectRatio = frame && frame.width > 0 && frame.height > 0
+      ? frame.width / frame.height
+      : fallbackCardAspectRatios[target];
+    playHaptic(hapticsEnabled, 'selection');
+    setCardVisualSelection({ aspectRatio: measuredAspectRatio, target });
+  }
+
+  async function chooseCardImage(selection: CardVisualSelection) {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        showToast(t('imagePermissionDenied'));
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: false,
+        mediaTypes: ['images'],
+        quality: 0.9,
+        selectionLimit: 1,
+      });
+      if (result.canceled) return;
+
+      setCardCropSelection({
+        aspectRatio: selection.aspectRatio,
+        asset: result.assets[0],
+        target: selection.target,
+      });
+    } catch {
+      showToast(t('imageSaveFailed'));
+    } finally {
+      setCardVisualSelection(null);
+    }
+  }
+
+  async function saveCroppedCardImage(target: CardVisualTarget, image: ImageResult) {
+    await cardVisuals.save(target, {
+      fileName: `${target}.jpg`,
+      mimeType: 'image/jpeg',
+      uri: image.uri,
+    });
+    setCardCropSelection(null);
+    playHaptic(hapticsEnabled, 'success');
+    showToast(t('imageUpdatedToast'));
+  }
+
+  async function restoreCardImage(target: CardVisualTarget) {
+    setCardVisualSelection(null);
+    try {
+      await cardVisuals.restoreDefault(target);
+      playHaptic(hapticsEnabled, 'selection');
+      showToast(t('imageResetToast'));
+    } catch {
+      showToast(t('imageSaveFailed'));
+    }
+  }
+
   function renderScreen() {
     switch (screen) {
       case 'onboarding':
@@ -158,6 +250,7 @@ function AlphaApp() {
             state={state}
             streak={streak}
             total={total}
+            visualSource={cardSources.today}
             onAddRoutine={withHaptic('light', openAddRoutine)}
             onCloseDay={withHaptic('success', closeDay)}
             onOpenReflection={withHaptic('light', () => setOverlay('reflection'))}
@@ -170,6 +263,7 @@ function AlphaApp() {
               playHaptic(hapticsEnabled, 'selection');
               toggleRoutine(id);
             }}
+            onVisualPress={(frame) => openCardVisual('today', frame)}
           />
         );
       case 'records':
@@ -182,9 +276,11 @@ function AlphaApp() {
             state={state}
             streak={streak}
             total={total}
+            visualSource={cardSources.records}
             onCollection={withHaptic('selection', () => go('collection'))}
             onDetail={withHaptic('selection', () => go('detail'))}
             onSettings={withHaptic('selection', () => go('settings'))}
+            onVisualPress={(frame) => openCardVisual('records', frame)}
           />
         );
       case 'course':
@@ -195,10 +291,12 @@ function AlphaApp() {
             courseRestartAvailable={courseRestartAvailable}
             nextCourseAvailable={nextCourseAvailable}
             state={state}
+            visualSource={cardSources.course}
             onDetail={withHaptic('selection', () => go('detail'))}
             onSettings={withHaptic('selection', () => go('settings'))}
             onStartNextCourse={withHaptic('success', beginNextCourse)}
             onRestartCourse={withHaptic('warning', restartCourse)}
+            onVisualPress={(frame) => openCardVisual('course', frame)}
           />
         );
       case 'settings':
@@ -227,13 +325,20 @@ function AlphaApp() {
           />
         );
       case 'collection':
-        return <CollectionScreen records={sortedRecords} onBack={withHaptic('selection', back)} />;
+        return (
+          <CollectionScreen
+            records={sortedRecords}
+            visualSource={cardSources.records}
+            onBack={withHaptic('selection', back)}
+            onVisualPress={(frame) => openCardVisual('records', frame)}
+          />
+        );
       default:
         return null;
     }
   }
 
-  if (!ready) {
+  if (!ready || !cardVisuals.ready) {
     return (
       <LinearGradient colors={['#020202', '#080808', '#030303']} style={styles.loading}>
         <StatusBar style="light" />
@@ -327,6 +432,39 @@ function AlphaApp() {
           setOverlay(null);
         }}
       />
+      <CardImageSheet
+        bottomInset={insets.bottom}
+        hasCustomImage={Boolean(cardVisualSelection && cardVisuals.uris[cardVisualSelection.target])}
+        open={cardVisualSelection !== null}
+        target={cardVisualSelection?.target ?? null}
+        onChoose={() => {
+          if (cardVisualSelection) void chooseCardImage(cardVisualSelection);
+        }}
+        onClose={withHaptic('selection', () => setCardVisualSelection(null))}
+        onRestore={() => {
+          if (cardVisualSelection) void restoreCardImage(cardVisualSelection.target);
+        }}
+      />
+      {cardCropSelection ? (
+        <CardImageCropEditor
+          aspectRatio={cardCropSelection.aspectRatio}
+          asset={cardCropSelection.asset}
+          bottomInset={insets.bottom}
+          labels={{
+            apply: t('apply'),
+            cancel: t('cancel'),
+            instruction: t('cropImageInstruction'),
+            title: `${t(cardCropSelection.target)} · ${t('adjustCardImage')}`,
+          }}
+          topInset={insets.top}
+          onApply={(image) => saveCroppedCardImage(cardCropSelection.target, image)}
+          onCancel={withHaptic('selection', () => setCardCropSelection(null))}
+          onError={() => {
+            setCardCropSelection(null);
+            showToast(t('imageSaveFailed'));
+          }}
+        />
+      ) : null}
     </View>
     </I18nContext.Provider>
   );
@@ -383,7 +521,7 @@ function TopBar({
           style={styles.iconButton}
           onPress={onSettings}
         >
-          <Text style={styles.iconText}>⚙</Text>
+          <Image source={visuals.settingsIcon} style={styles.settingsIcon} />
         </TouchableOpacity>
       ) : null}
     </View>
@@ -447,12 +585,14 @@ function TodayScreen({
   state,
   streak,
   total,
+  visualSource,
   onAddRoutine,
   onCloseDay,
   onOpenReflection,
   onRemoveRoutine,
   onSettings,
   onToggleRoutine,
+  onVisualPress,
 }: {
   courseComplete: boolean;
   coursePassed: boolean;
@@ -463,12 +603,14 @@ function TodayScreen({
   state: AppState;
   streak: number;
   total: number;
+  visualSource: ImageSourcePropType;
   onAddRoutine: () => void;
   onCloseDay: () => void;
   onOpenReflection: () => void;
   onRemoveRoutine: (id: string) => void;
   onSettings: () => void;
   onToggleRoutine: (id: string) => void;
+  onVisualPress: (frame: CardVisualFrame) => void;
 }) {
   const i18n = useI18n();
   const { t } = i18n;
@@ -491,11 +633,11 @@ function TodayScreen({
         subtitle={`${i18n.day(state.currentCourse.day)} · ${i18n.courseName(state.currentCourse.level)}`}
         onSettings={onSettings}
       />
-      <FireCard source={visuals.todayFire} label={t('todayFire')} quote={motto} />
+      <FireCard source={visualSource} label={t('todayFire')} quote={motto} onPress={onVisualPress} />
       <SectionTitle right={t('completedCount', { done, total })} title={t('todaySummary')} />
       <SummaryGrid
         items={[
-          { label: t('complete'), value: String(done) },
+          { label: t('completedMetric'), value: String(done) },
           { label: t('streak'), value: String(streak) },
           { label: t('today'), value: `${rate}%` },
         ]}
@@ -526,9 +668,11 @@ function RecordsScreen({
   state,
   streak,
   total,
+  visualSource,
   onCollection,
   onDetail,
   onSettings,
+  onVisualPress,
 }: {
   done: number;
   missed: number;
@@ -537,11 +681,14 @@ function RecordsScreen({
   state: AppState;
   streak: number;
   total: number;
+  visualSource: ImageSourcePropType;
   onCollection: () => void;
   onDetail: () => void;
   onSettings: () => void;
+  onVisualPress: (frame: CardVisualFrame) => void;
 }) {
-  const { t } = useI18n();
+  const i18n = useI18n();
+  const { t } = i18n;
   const recent = records.slice(0, 3);
   const doneDays = records.filter((record) => record.status === 'complete').length;
   const missDays = records.filter((record) => record.status === 'incomplete').length;
@@ -549,7 +696,7 @@ function RecordsScreen({
   return (
     <AppScreen>
       <TopBar title={t('records')} subtitle={t('recordsSubtitle')} onSettings={onSettings} />
-      <FireCard mini source={visuals.recordsHeader} first={t('completionStreak')} second={t('days', { count: streak })} />
+      <FireCard mini source={visualSource} first={t('completionStreak')} second={i18n.dayCount(streak)} onPress={onVisualPress} />
       <SectionTitle right={t('completedCount', { done, total })} title={t('todaySummary')} />
       <Card style={styles.progressCard}>
         <View style={styles.progress}>
@@ -558,7 +705,7 @@ function RecordsScreen({
         <SummaryGrid
           compact
           items={[
-            { label: t('complete'), value: String(done) },
+            { label: t('completedMetric'), value: String(done) },
             { label: t('incomplete'), value: String(missed) },
             { label: t('achievement'), value: `${rate}%`, accent: true },
           ]}
@@ -589,20 +736,24 @@ function CourseScreen({
   courseRestartAvailable,
   nextCourseAvailable,
   state,
+  visualSource,
   onDetail,
   onSettings,
   onRestartCourse,
   onStartNextCourse,
+  onVisualPress,
 }: {
   courseComplete: boolean;
   coursePassed: boolean;
   courseRestartAvailable: boolean;
   nextCourseAvailable: boolean;
   state: AppState;
+  visualSource: ImageSourcePropType;
   onDetail: () => void;
   onSettings: () => void;
   onRestartCourse: () => void;
   onStartNextCourse: () => void;
+  onVisualPress: (frame: CardVisualFrame) => void;
 }) {
   const i18n = useI18n();
   const { t } = i18n;
@@ -626,7 +777,12 @@ function CourseScreen({
       />
       <LinkButton label={t('view30Records')} onPress={onDetail} />
       <SectionTitle title={t('currentStage')} />
-      <VisualCard source={visuals.courseStage} style={styles.stepCard}>
+      <VisualCard
+        accessibilityLabel={`${t('course')} · ${t('cardImage')}`}
+        source={visualSource}
+        style={styles.stepCard}
+        onPress={onVisualPress}
+      >
         <View style={styles.visualTextLayer}>
           <Text style={styles.stepTitle}>
             {stageMeta.number} {currentStage.title}
@@ -737,12 +893,22 @@ function DetailScreen({
   );
 }
 
-function CollectionScreen({ records, onBack }: { records: DayRecord[]; onBack: () => void }) {
+function CollectionScreen({
+  records,
+  visualSource,
+  onBack,
+  onVisualPress,
+}: {
+  records: DayRecord[];
+  visualSource: ImageSourcePropType;
+  onBack: () => void;
+  onVisualPress: (frame: CardVisualFrame) => void;
+}) {
   const { t } = useI18n();
   return (
     <AppScreen>
       <TopBar title={t('recordCollection')} onBack={onBack} />
-      <FireCard mini source={visuals.recordsHeader} first={t('recordsLeft')} second={t('countItems', { count: records.length })} />
+      <FireCard mini source={visualSource} first={t('recordsLeft')} second={t('countItems', { count: records.length })} onPress={onVisualPress} />
       <SectionTitle title={t('recordsByDate')} />
       {records.length ? (
         records.map((record) => <RecordCard key={record.id} record={record} withDate />)
@@ -802,22 +968,34 @@ function SettingsScreen({
 }
 
 function VisualCard({
+  accessibilityLabel,
   children,
+  onPress,
   source,
   style,
   overlayOpacity = 0.2,
 }: {
+  accessibilityLabel?: string;
   children?: React.ReactNode;
-  source: number;
+  onPress?: (frame: CardVisualFrame) => void;
+  source: ImageSourcePropType;
   style?: object;
   overlayOpacity?: number;
 }) {
+  const layoutRef = useRef<CardVisualFrame | null>(null);
+
   return (
     <ImageBackground
       imageStyle={styles.visualImage as object}
       resizeMode="cover"
       source={source}
       style={[styles.card, style]}
+      onLayout={({ nativeEvent }) => {
+        layoutRef.current = {
+          height: nativeEvent.layout.height,
+          width: nativeEvent.layout.width,
+        };
+      }}
     >
       <LinearGradient
         colors={[`rgba(0,0,0,${overlayOpacity + 0.3})`, `rgba(0,0,0,${overlayOpacity})`, 'rgba(0,0,0,0.38)']}
@@ -826,6 +1004,14 @@ function VisualCard({
         style={styles.visualOverlay}
       />
       {children}
+      {onPress ? (
+        <Pressable
+          accessibilityLabel={accessibilityLabel}
+          accessibilityRole="button"
+          style={styles.cardImagePressTarget}
+          onPress={() => onPress(layoutRef.current ?? { height: 0, width: 0 })}
+        />
+      ) : null}
     </ImageBackground>
   );
 }
@@ -834,6 +1020,7 @@ function FireCard({
   first,
   label,
   mini,
+  onPress,
   quote,
   second,
   source,
@@ -841,11 +1028,14 @@ function FireCard({
   first?: string;
   label?: string;
   mini?: boolean;
+  onPress?: (frame: CardVisualFrame) => void;
   quote?: string;
   second?: string;
-  source: number;
+  source: ImageSourcePropType;
 }) {
-  const displayQuote = quote ? formatFireQuote(quote) : undefined;
+  const { locale, t } = useI18n();
+  const displayQuote = quote ? formatFireQuote(quote, locale === 'ko') : undefined;
+  const layoutRef = useRef<CardVisualFrame | null>(null);
 
   return (
     <ImageBackground
@@ -853,6 +1043,12 @@ function FireCard({
       resizeMode="cover"
       source={source}
       style={[styles.card, styles.fireCard, mini && styles.fireMini]}
+      onLayout={({ nativeEvent }) => {
+        layoutRef.current = {
+          height: nativeEvent.layout.height,
+          width: nativeEvent.layout.width,
+        };
+      }}
     >
       <LinearGradient
         colors={['rgba(0,0,0,0.66)', 'rgba(0,0,0,0.24)', 'rgba(0,0,0,0.32)']}
@@ -871,31 +1067,72 @@ function FireCard({
           </>
         )}
       </View>
+      {onPress ? (
+        <Pressable
+          accessibilityLabel={t('cardImage')}
+          accessibilityRole="button"
+          style={styles.cardImagePressTarget}
+          onPress={() => onPress(layoutRef.current ?? { height: 0, width: 0 })}
+        />
+      ) : null}
     </ImageBackground>
   );
 }
 
-function formatFireQuote(quote: string) {
-  const sentences = quote.match(/[^.!?]+[.!?]?/g)?.map((sentence) => sentence.trim()).filter(Boolean) ?? [];
+function formatFireQuote(quote: string, useKoreanLineBreaks: boolean) {
+  if (!useKoreanLineBreaks) return quote;
+  if (quote.includes('\n')) return quote;
 
-  if (sentences.length > 1) return sentences.join('\n');
-  if (quote.length < 20) return quote;
+  const sentences = quote
+    .split('\n')
+    .flatMap((line) => line.match(/[^.!?]+[.!?]?/g) ?? [])
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
 
-  const words = quote.split(/\s+/);
+  if (sentences.length === 0) return quote;
+
+  // The card has room for three deliberate lines. Split only at a word or
+  // phrase boundary so React Native never leaves a single trailing character.
+  const lines: string[] = [];
+  for (const [index, sentence] of sentences.entries()) {
+    const remainingSentences = sentences.length - index - 1;
+    const availableLines = Math.max(1, 3 - lines.length - remainingSentences);
+    const split = splitFireSentence(sentence);
+    lines.push(...(split.length <= availableLines ? split : [sentence]));
+  }
+
+  return lines.join('\n');
+}
+
+function splitFireSentence(sentence: string) {
+  const words = sentence.split(/\s+/).filter(Boolean);
+  if (sentence.length <= 20 || words.length < 2) return [sentence];
+
+  // Korean connective endings make the most natural visual break: for example
+  // "아무것도 하지 않으면" / "아무 일도 일어나지 않는다."
+  const connectiveIndex = words.findIndex((word, index) => (
+    index > 0
+    && index < words.length - 1
+    && /(?:으면|면|지만|는데|거나|면서|도록|고)[.!?]?$/.test(word)
+  ));
+  if (connectiveIndex !== -1) {
+    return [words.slice(0, connectiveIndex + 1).join(' '), words.slice(connectiveIndex + 1).join(' ')];
+  }
+
+  const target = sentence.length / 2;
   let splitAt = 1;
   let shortestDistance = Number.POSITIVE_INFINITY;
-  const totalLength = quote.length;
 
   for (let index = 1; index < words.length; index += 1) {
     const firstLength = words.slice(0, index).join(' ').length;
-    const distance = Math.abs(totalLength * 0.6 - firstLength);
+    const distance = Math.abs(target - firstLength);
     if (distance < shortestDistance) {
       splitAt = index;
       shortestDistance = distance;
     }
   }
 
-  return `${words.slice(0, splitAt).join(' ')}\n${words.slice(splitAt).join(' ')}`;
+  return [words.slice(0, splitAt).join(' '), words.slice(splitAt).join(' ')];
 }
 
 function Card({ children, style }: { children: React.ReactNode; style?: object }) {
@@ -907,11 +1144,13 @@ function PrimaryButton({
   label,
   onPress,
   style,
+  textStyle,
 }: {
   disabled?: boolean;
   label: string;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }) {
   return (
     <TouchableOpacity
@@ -927,7 +1166,7 @@ function PrimaryButton({
         colors={disabled ? ['#323236', '#171719'] : ['#f51c1c', '#a70707']}
         style={[styles.button, disabled && styles.buttonDisabled]}
       >
-        <Text style={[styles.buttonText, disabled && styles.buttonDisabledText]}>{label}</Text>
+        <Text adjustsFontSizeToFit minimumFontScale={0.8} numberOfLines={1} style={[styles.buttonText, disabled && styles.buttonDisabledText, textStyle]}>{label}</Text>
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -938,11 +1177,13 @@ function SecondaryButton({
   label,
   onPress,
   style,
+  textStyle,
 }: {
   danger?: boolean;
   label: string;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }) {
   return (
     <TouchableOpacity
@@ -952,7 +1193,7 @@ function SecondaryButton({
       style={[styles.secondaryButton, danger && styles.dangerButton, style]}
       onPress={onPress}
     >
-      <Text style={[styles.secondaryButtonText, danger && styles.dangerText]}>{label}</Text>
+      <Text adjustsFontSizeToFit minimumFontScale={0.8} numberOfLines={1} style={[styles.secondaryButtonText, danger && styles.dangerText, textStyle]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -1301,7 +1542,8 @@ function FinishDayModal({
   onClose: () => void;
   onReflection: () => void;
 }) {
-  const { t } = useI18n();
+  const i18n = useI18n();
+  const { t } = i18n;
   const complete = result === 'complete';
   return (
     <BaseModal open={open} onClose={onClose}>
@@ -1327,10 +1569,10 @@ function FinishDayModal({
         <View style={styles.resultTable}>
           <ResultRow label={t('completedRoutines')} value={t('countItems', { count: done })} />
           <ResultRow label={t('incompleteRoutines')} value={t('countItems', { count: missed })} />
-          <ResultRow label={t('completionStreakLabel')} value={t('days', { count: streak })} last />
+          <ResultRow label={t('completionStreakLabel')} value={i18n.dayCount(streak)} last />
         </View>
         <View style={styles.finishActions}>
-          <SecondaryButton label={t('cancel')} style={styles.finishActionButton} onPress={onCancel} />
+          <SecondaryButton label={t('cancel')} style={styles.finishActionButton} textStyle={styles.finishCancelText} onPress={onCancel} />
           <PrimaryButton label={t('writeReflection')} style={styles.finishReflectionButton} onPress={onReflection} />
         </View>
       </View>
@@ -1635,6 +1877,59 @@ function LanguageModal({
   );
 }
 
+function CardImageSheet({
+  bottomInset,
+  hasCustomImage,
+  open,
+  target,
+  onChoose,
+  onClose,
+  onRestore,
+}: {
+  bottomInset: number;
+  hasCustomImage: boolean;
+  open: boolean;
+  target: CardVisualTarget | null;
+  onChoose: () => void;
+  onClose: () => void;
+  onRestore: () => void;
+}) {
+  const { t } = useI18n();
+  const title = target ? `${t(target)} · ${t('cardImage')}` : t('cardImage');
+
+  return (
+    <BaseModal alignBottom open={open} onClose={onClose}>
+      <View style={[styles.cardImageSheet, { paddingBottom: Math.max(bottomInset, 16) }]}>
+        <View style={styles.modalHead}>
+          <Text style={styles.modalTitle}>{title}</Text>
+          <TouchableOpacity accessibilityLabel={t('close')} accessibilityRole="button" activeOpacity={0.78} onPress={onClose}>
+            <Text style={styles.closeText}>×</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          accessibilityRole="button"
+          activeOpacity={0.78}
+          style={styles.cardImageAction}
+          onPress={onChoose}
+        >
+          <Text style={styles.cardImageActionText}>{t('choosePhoto')}</Text>
+        </TouchableOpacity>
+        {hasCustomImage ? (
+          <TouchableOpacity
+            accessibilityRole="button"
+            activeOpacity={0.78}
+            style={styles.cardImageAction}
+            onPress={onRestore}
+          >
+            <Text style={styles.cardImageRestoreText}>{t('restoreDefaultImage')}</Text>
+          </TouchableOpacity>
+        ) : null}
+        <SecondaryButton label={t('cancel')} style={styles.cardImageCancel} onPress={onClose} />
+      </View>
+    </BaseModal>
+  );
+}
+
 function ResultRow({ label, last, value }: { label: string; last?: boolean; value: string }) {
   return (
     <View style={[styles.resultRow, last && styles.lastRow]}>
@@ -1746,6 +2041,10 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '900',
   },
+  settingsIcon: {
+    height: 22,
+    width: 22,
+  },
   card: {
     backgroundColor: 'rgba(255,255,255,0.035)',
     borderColor: colors.line,
@@ -1823,6 +2122,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginBottom: 2,
     padding: 16,
+  },
+  cardImagePressTarget: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 4,
   },
   fireMini: {
     height: 108,
@@ -2419,6 +2722,42 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     paddingHorizontal: 0,
   },
+  cardImageSheet: {
+    backgroundColor: '#070707',
+    borderColor: 'rgba(255,255,255,0.17)',
+    borderTopLeftRadius: radius.modal,
+    borderTopRightRadius: radius.modal,
+    borderWidth: 1,
+    paddingHorizontal: spacing.screenX,
+    paddingTop: 20,
+    width: '100%',
+  },
+  cardImageAction: {
+    alignItems: 'center',
+    backgroundColor: '#111112',
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: radius.button,
+    borderWidth: 1,
+    height: 56,
+    justifyContent: 'center',
+    marginTop: 12,
+    paddingHorizontal: 18,
+    width: '100%',
+  },
+  cardImageActionText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  cardImageRestoreText: {
+    color: colors.red,
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  cardImageCancel: {
+    marginTop: 12,
+    width: '100%',
+  },
   finishModal: {
     backgroundColor: '#070707',
     borderColor: 'rgba(255,255,255,0.17)',
@@ -2520,6 +2859,9 @@ const styles = StyleSheet.create({
   },
   finishActionButton: {
     flex: 0.44,
+  },
+  finishCancelText: {
+    fontSize: 13,
   },
   finishReflectionButton: {
     flex: 1,

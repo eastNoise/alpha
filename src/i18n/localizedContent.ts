@@ -54,8 +54,10 @@ const ko: LocalizedContent = {
     nextCourseBlockedToast: '현재 과정을 완료한 뒤 다음 과정을 시작할 수 있습니다.', nextCourseStartedToast: '다음 과정을 시작합니다.',
     restartBlockedToast: '현재 과정이 끝난 뒤 재시작할 수 있습니다.', restartedToast: '{level} 과정을 다시 시작합니다.',
     reminderChannel: '하루 마감', reminderBody: '하루를 마감하고 오늘의 기록을 남겨라.', languageTitle: '앱 언어', systemLanguage: '시스템 설정',
+    cardImage: '카드 이미지', choosePhoto: '사진 선택', restoreDefaultImage: '기본 이미지로 복원', imagePermissionDenied: '카드 이미지를 바꾸려면 사진 접근 권한이 필요합니다.', imageSaveFailed: '이미지를 저장하지 못했습니다.', imageUpdatedToast: '카드 이미지를 변경했습니다.', imageResetToast: '기본 이미지로 복원했습니다.',
+    dayOne: '{count}일',
   },
-  languages: { system: '시스템 설정', ko: '한국어', en: 'English', ja: '日本語', es: 'Español', de: 'Deutsch', fr: 'Français', zh: '简体中文' },
+  languages: { system: '시스템 설정', ko: '한국어', en: 'English', ja: '日本語', es: 'Español', de: 'Deutsch', fr: 'Français', zh: '简体中文', 'pt-BR': 'Português (Brasil)', 'zh-Hant': '繁體中文', it: 'Italiano' },
   categories: { 몸: '몸', 정신: '정신', 절제: '절제', 집중: '집중', 생활: '생활' },
   scopes: { 오늘만: '오늘만', '이번 과정 동안': '이번 과정 동안' },
   routines: {
@@ -114,8 +116,10 @@ const en: LocalizedContent = {
     nextCourseBlockedToast: 'Complete this course before starting the next.', nextCourseStartedToast: 'The next course begins now.',
     restartBlockedToast: 'You can restart after this course ends.', restartedToast: '{level} starts again now.',
     reminderChannel: 'Close the day', reminderBody: 'Close the day and leave an honest record.', languageTitle: 'App language', systemLanguage: 'System default',
+    cardImage: 'Card image', choosePhoto: 'Choose photo', restoreDefaultImage: 'Restore default image', imagePermissionDenied: 'Photo access is required to change the card image.', imageSaveFailed: 'The image could not be saved.', imageUpdatedToast: 'Card image updated.', imageResetToast: 'Default image restored.',
+    dayOne: '{count} day',
   },
-  languages: { system: 'System default', ko: '한국어', en: 'English', ja: '日本語', es: 'Español', de: 'Deutsch', fr: 'Français', zh: '简体中文' },
+  languages: { system: 'System default', ko: '한국어', en: 'English', ja: '日本語', es: 'Español', de: 'Deutsch', fr: 'Français', zh: '简体中文', 'pt-BR': 'Português (Brasil)', 'zh-Hant': '繁體中文', it: 'Italiano' },
   categories: { 몸: 'Body', 정신: 'Mind', 절제: 'Discipline', 집중: 'Focus', 생활: 'Life' },
   scopes: { 오늘만: 'Today only', '이번 과정 동안': 'For this course' },
   routines: {
@@ -169,6 +173,8 @@ const ja = clone(en, {
     resultCompleteTitle: '完了。', resultIncompleteTitle: '未完了。', resultCompleteCopy: '今日は逃げなかった。', resultIncompleteCopy: '残ったルーティンも記録された。', completedRoutines: '完了ルーティン', incompleteRoutines: '未完了ルーティン', completionStreakLabel: '連続完了', reflection: '一日の振り返り', todayRecord: '今日の記録', personalRoutineAdd: '個人ルーティンを追加', routineName: 'ルーティン名', routinePlaceholder: '例：懸垂10回', category: 'カテゴリー', scope: '適用期間',
     resetCopy: 'ルーティン、締めた日、振り返り、コース進捗を初期状態に戻します。', app: 'アプリ', version: 'バージョン', storage: '保存先', storedOnDevice: 'この端末に保存', course30Days: '{level} · 30日', scheduled: '予定', noRecordYet: 'まだ記録がありません。', date: '日付', status: '状態', stage: '段階', routineCompletion: 'ルーティン完了', routines: 'ルーティン',
     finishCourseToast: '{level}の30日コースを完了しました。', editLockedToast: '締めた後はルーティンを変更できません。', alreadyClosedToast: 'この日はすでに締めています。', closeUndoneToast: '締めを取り消しました。', enterReflectionToast: '振り返りを入力してください。', reflectionSavedToast: '振り返りを保存しました。', addLockedToast: '締めた後はルーティンを追加できません。', personalRoutine: '個人ルーティン', personalAddedToast: '個人ルーティンを追加しました。', deleteLockedToast: '締めた後はルーティンを削除できません。', personalDeletedToast: '個人ルーティンを削除しました。', resetDoneToast: '記録をリセットしました。', nextCourseBlockedToast: '現在のコースを完了してから次へ進んでください。', nextCourseStartedToast: '次のコースを始めます。', restartBlockedToast: 'コース終了後に再挑戦できます。', restartedToast: '{level}をもう一度始めます。', reminderChannel: '一日の締め', reminderBody: '一日を締め、今日の記録を残せ。', languageTitle: 'アプリの言語', systemLanguage: 'システム設定',
+    cardImage: 'カード画像', choosePhoto: '写真を選ぶ', restoreDefaultImage: '標準画像に戻す', imagePermissionDenied: 'カード画像を変更するには写真へのアクセスが必要です。', imageSaveFailed: '画像を保存できませんでした。', imageUpdatedToast: 'カード画像を変更しました。', imageResetToast: '標準画像に戻しました。',
+    dayOne: '{count}日',
   },
   languages: { system: 'システム設定', ko: '한국어', en: 'English', ja: '日本語', es: 'Español', de: 'Deutsch', fr: 'Français', zh: '简体中文' },
   categories: { 몸: '身体', 정신: '精神', 절제: '自制', 집중: '集中', 생활: '生活' },
@@ -200,7 +206,8 @@ const ja = clone(en, {
 
 const es = clone(en, {
   ui: {
-    back: 'Volver', settings: 'Ajustes', start: 'Empezar', close: 'Cerrar', cancel: 'Cancelar', save: 'Guardar', add: 'Añadir', reset: 'Restablecer', today: 'Hoy', records: 'Registros', course: 'Curso', dayCourse: 'Día {day} · {level}', notificationDenied: 'Los avisos están desactivados.', notificationFailed: 'No se pudieron configurar los avisos.', saveFailed: 'No se pudo guardar el progreso.', todayFire: 'La chispa de hoy', todaySummary: 'Resumen de hoy', todayRoutines: 'Rutinas de hoy', completedCount: '{done} / {total} hechas', complete: 'Completo', incomplete: 'Incompleto', inProgress: 'En curso', ended: 'Finalizado', streak: 'Racha', achievement: 'Cumplimiento', addPersonalRoutine: '+ Añadir rutina personal', writeReflection: 'Escribir reflexión diaria', closeComplete: 'Día cerrado', courseState: '{level} {state}', recordsSubtitle: 'Tus registros te construyen', completionStreak: 'Racha completa', days: '{count} días', course30Summary: 'Resumen de 30 días', courseSummaryCaption: '{done} completos · {missed} incompletos', view30Records: 'Ver registro de 30 días ›', recentRecords: 'Registros recientes', recordCollectionLink: 'Todos los registros ›', currentAndNext: 'Curso actual y siguiente', currentProgress: 'Progreso actual', currentStage: 'Etapa actual', stageStandards: 'Reglas de esta etapa', courseStages: 'Etapas del curso', nextCourse: 'Siguiente curso', available: 'Disponible', locked: 'Bloqueado', startCourse: 'Empezar {level}', finalCourse: 'Curso final', retryNeeded: 'Hay que repetir', restartCourse: 'Reiniciar {level}', records30: 'Registro de 30 días', recordCollection: 'Todos los registros', recordsLeft: 'Registros escritos', countItems: '{count}', recordsByDate: 'Registros por fecha', notificationSettings: 'Notificaciones', hapticSettings: 'Respuesta táctil', vibration: 'Vibración', dataReset: 'Restablecer datos', appInfo: 'Información de la app', language: 'Idioma', personal: 'Personal', deleteRoutine: 'Eliminar {name}', noRecord: 'Sin registro', resultCompleteTitle: 'Completo.', resultIncompleteTitle: 'Incompleto.', resultCompleteCopy: 'Hoy no huiste.', resultIncompleteCopy: 'Lo pendiente quedó registrado.', completedRoutines: 'Rutinas completas', incompleteRoutines: 'Rutinas incompletas', completionStreakLabel: 'Racha completa', reflection: 'Reflexión diaria', todayRecord: 'Registro de hoy', personalRoutineAdd: 'Añadir rutina personal', routineName: 'Nombre de la rutina', routinePlaceholder: 'Ej.: 10 dominadas', category: 'Categoría', scope: 'Duración', resetCopy: 'Restablece rutinas, cierres, reflexiones y progreso del curso.', app: 'App', version: 'Versión', storage: 'Almacenamiento', storedOnDevice: 'Guardado en este dispositivo', course30Days: '{level} · 30 días', scheduled: 'Próximo', noRecordYet: 'Aún no hay registro.', date: 'Fecha', status: 'Estado', stage: 'Etapa', routineCompletion: 'Rutinas completadas', routines: 'Rutinas', finishCourseToast: 'Completaste los 30 días de {level}.', editLockedToast: 'No puedes cambiar rutinas tras cerrar el día.', alreadyClosedToast: 'Este día ya está cerrado.', closeUndoneToast: 'Cierre cancelado.', enterReflectionToast: 'Escribe tu reflexión.', reflectionSavedToast: 'Reflexión guardada.', addLockedToast: 'No puedes añadir rutinas tras cerrar el día.', personalRoutine: 'Rutina personal', personalAddedToast: 'Rutina personal añadida.', deleteLockedToast: 'No puedes borrar rutinas tras cerrar el día.', personalDeletedToast: 'Rutina personal eliminada.', resetDoneToast: 'Registros restablecidos.', nextCourseBlockedToast: 'Completa este curso antes de empezar el siguiente.', nextCourseStartedToast: 'Empieza el siguiente curso.', restartBlockedToast: 'Podrás repetir cuando termine el curso.', restartedToast: '{level} empieza de nuevo.', reminderChannel: 'Cierra el día', reminderBody: 'Cierra el día y deja un registro honesto.', languageTitle: 'Idioma de la app', systemLanguage: 'Predeterminado del sistema',
+    back: 'Volver', settings: 'Ajustes', start: 'Empezar', close: 'Cerrar', cancel: 'Cancelar', save: 'Guardar', add: 'Añadir', reset: 'Restablecer', today: 'Hoy', records: 'Registros', course: 'Curso', dayCourse: 'Día {day} · {level}', notificationDenied: 'Los avisos están desactivados.', notificationFailed: 'No se pudieron configurar los avisos.', saveFailed: 'No se pudo guardar el progreso.', todayFire: 'La chispa de hoy', todaySummary: 'Resumen de hoy', todayRoutines: 'Rutinas de hoy', completedCount: '{done} / {total} hechas', complete: 'Completo', incomplete: 'Incompleto', inProgress: 'En curso', ended: 'Finalizado', streak: 'Racha', achievement: 'Cumplimiento', addPersonalRoutine: '+ Añadir rutina personal', writeReflection: 'Escribir reflexión diaria', closeComplete: 'Día cerrado', courseState: '{level} {state}', recordsSubtitle: 'Tus registros te construyen', completionStreak: 'Racha completa', days: '{count} días', course30Summary: 'Resumen de 30 días', courseSummaryCaption: '{done} completos · {missed} incompletos', view30Records: 'Ver registro de 30 días ›', recentRecords: 'Registros recientes', recordCollectionLink: 'Todos los registros ›', currentAndNext: 'Curso actual y siguiente', currentProgress: 'Progreso actual', currentStage: 'Etapa actual', stageStandards: 'Reglas de esta etapa', courseStages: 'Etapas del curso', nextCourse: 'Siguiente curso', available: 'Disponible', locked: 'Bloqueado', startCourse: 'Empezar {level}', finalCourse: 'Curso final', retryNeeded: 'Hay que repetir', restartCourse: 'Reiniciar {level}', records30: 'Registro de 30 días', recordCollection: 'Todos los registros', recordsLeft: 'Registros escritos', countItems: '{count}', recordsByDate: 'Registros por fecha', notificationSettings: 'Notificaciones', hapticSettings: 'Respuesta táctil', vibration: 'Vibración', dataReset: 'Restablecer datos', appInfo: 'Información de la app', language: 'Idioma', personal: 'Personal', deleteRoutine: 'Eliminar {name}', noRecord: 'Sin registro', resultCompleteTitle: 'Completo.', resultIncompleteTitle: 'Incompleto.', resultCompleteCopy: 'Hoy no huiste.', resultIncompleteCopy: 'Lo pendiente quedó registrado.', completedRoutines: 'Rutinas completas', incompleteRoutines: 'Rutinas incompletas', completionStreakLabel: 'Racha completa', reflection: 'Reflexión diaria', todayRecord: 'Registro de hoy', personalRoutineAdd: 'Añadir rutina personal', routineName: 'Nombre de la rutina', routinePlaceholder: 'Ej.: 10 dominadas', category: 'Categoría', scope: 'Duración', resetCopy: 'Restablece rutinas, cierres, reflexiones y progreso del curso.', app: 'App', version: 'Versión', storage: 'Almacenamiento', storedOnDevice: 'Guardado en este dispositivo', course30Days: '{level} · 30 días', scheduled: 'Próximo', noRecordYet: 'Aún no hay registro.', date: 'Fecha', status: 'Estado', stage: 'Etapa', routineCompletion: 'Rutinas completadas', routines: 'Rutinas', finishCourseToast: 'Completaste los 30 días de {level}.', editLockedToast: 'No puedes cambiar rutinas tras cerrar el día.', alreadyClosedToast: 'Este día ya está cerrado.', closeUndoneToast: 'Cierre cancelado.', enterReflectionToast: 'Escribe tu reflexión.', reflectionSavedToast: 'Reflexión guardada.', addLockedToast: 'No puedes añadir rutinas tras cerrar el día.', personalRoutine: 'Rutina personal', personalAddedToast: 'Rutina personal añadida.', deleteLockedToast: 'No puedes borrar rutinas tras cerrar el día.', personalDeletedToast: 'Rutina personal eliminada.', resetDoneToast: 'Registros restablecidos.', nextCourseBlockedToast: 'Completa este curso antes de empezar el siguiente.', nextCourseStartedToast: 'Empieza el siguiente curso.', restartBlockedToast: 'Podrás repetir cuando termine el curso.', restartedToast: '{level} empieza de nuevo.', reminderChannel: 'Cierra el día', reminderBody: 'Cierra el día y deja un registro honesto.', languageTitle: 'Idioma de la app', systemLanguage: 'Predeterminado del sistema', cardImage: 'Imagen de la tarjeta', choosePhoto: 'Elegir foto', restoreDefaultImage: 'Restaurar imagen predeterminada', imagePermissionDenied: 'Se necesita acceso a las fotos para cambiar la imagen.', imageSaveFailed: 'No se pudo guardar la imagen.', imageUpdatedToast: 'Imagen actualizada.', imageResetToast: 'Imagen predeterminada restaurada.',
+    dayOne: '{count} día',
   },
   languages: { system: 'Sistema', ko: '한국어', en: 'English', ja: '日本語', es: 'Español', de: 'Deutsch', fr: 'Français', zh: '简体中文' },
   categories: { 몸: 'Cuerpo', 정신: 'Mente', 절제: 'Disciplina', 집중: 'Enfoque', 생활: 'Vida' }, scopes: { 오늘만: 'Solo hoy', '이번 과정 동안': 'Durante este curso' },
@@ -214,7 +221,8 @@ const es = clone(en, {
 
 const de = clone(en, {
   ui: {
-    back: 'Zurück', settings: 'Einstellungen', start: 'Beginnen', close: 'Schließen', cancel: 'Abbrechen', save: 'Speichern', add: 'Hinzufügen', reset: 'Zurücksetzen', today: 'Heute', records: 'Aufzeichnungen', course: 'Kurs', dayCourse: 'Tag {day} · {level}', notificationDenied: 'Benachrichtigungen sind deaktiviert.', notificationFailed: 'Benachrichtigungen konnten nicht eingerichtet werden.', saveFailed: 'Fortschritt konnte nicht gespeichert werden.', todayFire: 'Der Funke von heute', todaySummary: 'Heutige Übersicht', todayRoutines: 'Heutige Routinen', completedCount: '{done} / {total} erledigt', complete: 'Erledigt', incomplete: 'Unvollständig', inProgress: 'In Arbeit', ended: 'Beendet', streak: 'Serie', achievement: 'Erfüllung', addPersonalRoutine: '+ Eigene Routine hinzufügen', writeReflection: 'Tagesreflexion schreiben', closeComplete: 'Tag abgeschlossen', courseState: '{level} {state}', recordsSubtitle: 'Deine Aufzeichnungen formen dich', completionStreak: 'Erfolgsserie', days: '{count} Tage', course30Summary: '30-Tage-Übersicht', courseSummaryCaption: '{done} erledigt · {missed} offen', view30Records: '30-Tage-Verlauf ansehen ›', recentRecords: 'Letzte Aufzeichnungen', recordCollectionLink: 'Alle Aufzeichnungen ›', currentAndNext: 'Aktueller und nächster Kurs', currentProgress: 'Aktueller Fortschritt', currentStage: 'Aktuelle Stufe', stageStandards: 'Maßstab dieser Stufe', courseStages: 'Kursstufen', nextCourse: 'Nächster Kurs', available: 'Bereit', locked: 'Gesperrt', startCourse: '{level} beginnen', finalCourse: 'Letzter Kurs', retryNeeded: 'Wiederholung nötig', restartCourse: '{level} neu starten', records30: '30-Tage-Verlauf', recordCollection: 'Alle Aufzeichnungen', recordsLeft: 'Einträge', countItems: '{count}', recordsByDate: 'Nach Datum', notificationSettings: 'Benachrichtigungen', hapticSettings: 'Taptisches Feedback', vibration: 'Vibration', dataReset: 'Daten zurücksetzen', appInfo: 'App-Informationen', language: 'Sprache', personal: 'Eigene', deleteRoutine: '{name} löschen', noRecord: 'Kein Eintrag', resultCompleteTitle: 'Erledigt.', resultIncompleteTitle: 'Unvollständig.', resultCompleteCopy: 'Heute bist du nicht ausgewichen.', resultIncompleteCopy: 'Was offen blieb, ist festgehalten.', completedRoutines: 'Erledigte Routinen', incompleteRoutines: 'Offene Routinen', completionStreakLabel: 'Erfolgsserie', reflection: 'Tagesreflexion', todayRecord: 'Heutiger Eintrag', personalRoutineAdd: 'Eigene Routine hinzufügen', routineName: 'Name der Routine', routinePlaceholder: 'z. B. 10 Klimmzüge', category: 'Kategorie', scope: 'Zeitraum', resetCopy: 'Setzt Routinen, Tagesabschlüsse, Reflexionen und Kursfortschritt zurück.', app: 'App', version: 'Version', storage: 'Speicher', storedOnDevice: 'Auf diesem Gerät gespeichert', course30Days: '{level} · 30 Tage', scheduled: 'Geplant', noRecordYet: 'Noch kein Eintrag.', date: 'Datum', status: 'Status', stage: 'Stufe', routineCompletion: 'Routinen erledigt', routines: 'Routinen', finishCourseToast: 'Du hast den 30-Tage-Kurs {level} abgeschlossen.', editLockedToast: 'Nach Tagesabschluss sind Änderungen gesperrt.', alreadyClosedToast: 'Dieser Tag ist bereits abgeschlossen.', closeUndoneToast: 'Tagesabschluss aufgehoben.', enterReflectionToast: 'Schreibe deine Reflexion.', reflectionSavedToast: 'Reflexion gespeichert.', addLockedToast: 'Nach Tagesabschluss können keine Routinen hinzugefügt werden.', personalRoutine: 'Eigene Routine', personalAddedToast: 'Routine hinzugefügt.', deleteLockedToast: 'Nach Tagesabschluss können keine Routinen gelöscht werden.', personalDeletedToast: 'Routine gelöscht.', resetDoneToast: 'Aufzeichnungen zurückgesetzt.', nextCourseBlockedToast: 'Schließe diesen Kurs ab, bevor du den nächsten beginnst.', nextCourseStartedToast: 'Der nächste Kurs beginnt.', restartBlockedToast: 'Nach Kursende kannst du neu beginnen.', restartedToast: '{level} beginnt von vorn.', reminderChannel: 'Tag abschließen', reminderBody: 'Schließe den Tag ab und hinterlasse einen ehrlichen Eintrag.', languageTitle: 'App-Sprache', systemLanguage: 'Systemstandard',
+    back: 'Zurück', settings: 'Einstellungen', start: 'Beginnen', close: 'Schließen', cancel: 'Abbrechen', save: 'Speichern', add: 'Hinzufügen', reset: 'Zurücksetzen', today: 'Heute', records: 'Aufzeichnungen', course: 'Kurs', dayCourse: 'Tag {day} · {level}', notificationDenied: 'Benachrichtigungen sind deaktiviert.', notificationFailed: 'Benachrichtigungen konnten nicht eingerichtet werden.', saveFailed: 'Fortschritt konnte nicht gespeichert werden.', todayFire: 'Der Funke von heute', todaySummary: 'Heutige Übersicht', todayRoutines: 'Heutige Routinen', completedCount: '{done} / {total} erledigt', complete: 'Erledigt', incomplete: 'Unvollständig', inProgress: 'In Arbeit', ended: 'Beendet', streak: 'Serie', achievement: 'Erfüllung', addPersonalRoutine: '+ Eigene Routine hinzufügen', writeReflection: 'Tagesreflexion schreiben', closeComplete: 'Tag abgeschlossen', courseState: '{level} {state}', recordsSubtitle: 'Deine Aufzeichnungen formen dich', completionStreak: 'Erfolgsserie', days: '{count} Tage', course30Summary: '30-Tage-Übersicht', courseSummaryCaption: '{done} erledigt · {missed} offen', view30Records: '30-Tage-Verlauf ansehen ›', recentRecords: 'Letzte Aufzeichnungen', recordCollectionLink: 'Alle Aufzeichnungen ›', currentAndNext: 'Aktueller und nächster Kurs', currentProgress: 'Aktueller Fortschritt', currentStage: 'Aktuelle Stufe', stageStandards: 'Maßstab dieser Stufe', courseStages: 'Kursstufen', nextCourse: 'Nächster Kurs', available: 'Bereit', locked: 'Gesperrt', startCourse: '{level} beginnen', finalCourse: 'Letzter Kurs', retryNeeded: 'Wiederholung nötig', restartCourse: '{level} neu starten', records30: '30-Tage-Verlauf', recordCollection: 'Alle Aufzeichnungen', recordsLeft: 'Einträge', countItems: '{count}', recordsByDate: 'Nach Datum', notificationSettings: 'Benachrichtigungen', hapticSettings: 'Taptisches Feedback', vibration: 'Vibration', dataReset: 'Daten zurücksetzen', appInfo: 'App-Informationen', language: 'Sprache', personal: 'Eigene', deleteRoutine: '{name} löschen', noRecord: 'Kein Eintrag', resultCompleteTitle: 'Erledigt.', resultIncompleteTitle: 'Unvollständig.', resultCompleteCopy: 'Heute bist du nicht ausgewichen.', resultIncompleteCopy: 'Was offen blieb, ist festgehalten.', completedRoutines: 'Erledigte Routinen', incompleteRoutines: 'Offene Routinen', completionStreakLabel: 'Erfolgsserie', reflection: 'Tagesreflexion', todayRecord: 'Heutiger Eintrag', personalRoutineAdd: 'Eigene Routine hinzufügen', routineName: 'Name der Routine', routinePlaceholder: 'z. B. 10 Klimmzüge', category: 'Kategorie', scope: 'Zeitraum', resetCopy: 'Setzt Routinen, Tagesabschlüsse, Reflexionen und Kursfortschritt zurück.', app: 'App', version: 'Version', storage: 'Speicher', storedOnDevice: 'Auf diesem Gerät gespeichert', course30Days: '{level} · 30 Tage', scheduled: 'Geplant', noRecordYet: 'Noch kein Eintrag.', date: 'Datum', status: 'Status', stage: 'Stufe', routineCompletion: 'Routinen erledigt', routines: 'Routinen', finishCourseToast: 'Du hast den 30-Tage-Kurs {level} abgeschlossen.', editLockedToast: 'Nach Tagesabschluss sind Änderungen gesperrt.', alreadyClosedToast: 'Dieser Tag ist bereits abgeschlossen.', closeUndoneToast: 'Tagesabschluss aufgehoben.', enterReflectionToast: 'Schreibe deine Reflexion.', reflectionSavedToast: 'Reflexion gespeichert.', addLockedToast: 'Nach Tagesabschluss können keine Routinen hinzugefügt werden.', personalRoutine: 'Eigene Routine', personalAddedToast: 'Routine hinzugefügt.', deleteLockedToast: 'Nach Tagesabschluss können keine Routinen gelöscht werden.', personalDeletedToast: 'Routine gelöscht.', resetDoneToast: 'Aufzeichnungen zurückgesetzt.', nextCourseBlockedToast: 'Schließe diesen Kurs ab, bevor du den nächsten beginnst.', nextCourseStartedToast: 'Der nächste Kurs beginnt.', restartBlockedToast: 'Nach Kursende kannst du neu beginnen.', restartedToast: '{level} beginnt von vorn.', reminderChannel: 'Tag abschließen', reminderBody: 'Schließe den Tag ab und hinterlasse einen ehrlichen Eintrag.', languageTitle: 'App-Sprache', systemLanguage: 'Systemstandard', cardImage: 'Kartenbild', choosePhoto: 'Foto auswählen', restoreDefaultImage: 'Standardbild wiederherstellen', imagePermissionDenied: 'Zum Ändern des Kartenbilds ist Fotozugriff erforderlich.', imageSaveFailed: 'Das Bild konnte nicht gespeichert werden.', imageUpdatedToast: 'Kartenbild geändert.', imageResetToast: 'Standardbild wiederhergestellt.',
+    dayOne: '{count} Tag',
   },
   languages: { system: 'Systemstandard', ko: '한국어', en: 'English', ja: '日本語', es: 'Español', de: 'Deutsch', fr: 'Français', zh: '简体中文' }, categories: { 몸: 'Körper', 정신: 'Geist', 절제: 'Disziplin', 집중: 'Fokus', 생활: 'Leben' }, scopes: { 오늘만: 'Nur heute', '이번 과정 동안': 'Für diesen Kurs' },
   routines: { water: '500 ml Wasser trinken', bed: 'Bett machen', pushup: '30 Liegestütze', 'basic-squat': '30 Kniebeugen', 'basic-walk': '10 Minuten gehen', 'basic-stretch': '10 Minuten dehnen', 'basic-reading': '5 Seiten lesen', 'standard-pushup': '50 Liegestütze', 'standard-squat': '50 Kniebeugen', 'standard-water': '1 L Wasser trinken', 'standard-bed': 'Bett machen', 'standard-running': '2 km laufen oder gehen', 'standard-reading': '10 Seiten lesen', 'standard-porn-free': 'Keine Pornografie', 'standard-short-form-limit': 'Kurzvideos: max. 30 Min.', 'standard-tidy': '10 Minuten aufräumen', 'hard-training': '60 Minuten trainieren', 'hard-reading': '20 Seiten lesen', 'hard-water': '1,5 L Wasser trinken', 'hard-running': '3 km laufen', 'hard-deep-work': '90 Minuten Deep Work', 'hard-porn-free': 'Keine Pornografie', 'hard-junk-food-free': 'Kein Junkfood', 'hard-short-form-free': 'Keine Kurzvideos', 'hard-meditation': '10 Minuten meditieren' },
@@ -227,7 +235,8 @@ const de = clone(en, {
 
 const fr = clone(en, {
   ui: {
-    back: 'Retour', settings: 'Réglages', start: 'Commencer', close: 'Fermer', cancel: 'Annuler', save: 'Enregistrer', add: 'Ajouter', reset: 'Réinitialiser', today: "Aujourd’hui", records: 'Journal', course: 'Parcours', dayCourse: 'Jour {day} · {level}', notificationDenied: 'Les notifications sont désactivées.', notificationFailed: 'Impossible de configurer les notifications.', saveFailed: 'Impossible d’enregistrer la progression.', todayFire: 'L’étincelle du jour', todaySummary: 'Bilan du jour', todayRoutines: 'Routines du jour', completedCount: '{done} / {total} faites', complete: 'Terminé', incomplete: 'Incomplet', inProgress: 'En cours', ended: 'Terminé', streak: 'Série', achievement: 'Réussite', addPersonalRoutine: '+ Ajouter une routine', writeReflection: 'Écrire la réflexion du jour', closeComplete: 'Journée close', courseState: '{level} {state}', recordsSubtitle: 'Tes traces te façonnent', completionStreak: 'Série complète', days: '{count} jours', course30Summary: 'Bilan des 30 jours', courseSummaryCaption: '{done} réussis · {missed} incomplets', view30Records: 'Voir les 30 jours ›', recentRecords: 'Entrées récentes', recordCollectionLink: 'Tout le journal ›', currentAndNext: 'Parcours actuel et suivant', currentProgress: 'Progression actuelle', currentStage: 'Étape actuelle', stageStandards: 'Exigences de cette étape', courseStages: 'Étapes du parcours', nextCourse: 'Parcours suivant', available: 'Disponible', locked: 'Verrouillé', startCourse: 'Commencer {level}', finalCourse: 'Parcours final', retryNeeded: 'Nouvel essai requis', restartCourse: 'Recommencer {level}', records30: 'Journal des 30 jours', recordCollection: 'Tout le journal', recordsLeft: 'Entrées écrites', countItems: '{count}', recordsByDate: 'Journal par date', notificationSettings: 'Notifications', hapticSettings: 'Retour tactile', vibration: 'Vibration', dataReset: 'Réinitialiser les données', appInfo: 'Informations', language: 'Langue', personal: 'Perso', deleteRoutine: 'Supprimer {name}', noRecord: 'Aucune entrée', resultCompleteTitle: 'Terminé.', resultIncompleteTitle: 'Incomplet.', resultCompleteCopy: 'Aujourd’hui, tu n’as pas fui.', resultIncompleteCopy: 'Ce qui reste est consigné.', completedRoutines: 'Routines terminées', incompleteRoutines: 'Routines incomplètes', completionStreakLabel: 'Série complète', reflection: 'Réflexion du jour', todayRecord: 'Trace du jour', personalRoutineAdd: 'Ajouter une routine', routineName: 'Nom de la routine', routinePlaceholder: 'Ex. : 10 tractions', category: 'Catégorie', scope: 'Durée', resetCopy: 'Réinitialise les routines, clôtures, réflexions et la progression.', app: 'App', version: 'Version', storage: 'Stockage', storedOnDevice: 'Stocké sur cet appareil', course30Days: '{level} · 30 jours', scheduled: 'À venir', noRecordYet: 'Aucune entrée pour le moment.', date: 'Date', status: 'Statut', stage: 'Étape', routineCompletion: 'Routines terminées', routines: 'Routines', finishCourseToast: 'Tu as terminé les 30 jours de {level}.', editLockedToast: 'Impossible de modifier les routines après la clôture.', alreadyClosedToast: 'Cette journée est déjà close.', closeUndoneToast: 'Clôture annulée.', enterReflectionToast: 'Écris ta réflexion.', reflectionSavedToast: 'Réflexion enregistrée.', addLockedToast: 'Impossible d’ajouter une routine après la clôture.', personalRoutine: 'Routine personnelle', personalAddedToast: 'Routine ajoutée.', deleteLockedToast: 'Impossible de supprimer une routine après la clôture.', personalDeletedToast: 'Routine supprimée.', resetDoneToast: 'Journal réinitialisé.', nextCourseBlockedToast: 'Termine ce parcours avant de passer au suivant.', nextCourseStartedToast: 'Le parcours suivant commence.', restartBlockedToast: 'Tu pourras recommencer à la fin du parcours.', restartedToast: '{level} recommence maintenant.', reminderChannel: 'Clore la journée', reminderBody: 'Clôture la journée et laisse une trace honnête.', languageTitle: 'Langue de l’app', systemLanguage: 'Réglage du système',
+    back: 'Retour', settings: 'Réglages', start: 'Commencer', close: 'Fermer', cancel: 'Annuler', save: 'Enregistrer', add: 'Ajouter', reset: 'Réinitialiser', today: "Aujourd’hui", records: 'Journal', course: 'Parcours', dayCourse: 'Jour {day} · {level}', notificationDenied: 'Les notifications sont désactivées.', notificationFailed: 'Impossible de configurer les notifications.', saveFailed: 'Impossible d’enregistrer la progression.', todayFire: 'L’étincelle du jour', todaySummary: 'Bilan du jour', todayRoutines: 'Routines du jour', completedCount: '{done} / {total} faites', complete: 'Terminé', incomplete: 'Incomplet', inProgress: 'En cours', ended: 'Terminé', streak: 'Série', achievement: 'Réussite', addPersonalRoutine: '+ Ajouter une routine', writeReflection: 'Écrire la réflexion du jour', closeComplete: 'Journée close', courseState: '{level} {state}', recordsSubtitle: 'Tes traces te façonnent', completionStreak: 'Série complète', days: '{count} jours', course30Summary: 'Bilan des 30 jours', courseSummaryCaption: '{done} réussis · {missed} incomplets', view30Records: 'Voir les 30 jours ›', recentRecords: 'Entrées récentes', recordCollectionLink: 'Tout le journal ›', currentAndNext: 'Parcours actuel et suivant', currentProgress: 'Progression actuelle', currentStage: 'Étape actuelle', stageStandards: 'Exigences de cette étape', courseStages: 'Étapes du parcours', nextCourse: 'Parcours suivant', available: 'Disponible', locked: 'Verrouillé', startCourse: 'Commencer {level}', finalCourse: 'Parcours final', retryNeeded: 'Nouvel essai requis', restartCourse: 'Recommencer {level}', records30: 'Journal des 30 jours', recordCollection: 'Tout le journal', recordsLeft: 'Entrées écrites', countItems: '{count}', recordsByDate: 'Journal par date', notificationSettings: 'Notifications', hapticSettings: 'Retour tactile', vibration: 'Vibration', dataReset: 'Réinitialiser les données', appInfo: 'Informations', language: 'Langue', personal: 'Perso', deleteRoutine: 'Supprimer {name}', noRecord: 'Aucune entrée', resultCompleteTitle: 'Terminé.', resultIncompleteTitle: 'Incomplet.', resultCompleteCopy: 'Aujourd’hui, tu n’as pas fui.', resultIncompleteCopy: 'Ce qui reste est consigné.', completedRoutines: 'Routines terminées', incompleteRoutines: 'Routines incomplètes', completionStreakLabel: 'Série complète', reflection: 'Réflexion du jour', todayRecord: 'Trace du jour', personalRoutineAdd: 'Ajouter une routine', routineName: 'Nom de la routine', routinePlaceholder: 'Ex. : 10 tractions', category: 'Catégorie', scope: 'Durée', resetCopy: 'Réinitialise les routines, clôtures, réflexions et la progression.', app: 'App', version: 'Version', storage: 'Stockage', storedOnDevice: 'Stocké sur cet appareil', course30Days: '{level} · 30 jours', scheduled: 'À venir', noRecordYet: 'Aucune entrée pour le moment.', date: 'Date', status: 'Statut', stage: 'Étape', routineCompletion: 'Routines terminées', routines: 'Routines', finishCourseToast: 'Tu as terminé les 30 jours de {level}.', editLockedToast: 'Impossible de modifier les routines après la clôture.', alreadyClosedToast: 'Cette journée est déjà close.', closeUndoneToast: 'Clôture annulée.', enterReflectionToast: 'Écris ta réflexion.', reflectionSavedToast: 'Réflexion enregistrée.', addLockedToast: 'Impossible d’ajouter une routine après la clôture.', personalRoutine: 'Routine personnelle', personalAddedToast: 'Routine ajoutée.', deleteLockedToast: 'Impossible de supprimer une routine après la clôture.', personalDeletedToast: 'Routine supprimée.', resetDoneToast: 'Journal réinitialisé.', nextCourseBlockedToast: 'Termine ce parcours avant de passer au suivant.', nextCourseStartedToast: 'Le parcours suivant commence.', restartBlockedToast: 'Tu pourras recommencer à la fin du parcours.', restartedToast: '{level} recommence maintenant.', reminderChannel: 'Clore la journée', reminderBody: 'Clôture la journée et laisse une trace honnête.', languageTitle: 'Langue de l’app', systemLanguage: 'Réglage du système', cardImage: 'Image de la carte', choosePhoto: 'Choisir une photo', restoreDefaultImage: 'Rétablir l’image par défaut', imagePermissionDenied: 'L’accès aux photos est nécessaire pour modifier l’image.', imageSaveFailed: 'Impossible d’enregistrer l’image.', imageUpdatedToast: 'Image de la carte modifiée.', imageResetToast: 'Image par défaut rétablie.',
+    dayOne: '{count} jour',
   },
   languages: { system: 'Système', ko: '한국어', en: 'English', ja: '日本語', es: 'Español', de: 'Deutsch', fr: 'Français', zh: '简体中文' }, categories: { 몸: 'Corps', 정신: 'Esprit', 절제: 'Discipline', 집중: 'Concentration', 생활: 'Vie' }, scopes: { 오늘만: "Aujourd’hui seulement", '이번 과정 동안': 'Pendant ce parcours' },
   routines: { water: 'Boire 500 ml d’eau', bed: 'Faire le lit', pushup: '30 pompes', 'basic-squat': '30 squats', 'basic-walk': 'Marcher 10 minutes', 'basic-stretch': 'S’étirer 10 minutes', 'basic-reading': 'Lire 5 pages', 'standard-pushup': '50 pompes', 'standard-squat': '50 squats', 'standard-water': 'Boire 1 L d’eau', 'standard-bed': 'Faire le lit', 'standard-running': 'Courir ou marcher 2 km', 'standard-reading': 'Lire 10 pages', 'standard-porn-free': 'Aucune pornographie', 'standard-short-form-limit': 'Vidéos courtes : 30 min max', 'standard-tidy': 'Ranger 10 minutes', 'hard-training': 'S’entraîner 60 minutes', 'hard-reading': 'Lire 20 pages', 'hard-water': 'Boire 1,5 L d’eau', 'hard-running': 'Courir 3 km', 'hard-deep-work': '90 minutes de travail profond', 'hard-porn-free': 'Aucune pornographie', 'hard-junk-food-free': 'Aucune malbouffe', 'hard-short-form-free': 'Aucune vidéo courte', 'hard-meditation': 'Méditer 10 minutes' },
@@ -240,7 +249,8 @@ const fr = clone(en, {
 
 const zh = clone(en, {
   ui: {
-    back: '返回', settings: '设置', start: '开始', close: '关闭', cancel: '取消', save: '保存', add: '添加', reset: '重置', today: '今天', records: '记录', course: '课程', dayCourse: '第 {day} 天 · {level}', notificationDenied: '通知权限已关闭。', notificationFailed: '无法设置通知。', saveFailed: '无法保存进度。', todayFire: '今日火种', todaySummary: '今日概览', todayRoutines: '今日习惯', completedCount: '完成 {done} / {total}', complete: '完成', incomplete: '未完成', inProgress: '进行中', ended: '已结束', streak: '连续', achievement: '完成率', addPersonalRoutine: '+ 添加个人习惯', writeReflection: '写今日复盘', closeComplete: '今日已结束', courseState: '{level} {state}', recordsSubtitle: '累积的记录塑造你', completionStreak: '连续完成', days: '{count}天', course30Summary: '30天课程概览', courseSummaryCaption: '完成 {done}天 · 未完成 {missed}天', view30Records: '查看30天记录 ›', recentRecords: '最近记录', recordCollectionLink: '全部记录 ›', currentAndNext: '当前课程与下一阶段', currentProgress: '当前进度', currentStage: '当前阶段', stageStandards: '本阶段标准', courseStages: '课程阶段', nextCourse: '下一课程', available: '可以开始', locked: '已锁定', startCourse: '开始 {level}', finalCourse: '最终课程', retryNeeded: '需要重试', restartCourse: '重启 {level}', records30: '30天记录', recordCollection: '全部记录', recordsLeft: '已写记录', countItems: '{count}条', recordsByDate: '按日期查看', notificationSettings: '通知设置', hapticSettings: '触感反馈', vibration: '振动', dataReset: '重置数据', appInfo: '应用信息', language: '语言', personal: '个人', deleteRoutine: '删除{name}', noRecord: '暂无记录', resultCompleteTitle: '完成。', resultIncompleteTitle: '未完成。', resultCompleteCopy: '今天你没有逃避。', resultIncompleteCopy: '未完成的也已如实记录。', completedRoutines: '已完成习惯', incompleteRoutines: '未完成习惯', completionStreakLabel: '连续完成', reflection: '今日复盘', todayRecord: '今日记录', personalRoutineAdd: '添加个人习惯', routineName: '习惯名称', routinePlaceholder: '例如：10个引体向上', category: '类别', scope: '适用范围', resetCopy: '将习惯、每日结算、复盘和课程进度恢复到初始状态。', app: '应用', version: '版本', storage: '存储', storedOnDevice: '保存在此设备', course30Days: '{level} · 30天', scheduled: '待开始', noRecordYet: '还没有记录。', date: '日期', status: '状态', stage: '阶段', routineCompletion: '习惯完成', routines: '习惯', finishCourseToast: '你完成了 {level} 的30天课程。', editLockedToast: '结束今日后不能修改习惯。', alreadyClosedToast: '今天已经结束。', closeUndoneToast: '已取消今日结束。', enterReflectionToast: '写下你的复盘。', reflectionSavedToast: '复盘已保存。', addLockedToast: '结束今日后不能添加习惯。', personalRoutine: '个人习惯', personalAddedToast: '已添加个人习惯。', deleteLockedToast: '结束今日后不能删除习惯。', personalDeletedToast: '已删除个人习惯。', resetDoneToast: '记录已重置。', nextCourseBlockedToast: '完成当前课程后才能开始下一课程。', nextCourseStartedToast: '下一课程现在开始。', restartBlockedToast: '课程结束后可以重新开始。', restartedToast: '{level} 重新开始。', reminderChannel: '结束今日', reminderBody: '结束今天，留下诚实的记录。', languageTitle: '应用语言', systemLanguage: '跟随系统',
+    back: '返回', settings: '设置', start: '开始', close: '关闭', cancel: '取消', save: '保存', add: '添加', reset: '重置', today: '今天', records: '记录', course: '课程', dayCourse: '第 {day} 天 · {level}', notificationDenied: '通知权限已关闭。', notificationFailed: '无法设置通知。', saveFailed: '无法保存进度。', todayFire: '今日火种', todaySummary: '今日概览', todayRoutines: '今日习惯', completedCount: '完成 {done} / {total}', complete: '完成', incomplete: '未完成', inProgress: '进行中', ended: '已结束', streak: '连续', achievement: '完成率', addPersonalRoutine: '+ 添加个人习惯', writeReflection: '写今日复盘', closeComplete: '今日已结束', courseState: '{level} {state}', recordsSubtitle: '累积的记录塑造你', completionStreak: '连续完成', days: '{count}天', course30Summary: '30天课程概览', courseSummaryCaption: '完成 {done}天 · 未完成 {missed}天', view30Records: '查看30天记录 ›', recentRecords: '最近记录', recordCollectionLink: '全部记录 ›', currentAndNext: '当前课程与下一阶段', currentProgress: '当前进度', currentStage: '当前阶段', stageStandards: '本阶段标准', courseStages: '课程阶段', nextCourse: '下一课程', available: '可以开始', locked: '已锁定', startCourse: '开始 {level}', finalCourse: '最终课程', retryNeeded: '需要重试', restartCourse: '重启 {level}', records30: '30天记录', recordCollection: '全部记录', recordsLeft: '已写记录', countItems: '{count}条', recordsByDate: '按日期查看', notificationSettings: '通知设置', hapticSettings: '触感反馈', vibration: '振动', dataReset: '重置数据', appInfo: '应用信息', language: '语言', personal: '个人', deleteRoutine: '删除{name}', noRecord: '暂无记录', resultCompleteTitle: '完成。', resultIncompleteTitle: '未完成。', resultCompleteCopy: '今天你没有逃避。', resultIncompleteCopy: '未完成的也已如实记录。', completedRoutines: '已完成习惯', incompleteRoutines: '未完成习惯', completionStreakLabel: '连续完成', reflection: '今日复盘', todayRecord: '今日记录', personalRoutineAdd: '添加个人习惯', routineName: '习惯名称', routinePlaceholder: '例如：10个引体向上', category: '类别', scope: '适用范围', resetCopy: '将习惯、每日结算、复盘和课程进度恢复到初始状态。', app: '应用', version: '版本', storage: '存储', storedOnDevice: '保存在此设备', course30Days: '{level} · 30天', scheduled: '待开始', noRecordYet: '还没有记录。', date: '日期', status: '状态', stage: '阶段', routineCompletion: '习惯完成', routines: '习惯', finishCourseToast: '你完成了 {level} 的30天课程。', editLockedToast: '结束今日后不能修改习惯。', alreadyClosedToast: '今天已经结束。', closeUndoneToast: '已取消今日结束。', enterReflectionToast: '写下你的复盘。', reflectionSavedToast: '复盘已保存。', addLockedToast: '结束今日后不能添加习惯。', personalRoutine: '个人习惯', personalAddedToast: '已添加个人习惯。', deleteLockedToast: '结束今日后不能删除习惯。', personalDeletedToast: '已删除个人习惯。', resetDoneToast: '记录已重置。', nextCourseBlockedToast: '完成当前课程后才能开始下一课程。', nextCourseStartedToast: '下一课程现在开始。', restartBlockedToast: '课程结束后可以重新开始。', restartedToast: '{level} 重新开始。', reminderChannel: '结束今日', reminderBody: '结束今天，留下诚实的记录。', languageTitle: '应用语言', systemLanguage: '跟随系统', cardImage: '卡片图片', choosePhoto: '选择照片', restoreDefaultImage: '恢复默认图片', imagePermissionDenied: '更换卡片图片需要照片访问权限。', imageSaveFailed: '无法保存图片。', imageUpdatedToast: '卡片图片已更换。', imageResetToast: '已恢复默认图片。',
+    dayOne: '{count}天',
   },
   languages: { system: '跟随系统', ko: '한국어', en: 'English', ja: '日本語', es: 'Español', de: 'Deutsch', fr: 'Français', zh: '简体中文' }, categories: { 몸: '身体', 정신: '精神', 절제: '自律', 집중: '专注', 생활: '生活' }, scopes: { 오늘만: '仅今天', '이번 과정 동안': '本课程期间' },
   routines: { water: '喝500毫升水', bed: '整理床铺', pushup: '30个俯卧撑', 'basic-squat': '30个深蹲', 'basic-walk': '步行10分钟', 'basic-stretch': '拉伸10分钟', 'basic-reading': '阅读5页', 'standard-pushup': '50个俯卧撑', 'standard-squat': '50个深蹲', 'standard-water': '喝1升水', 'standard-bed': '整理床铺', 'standard-running': '跑步或步行2公里', 'standard-reading': '阅读10页', 'standard-porn-free': '禁止色情内容', 'standard-short-form-limit': '短视频不超过30分钟', 'standard-tidy': '整理10分钟', 'hard-training': '训练60分钟', 'hard-reading': '阅读20页', 'hard-water': '喝1.5升水', 'hard-running': '跑步3公里', 'hard-deep-work': '深度工作90分钟', 'hard-porn-free': '禁止色情内容', 'hard-junk-food-free': '禁止垃圾食品', 'hard-short-form-free': '禁止短视频', 'hard-meditation': '冥想10分钟' },
@@ -251,4 +261,274 @@ const zh = clone(en, {
   },
 });
 
-export const localizedContent: Record<AppLocale, LocalizedContent> = { ko, en, ja, es, de, fr, zh };
+const ptBR = clone(en, {
+  ui: {
+    back: 'Voltar', settings: 'Ajustes', start: 'Começar', close: 'Fechar', cancel: 'Cancelar', save: 'Salvar', add: 'Adicionar', reset: 'Redefinir',
+    today: 'Hoje', records: 'Registros', course: 'Curso', day: 'Dia {day}', dayCourse: 'Dia {day} · Curso {level}',
+    notificationDenied: 'As notificações estão desativadas.', notificationFailed: 'Não foi possível configurar as notificações.', saveFailed: 'Não foi possível salvar seu progresso.',
+    todayFire: 'A chama de hoje', todaySummary: 'Resumo de hoje', todayRoutines: 'Rotinas de hoje', completedCount: '{done} / {total} concluídas',
+    complete: 'Concluir', incomplete: 'Incompleto', inProgress: 'Em andamento', ended: 'Encerrado', streak: 'Sequência', achievement: 'Conclusão',
+    addPersonalRoutine: '+ Adicionar rotina pessoal', writeReflection: 'Escrever reflexão do dia', closeComplete: 'Dia encerrado', courseState: '{level} {state}',
+    recordsSubtitle: 'Seus registros moldam você', completionStreak: 'Sequência de dias completos', days: '{count} dias',
+    course30Summary: 'Resumo do curso de 30 dias', courseSummaryCaption: '{done} completos · {missed} incompletos', view30Records: 'Ver registro de 30 dias ›',
+    recentRecords: 'Registros recentes', recordCollectionLink: 'Todos os registros ›', currentAndNext: 'Curso atual e próximo passo', currentProgress: 'Progresso atual',
+    currentStage: 'Etapa atual', stageStandards: 'Critérios desta etapa', courseStages: 'Etapas do curso', nextCourse: 'Próximo curso',
+    available: 'Disponível', locked: 'Bloqueado', startCourse: 'Começar {level}', finalCourse: 'Curso final', retryNeeded: 'Nova tentativa necessária', restartCourse: 'Recomeçar {level}',
+    records30: 'Registro de 30 dias', recordCollection: 'Todos os registros', recordsLeft: 'Registros feitos', countItems: '{count}', recordsByDate: 'Registros por data',
+    notificationSettings: 'Notificações', hapticSettings: 'Resposta ao toque', vibration: 'Vibração', dataReset: 'Redefinir dados', appInfo: 'Informações do app', language: 'Idioma',
+    personal: 'Pessoal', deleteRoutine: 'Excluir {name}', noRecord: 'Sem registro',
+    resultCompleteTitle: 'Concluído.', resultIncompleteTitle: 'Incompleto.', resultCompleteCopy: 'Hoje você não fugiu.', resultIncompleteCopy: 'O que faltou também ficou registrado.',
+    completedRoutines: 'Rotinas concluídas', incompleteRoutines: 'Rotinas incompletas', completionStreakLabel: 'Sequência de dias completos',
+    reflection: 'Reflexão do dia', todayRecord: 'Registro de hoje', personalRoutineAdd: 'Adicionar rotina pessoal', routineName: 'Nome da rotina', routinePlaceholder: 'Ex.: 10 barras',
+    category: 'Categoria', scope: 'Duração', resetCopy: 'Isso redefine as rotinas, os dias encerrados, as reflexões e o progresso do curso.',
+    app: 'App', version: 'Versão', storage: 'Armazenamento', storedOnDevice: 'Salvo neste dispositivo', course30Days: '{level} · 30 dias',
+    scheduled: 'Em breve', noRecordYet: 'Nenhum registro ainda.', date: 'Data', status: 'Status', stage: 'Etapa', routineCompletion: 'Rotinas concluídas', routines: 'Rotinas',
+    finishCourseToast: 'Você concluiu os 30 dias do curso {level}.', editLockedToast: 'Não é possível alterar as rotinas depois de encerrar o dia.', alreadyClosedToast: 'Este dia já foi encerrado.',
+    closeUndoneToast: 'Encerramento do dia cancelado.', enterReflectionToast: 'Escreva sua reflexão.', reflectionSavedToast: 'Reflexão salva.',
+    addLockedToast: 'Não é possível adicionar rotinas depois de encerrar o dia.', personalRoutine: 'Rotina pessoal', personalAddedToast: 'Rotina pessoal adicionada.',
+    deleteLockedToast: 'Não é possível excluir rotinas depois de encerrar o dia.', personalDeletedToast: 'Rotina pessoal excluída.', resetDoneToast: 'Seus registros foram redefinidos.',
+    nextCourseBlockedToast: 'Conclua este curso antes de começar o próximo.', nextCourseStartedToast: 'O próximo curso começa agora.',
+    restartBlockedToast: 'Você poderá recomeçar quando este curso terminar.', restartedToast: '{level} começa novamente agora.',
+    reminderChannel: 'Encerrar o dia', reminderBody: 'Encerre o dia e deixe um registro honesto.', languageTitle: 'Idioma do app', systemLanguage: 'Padrão do sistema',
+    cardImage: 'Imagem do cartão', choosePhoto: 'Escolher foto', restoreDefaultImage: 'Restaurar imagem padrão', imagePermissionDenied: 'O acesso às fotos é necessário para trocar a imagem do cartão.', imageSaveFailed: 'Não foi possível salvar a imagem.', imageUpdatedToast: 'Imagem do cartão atualizada.', imageResetToast: 'Imagem padrão restaurada.',
+    dayOne: '{count} dia',
+  },
+  languages: { system: 'Padrão do sistema' },
+  categories: { 몸: 'Corpo', 정신: 'Mente', 절제: 'Disciplina', 집중: 'Foco', 생활: 'Vida' },
+  scopes: { 오늘만: 'Somente hoje', '이번 과정 동안': 'Durante este curso' },
+  routines: {
+    water: 'Beber 500 ml de água', bed: 'Arrumar a cama', pushup: '30 flexões', 'basic-squat': '30 agachamentos', 'basic-walk': 'Caminhar por 10 minutos', 'basic-stretch': 'Alongar por 10 minutos', 'basic-reading': 'Ler 5 páginas',
+    'standard-pushup': '50 flexões', 'standard-squat': '50 agachamentos', 'standard-water': 'Beber 1 L de água', 'standard-bed': 'Arrumar a cama', 'standard-running': 'Correr ou caminhar 2 km', 'standard-reading': 'Ler 10 páginas', 'standard-porn-free': 'Sem pornografia', 'standard-short-form-limit': 'Vídeos curtos: no máximo 30 min', 'standard-tidy': 'Organizar por 10 minutos',
+    'hard-training': 'Treinar por 60 minutos', 'hard-reading': 'Ler 20 páginas', 'hard-water': 'Beber 1,5 L de água', 'hard-running': 'Correr 3 km', 'hard-deep-work': '90 minutos de trabalho profundo', 'hard-porn-free': 'Sem pornografia', 'hard-junk-food-free': 'Sem ultraprocessados', 'hard-short-form-free': 'Sem vídeos curtos', 'hard-meditation': 'Meditar por 10 minutos',
+  },
+  stages: {
+    BASIC: [
+      { title: 'Controle básico', quote: '“Acorde a si mesmo.”', bullets: ['Beber 500 ml de água', 'Arrumar a cama', '30 flexões'] },
+      { title: 'Despertar o corpo', quote: '“Mova o corpo primeiro.”', bullets: ['Adicionar 30 agachamentos', 'Adicionar 10 minutos de caminhada', 'Manter as 3 primeiras'] },
+      { title: 'Criar ritmo', quote: '“A repetição muda o ritmo do dia.”', bullets: ['Adicionar 10 minutos de alongamento', 'Manter as 5 primeiras', 'Encerrar até os dias difíceis'] },
+      { title: 'Firmar o padrão', quote: '“Vacile, mas volte ao padrão.”', bullets: ['Adicionar 5 páginas de leitura', '7 rotinas no total', 'Concluir 30 dias de BASIC'] },
+    ],
+    STANDARD: [
+      { title: 'Condicionar o corpo', quote: '“Uma repetição malfeita não deixa marca.”', bullets: ['50 flexões', '50 agachamentos', '1 L de água · Arrumar a cama'] },
+      { title: 'Ganhar resistência', quote: '“Quando o coração aguenta, seu padrão cresce.”', bullets: ['Adicionar corrida ou caminhada de 2 km', 'Manter as 4 primeiras', '5 rotinas no total'] },
+      { title: 'Começar o autocontrole', quote: '“O padrão se firma quando o desejo é controlado.”', bullets: ['Adicionar 10 páginas de leitura', 'Adicionar sem pornografia', '7 rotinas no total'] },
+      { title: 'Fixar o padrão', quote: '“Mantenha o mesmo padrão mesmo cansado.”', bullets: ['Vídeos curtos: no máximo 30 min', 'Organizar por 10 minutos', '9 rotinas no total'] },
+    ],
+    HARD: [
+      { title: 'Elevar a intensidade', quote: '“Atravesse o que você quer evitar.”', bullets: ['Treinar por 60 minutos', 'Ler 20 páginas', 'Beber 1,5 L de água'] },
+      { title: 'Fortalecer a resistência', quote: '“Mantenha a ordem sob pressão.”', bullets: ['Adicionar corrida de 3 km', 'Manter as 3 primeiras', '4 rotinas no total'] },
+      { title: 'Aprofundar o trabalho', quote: '“Seu padrão aparece nos dias difíceis.”', bullets: ['Adicionar 90 minutos de trabalho profundo', 'Adicionar sem pornografia', '6 rotinas no total'] },
+      { title: 'Dominar o desejo', quote: '“Carregue o mesmo peso até o fim.”', bullets: ['Sem ultraprocessados', 'Sem vídeos curtos', 'Meditar por 10 minutos'] },
+    ],
+  },
+});
+
+const zhHant = clone(en, {
+  ui: {
+    back: '返回', settings: '設定', start: '開始', close: '關閉', cancel: '取消', save: '儲存', add: '新增', reset: '重設',
+    today: '今天', records: '記錄', course: '課程', day: '第{day}天', dayCourse: '第{day}天 · {level}',
+    notificationDenied: '通知權限已關閉。', notificationFailed: '無法設定通知。', saveFailed: '無法儲存進度。',
+    todayFire: '今日火種', todaySummary: '今日總結', todayRoutines: '今日習慣', completedCount: '完成 {done} / {total}',
+    complete: '完成', incomplete: '未完成', inProgress: '進行中', ended: '已結束', streak: '連續', achievement: '完成率',
+    addPersonalRoutine: '+ 新增個人習慣', writeReflection: '寫下今日反思', closeComplete: '今日已結束', courseState: '{level} {state}',
+    recordsSubtitle: '累積的記錄塑造你', completionStreak: '連續完成', days: '{count}天',
+    course30Summary: '30天課程總結', courseSummaryCaption: '完成 {done}天 · 未完成 {missed}天', view30Records: '查看30天記錄 ›',
+    recentRecords: '最近記錄', recordCollectionLink: '全部記錄 ›', currentAndNext: '目前課程與下一階段', currentProgress: '目前進度',
+    currentStage: '目前階段', stageStandards: '本階段標準', courseStages: '課程階段', nextCourse: '下一課程',
+    available: '可以開始', locked: '已鎖定', startCourse: '開始 {level}', finalCourse: '最終課程', retryNeeded: '需要重試', restartCourse: '重新開始 {level}',
+    records30: '30天記錄', recordCollection: '全部記錄', recordsLeft: '已寫記錄', countItems: '{count}筆', recordsByDate: '依日期查看',
+    notificationSettings: '通知設定', hapticSettings: '觸覺回饋', vibration: '震動', dataReset: '重設資料', appInfo: 'App資訊', language: '語言',
+    personal: '個人', deleteRoutine: '刪除{name}', noRecord: '沒有記錄',
+    resultCompleteTitle: '完成。', resultIncompleteTitle: '未完成。', resultCompleteCopy: '今天你沒有逃避。', resultIncompleteCopy: '沒完成的部分也已如實記錄。',
+    completedRoutines: '已完成習慣', incompleteRoutines: '未完成習慣', completionStreakLabel: '連續完成',
+    reflection: '今日反思', todayRecord: '今日記錄', personalRoutineAdd: '新增個人習慣', routineName: '習慣名稱', routinePlaceholder: '例如：10次引體向上',
+    category: '類別', scope: '適用範圍', resetCopy: '這會重設習慣、每日結算、反思與課程進度。',
+    app: 'App', version: '版本', storage: '儲存空間', storedOnDevice: '儲存在此裝置', course30Days: '{level} · 30天',
+    scheduled: '尚未開始', noRecordYet: '目前還沒有記錄。', date: '日期', status: '狀態', stage: '階段', routineCompletion: '習慣完成度', routines: '習慣',
+    finishCourseToast: '你已完成{level}的30天課程。', editLockedToast: '結束今日後無法修改習慣。', alreadyClosedToast: '今天已經結束。',
+    closeUndoneToast: '已取消今日結算。', enterReflectionToast: '寫下你的反思。', reflectionSavedToast: '反思已儲存。',
+    addLockedToast: '結束今日後無法新增習慣。', personalRoutine: '個人習慣', personalAddedToast: '已新增個人習慣。',
+    deleteLockedToast: '結束今日後無法刪除習慣。', personalDeletedToast: '已刪除個人習慣。', resetDoneToast: '記錄已重設。',
+    nextCourseBlockedToast: '完成目前課程後才能開始下一課程。', nextCourseStartedToast: '下一課程現在開始。',
+    restartBlockedToast: '課程結束後才能重新開始。', restartedToast: '{level}重新開始。',
+    reminderChannel: '結束今日', reminderBody: '結束今天，留下誠實的記錄。', languageTitle: 'App語言', systemLanguage: '跟隨系統',
+    cardImage: '卡片圖片', choosePhoto: '選擇照片', restoreDefaultImage: '恢復預設圖片', imagePermissionDenied: '更換卡片圖片需要照片存取權限。', imageSaveFailed: '無法儲存圖片。', imageUpdatedToast: '卡片圖片已更新。', imageResetToast: '已恢復預設圖片。',
+    dayOne: '{count}天',
+  },
+  languages: { system: '跟隨系統' },
+  categories: { 몸: '身體', 정신: '精神', 절제: '自律', 집중: '專注', 생활: '生活' },
+  scopes: { 오늘만: '僅限今天', '이번 과정 동안': '本課程期間' },
+  routines: {
+    water: '喝500毫升水', bed: '整理床鋪', pushup: '30次伏地挺身', 'basic-squat': '30次深蹲', 'basic-walk': '步行10分鐘', 'basic-stretch': '伸展10分鐘', 'basic-reading': '閱讀5頁',
+    'standard-pushup': '50次伏地挺身', 'standard-squat': '50次深蹲', 'standard-water': '喝1公升水', 'standard-bed': '整理床鋪', 'standard-running': '跑步或步行2公里', 'standard-reading': '閱讀10頁', 'standard-porn-free': '不看色情內容', 'standard-short-form-limit': '短影音不超過30分鐘', 'standard-tidy': '整理10分鐘',
+    'hard-training': '訓練60分鐘', 'hard-reading': '閱讀20頁', 'hard-water': '喝1.5公升水', 'hard-running': '跑步3公里', 'hard-deep-work': '深度工作90分鐘', 'hard-porn-free': '不看色情內容', 'hard-junk-food-free': '不吃垃圾食物', 'hard-short-form-free': '不看短影音', 'hard-meditation': '冥想10分鐘',
+  },
+  stages: {
+    BASIC: [
+      { title: '基礎掌控', quote: '「喚醒自己。」', bullets: ['喝500毫升水', '整理床鋪', '30次伏地挺身'] },
+      { title: '喚醒身體', quote: '「先讓身體動起來。」', bullets: ['增加30次深蹲', '增加步行10分鐘', '維持最初3項'] },
+      { title: '建立節奏', quote: '「重複會改變一天的節奏。」', bullets: ['增加伸展10分鐘', '維持最初5項', '艱難的日子也要結算'] },
+      { title: '適應標準', quote: '「可以動搖，但要回到標準。」', bullets: ['增加閱讀5頁', '共7項習慣', '完成BASIC 30天'] },
+    ],
+    STANDARD: [
+      { title: '鍛鍊身體', quote: '「敷衍的一次不會留下痕跡。」', bullets: ['50次伏地挺身', '50次深蹲', '1公升水 · 整理床鋪'] },
+      { title: '增加耐力', quote: '「心臟能承受多少，標準就能擴展多少。」', bullets: ['增加跑步或步行2公里', '維持最初4項', '共5項習慣'] },
+      { title: '開始克制', quote: '「掌控欲望時，標準才會站穩。」', bullets: ['增加閱讀10頁', '增加不看色情內容', '共7項習慣'] },
+      { title: '固定標準', quote: '「疲憊時也要維持同樣的標準。」', bullets: ['短影音不超過30分鐘', '整理10分鐘', '共9項習慣'] },
+    ],
+    HARD: [
+      { title: '提高強度', quote: '「穿過你最想逃避的地方。」', bullets: ['訓練60分鐘', '閱讀20頁', '喝1.5公升水'] },
+      { title: '強化耐力', quote: '「壓力之下也要守住順序。」', bullets: ['增加跑步3公里', '維持最初3項', '共4項習慣'] },
+      { title: '深化工作', quote: '「標準會在艱難的日子裡顯現。」', bullets: ['增加深度工作90分鐘', '增加不看色情內容', '共6項習慣'] },
+      { title: '掌控欲望', quote: '「直到最後都扛住同樣的重量。」', bullets: ['不吃垃圾食物', '不看短影音', '冥想10分鐘'] },
+    ],
+  },
+});
+
+const it = clone(en, {
+  ui: {
+    back: 'Indietro', settings: 'Impostazioni', start: 'Inizia', close: 'Chiudi', cancel: 'Annulla', save: 'Salva', add: 'Aggiungi', reset: 'Reimposta',
+    today: 'Oggi', records: 'Registro', course: 'Corso', day: 'Giorno {day}', dayCourse: 'Giorno {day} · {level}',
+    notificationDenied: 'Le notifiche sono disattivate.', notificationFailed: 'Impossibile configurare le notifiche.', saveFailed: 'Impossibile salvare i progressi.',
+    todayFire: 'La scintilla di oggi', todaySummary: 'Riepilogo di oggi', todayRoutines: 'Routine di oggi', completedCount: '{done} / {total} completate',
+    complete: 'Completa', incomplete: 'Incompleto', inProgress: 'In corso', ended: 'Terminato', streak: 'Serie', achievement: 'Completamento',
+    addPersonalRoutine: '+ Aggiungi routine personale', writeReflection: 'Scrivi la riflessione del giorno', closeComplete: 'Giornata conclusa', courseState: '{level} {state}',
+    recordsSubtitle: 'Le tue tracce ti plasmano', completionStreak: 'Serie di completamenti', days: '{count} giorni',
+    course30Summary: 'Riepilogo del corso di 30 giorni', courseSummaryCaption: '{done} completi · {missed} incompleti', view30Records: 'Vedi il registro di 30 giorni ›',
+    recentRecords: 'Registri recenti', recordCollectionLink: 'Tutto il registro ›', currentAndNext: 'Corso attuale e prossimo passo', currentProgress: 'Progresso attuale',
+    currentStage: 'Fase attuale', stageStandards: 'Criteri di questa fase', courseStages: 'Fasi del corso', nextCourse: 'Corso successivo',
+    available: 'Disponibile', locked: 'Bloccato', startCourse: 'Inizia {level}', finalCourse: 'Corso finale', retryNeeded: 'Nuovo tentativo richiesto', restartCourse: 'Ricomincia {level}',
+    records30: 'Registro di 30 giorni', recordCollection: 'Tutto il registro', recordsLeft: 'Registri scritti', countItems: '{count}', recordsByDate: 'Registri per data',
+    notificationSettings: 'Notifiche', hapticSettings: 'Feedback al tocco', vibration: 'Vibrazione', dataReset: 'Reimposta dati', appInfo: 'Informazioni app', language: 'Lingua',
+    personal: 'Personale', deleteRoutine: 'Elimina {name}', noRecord: 'Nessun registro',
+    resultCompleteTitle: 'Completato.', resultIncompleteTitle: 'Incompleto.', resultCompleteCopy: 'Oggi non sei scappato.', resultIncompleteCopy: 'Anche ciò che manca è stato registrato.',
+    completedRoutines: 'Routine completate', incompleteRoutines: 'Routine incomplete', completionStreakLabel: 'Serie di completamenti',
+    reflection: 'Riflessione del giorno', todayRecord: 'Registro di oggi', personalRoutineAdd: 'Aggiungi routine personale', routineName: 'Nome della routine', routinePlaceholder: 'Es. 10 trazioni',
+    category: 'Categoria', scope: 'Durata', resetCopy: 'Questa azione reimposta le routine, le giornate concluse, le riflessioni e i progressi del corso.',
+    app: 'App', version: 'Versione', storage: 'Archiviazione', storedOnDevice: 'Salvato su questo dispositivo', course30Days: '{level} · 30 giorni',
+    scheduled: 'In programma', noRecordYet: 'Nessun registro per ora.', date: 'Data', status: 'Stato', stage: 'Fase', routineCompletion: 'Routine completate', routines: 'Routine',
+    finishCourseToast: 'Hai completato i 30 giorni del corso {level}.', editLockedToast: 'Non puoi modificare le routine dopo aver concluso la giornata.', alreadyClosedToast: 'Questa giornata è già conclusa.',
+    closeUndoneToast: 'Chiusura della giornata annullata.', enterReflectionToast: 'Scrivi la tua riflessione.', reflectionSavedToast: 'Riflessione salvata.',
+    addLockedToast: 'Non puoi aggiungere routine dopo aver concluso la giornata.', personalRoutine: 'Routine personale', personalAddedToast: 'Routine personale aggiunta.',
+    deleteLockedToast: 'Non puoi eliminare routine dopo aver concluso la giornata.', personalDeletedToast: 'Routine personale eliminata.', resetDoneToast: 'Il registro è stato reimpostato.',
+    nextCourseBlockedToast: 'Completa questo corso prima di iniziare il successivo.', nextCourseStartedToast: 'Il corso successivo inizia ora.',
+    restartBlockedToast: 'Potrai ricominciare quando questo corso sarà terminato.', restartedToast: '{level} ricomincia ora.',
+    reminderChannel: 'Concludi la giornata', reminderBody: 'Concludi la giornata e lascia un registro sincero.', languageTitle: 'Lingua dell’app', systemLanguage: 'Lingua di sistema',
+    cardImage: 'Immagine della scheda', choosePhoto: 'Scegli foto', restoreDefaultImage: 'Ripristina immagine predefinita', imagePermissionDenied: 'Serve l’accesso alle foto per cambiare l’immagine della scheda.', imageSaveFailed: 'Impossibile salvare l’immagine.', imageUpdatedToast: 'Immagine della scheda aggiornata.', imageResetToast: 'Immagine predefinita ripristinata.',
+    dayOne: '{count} giorno',
+  },
+  languages: { system: 'Lingua di sistema' },
+  categories: { 몸: 'Corpo', 정신: 'Mente', 절제: 'Disciplina', 집중: 'Concentrazione', 생활: 'Vita' },
+  scopes: { 오늘만: 'Solo oggi', '이번 과정 동안': 'Per questo corso' },
+  routines: {
+    water: 'Bere 500 ml d’acqua', bed: 'Rifare il letto', pushup: '30 piegamenti', 'basic-squat': '30 squat', 'basic-walk': 'Camminare per 10 minuti', 'basic-stretch': 'Fare stretching per 10 minuti', 'basic-reading': 'Leggere 5 pagine',
+    'standard-pushup': '50 piegamenti', 'standard-squat': '50 squat', 'standard-water': 'Bere 1 L d’acqua', 'standard-bed': 'Rifare il letto', 'standard-running': 'Correre o camminare per 2 km', 'standard-reading': 'Leggere 10 pagine', 'standard-porn-free': 'Niente pornografia', 'standard-short-form-limit': 'Video brevi: massimo 30 min', 'standard-tidy': 'Riordinare per 10 minuti',
+    'hard-training': 'Allenarsi per 60 minuti', 'hard-reading': 'Leggere 20 pagine', 'hard-water': 'Bere 1,5 L d’acqua', 'hard-running': 'Correre per 3 km', 'hard-deep-work': '90 minuti di lavoro profondo', 'hard-porn-free': 'Niente pornografia', 'hard-junk-food-free': 'Niente cibo spazzatura', 'hard-short-form-free': 'Niente video brevi', 'hard-meditation': 'Meditare per 10 minuti',
+  },
+  stages: {
+    BASIC: [
+      { title: 'Controllo di base', quote: '«Svegliati.»', bullets: ['Bere 500 ml d’acqua', 'Rifare il letto', '30 piegamenti'] },
+      { title: 'Svegliare il corpo', quote: '«Muovi prima il corpo.»', bullets: ['Aggiungi 30 squat', 'Aggiungi 10 minuti di camminata', 'Mantieni le prime 3'] },
+      { title: 'Creare il ritmo', quote: '«La ripetizione cambia il ritmo della giornata.»', bullets: ['Aggiungi 10 minuti di stretching', 'Mantieni le prime 5', 'Concludi anche le giornate difficili'] },
+      { title: 'Adattarsi allo standard', quote: '«Vacilla, poi torna allo standard.»', bullets: ['Aggiungi 5 pagine di lettura', '7 routine in totale', 'Completa 30 giorni di BASIC'] },
+    ],
+    STANDARD: [
+      { title: 'Allenare il corpo', quote: '«Una ripetizione svogliata non lascia nulla.»', bullets: ['50 piegamenti', '50 squat', '1 L d’acqua · Rifare il letto'] },
+      { title: 'Aumentare la resistenza', quote: '«Quando il cuore resiste, il tuo standard cresce.»', bullets: ['Aggiungi 2 km di corsa o camminata', 'Mantieni le prime 4', '5 routine in totale'] },
+      { title: 'Iniziare il controllo', quote: '«Lo standard si alza quando domini il desiderio.»', bullets: ['Aggiungi 10 pagine di lettura', 'Aggiungi niente pornografia', '7 routine in totale'] },
+      { title: 'Fissare lo standard', quote: '«Mantieni lo stesso standard anche quando sei stanco.»', bullets: ['Video brevi: massimo 30 min', 'Riordina per 10 minuti', '9 routine in totale'] },
+    ],
+    HARD: [
+      { title: 'Alzare l’intensità', quote: '«Attraversa ciò che vuoi evitare.»', bullets: ['Allenati per 60 minuti', 'Leggi 20 pagine', 'Bevi 1,5 L d’acqua'] },
+      { title: 'Rafforzare la resistenza', quote: '«Mantieni l’ordine sotto pressione.»', bullets: ['Aggiungi una corsa di 3 km', 'Mantieni le prime 3', '4 routine in totale'] },
+      { title: 'Approfondire il lavoro', quote: '«Lo standard emerge nei giorni difficili.»', bullets: ['Aggiungi 90 minuti di lavoro profondo', 'Aggiungi niente pornografia', '6 routine in totale'] },
+      { title: 'Dominare il desiderio', quote: '«Porta lo stesso peso fino alla fine.»', bullets: ['Niente cibo spazzatura', 'Niente video brevi', 'Medita per 10 minuti'] },
+    ],
+  },
+});
+
+const cropEditorUi: Record<AppLocale, Record<string, string>> = {
+  ko: {
+    apply: '적용',
+    adjustCardImage: '사진 맞추기',
+    cropImageInstruction: '사진을 움직이고 두 손가락으로 확대하세요.',
+    completedMetric: '완료',
+  },
+  en: {
+    apply: 'Apply',
+    adjustCardImage: 'Adjust image',
+    cropImageInstruction: 'Move the image and pinch to zoom.',
+    completedMetric: 'Complete',
+  },
+  ja: {
+    apply: '適用',
+    adjustCardImage: '画像を調整',
+    cropImageInstruction: '画像を動かし、ピンチして拡大してください。',
+    completedMetric: '完了',
+  },
+  es: {
+    apply: 'Aplicar',
+    adjustCardImage: 'Ajustar imagen',
+    cropImageInstruction: 'Mueve la imagen y pellizca para ampliar.',
+    completedMetric: 'Completas',
+  },
+  de: {
+    apply: 'Anwenden',
+    adjustCardImage: 'Bild anpassen',
+    cropImageInstruction: 'Verschiebe das Bild und zoome mit zwei Fingern.',
+    completedMetric: 'Erledigt',
+  },
+  fr: {
+    apply: 'Appliquer',
+    adjustCardImage: 'Ajuster l’image',
+    cropImageInstruction: 'Déplacez l’image et pincez pour zoomer.',
+    completedMetric: 'Terminées',
+  },
+  zh: {
+    apply: '应用',
+    adjustCardImage: '调整图片',
+    cropImageInstruction: '拖动图片并双指缩放。',
+    completedMetric: '完成',
+  },
+  'pt-BR': {
+    apply: 'Aplicar',
+    adjustCardImage: 'Ajustar imagem',
+    cropImageInstruction: 'Mova a imagem e use dois dedos para ampliar.',
+    completedMetric: 'Concluídas',
+  },
+  'zh-Hant': {
+    apply: '套用',
+    adjustCardImage: '調整圖片',
+    cropImageInstruction: '拖曳圖片並用雙指縮放。',
+    completedMetric: '完成',
+  },
+  it: {
+    apply: 'Applica',
+    adjustCardImage: 'Regola immagine',
+    cropImageInstruction: 'Sposta l’immagine e pizzica per ingrandire.',
+    completedMetric: 'Completate',
+  },
+};
+
+function withCropEditorUi(locale: AppLocale, content: LocalizedContent): LocalizedContent {
+  return {
+    ...content,
+    ui: {
+      ...content.ui,
+      ...cropEditorUi[locale],
+    },
+  };
+}
+
+export const localizedContent: Record<AppLocale, LocalizedContent> = {
+  ko: withCropEditorUi('ko', ko),
+  en: withCropEditorUi('en', en),
+  ja: withCropEditorUi('ja', ja),
+  es: withCropEditorUi('es', es),
+  de: withCropEditorUi('de', de),
+  fr: withCropEditorUi('fr', fr),
+  zh: withCropEditorUi('zh', zh),
+  'pt-BR': withCropEditorUi('pt-BR', ptBR),
+  'zh-Hant': withCropEditorUi('zh-Hant', zhHant),
+  it: withCropEditorUi('it', it),
+};
