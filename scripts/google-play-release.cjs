@@ -1,17 +1,13 @@
-const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
+const { getAccessToken } = require('./google-play-auth.cjs');
+
 const root = path.resolve(__dirname, '..');
-const credentialsPath = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
 const packageName = process.env.GOOGLE_PLAY_PACKAGE_NAME || 'com.eastnoise.alpha';
 const track = process.env.GOOGLE_PLAY_TRACK || 'production';
 const releaseStatus = process.env.GOOGLE_PLAY_RELEASE_STATUS || 'completed';
 const appBundlePath = process.env.GOOGLE_PLAY_AAB;
-
-if (!credentialsPath) {
-  throw new Error('GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is required.');
-}
 
 if (!appBundlePath) {
   throw new Error('GOOGLE_PLAY_AAB is required.');
@@ -21,41 +17,8 @@ const absoluteBundlePath = path.resolve(appBundlePath);
 const appConfig = require(path.join(root, 'app.json'));
 const listings = require(path.join(root, 'release/google-play/store-listings.json'));
 const releaseNotes = require(path.join(root, 'release/google-play/release-notes.json'));
-const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
-
 const apiBase = 'https://androidpublisher.googleapis.com/androidpublisher/v3';
 const uploadBase = 'https://androidpublisher.googleapis.com/upload/androidpublisher/v3';
-
-function createAssertion() {
-  const now = Math.floor(Date.now() / 1000);
-  const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
-  const unsigned = `${encode({ alg: 'RS256', typ: 'JWT' })}.${encode({
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: now + 3600,
-    iat: now,
-    iss: credentials.client_email,
-    scope: 'https://www.googleapis.com/auth/androidpublisher',
-  })}`;
-  const signer = crypto.createSign('RSA-SHA256');
-  signer.update(unsigned);
-  return `${unsigned}.${signer.sign(credentials.private_key, 'base64url')}`;
-}
-
-async function getAccessToken() {
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    body: new URLSearchParams({
-      assertion: createAssertion(),
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-    }),
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    method: 'POST',
-  });
-  const body = await response.json();
-  if (!response.ok) {
-    throw new Error(`Google OAuth failed (${response.status}): ${JSON.stringify(body)}`);
-  }
-  return body.access_token;
-}
 
 async function request(url, accessToken, options = {}) {
   const response = await fetch(url, {

@@ -1,0 +1,14 @@
+{
+  "locale": "ja",
+  "overviewTitle": "ALPHA · JAPANESE · V2 REFINED",
+  "brand": [
+    { "lines": ["90日で"], "redLines": [], "supportingText": "自律は、やる気ではなく反復から始まる。" },
+    { "lines": ["人生を"], "redLines": [], "supportingText": "今日を終える基準を、毎日積み上げろ。" },
+    { "lines": ["立て直せ。"], "redLines": [0], "supportingText": "BASIC・STANDARD・HARD。3段階、90日間。" }
+  ],
+  "product": [
+    { "lines": ["今日を", "締めろ。"], "redLines": [1], "supportingText": "確認し、実行し、一日を締める。" },
+    { "lines": ["失敗まで", "記録しろ。"], "redLines": [0], "supportingText": "できた日も、崩れた日も、記録に残る。" },
+    { "lines": ["基準を", "上げろ。"], "redLines": [1], "supportingText": "BASICからHARDへ。30日ごとに次の段階へ。" }
+  ]
+}

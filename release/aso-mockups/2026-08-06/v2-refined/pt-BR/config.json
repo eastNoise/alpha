@@ -1,0 +1,14 @@
+{
+  "locale": "pt-BR",
+  "overviewTitle": "ALPHA · PORTUGUESE · V2 REFINED",
+  "brand": [
+    { "lines": ["90 DIAS"], "redLines": [], "supportingText": "A disciplina começa na repetição, não na motivação." },
+    { "lines": ["PARA RECONSTRUIR"], "redLines": [], "supportingText": "Construa seu padrão, dia após dia." },
+    { "lines": ["SUA VIDA."], "redLines": [0], "supportingText": "BASIC · STANDARD · HARD. Três etapas. 90 dias." }
+  ],
+  "product": [
+    { "lines": ["ENCERRE", "O DIA."], "redLines": [1], "supportingText": "Confira. Faça. Encerre o dia." },
+    { "lines": ["REGISTRE CADA", "FALHA."], "redLines": [0], "supportingText": "Com vitória ou falha, cada dia fica registrado." },
+    { "lines": ["ELEVE SEU", "PADRÃO."], "redLines": [1], "supportingText": "Do BASIC ao HARD, um curso de 30 dias por vez." }
+  ]
+}

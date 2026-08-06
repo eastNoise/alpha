@@ -1,0 +1,14 @@
+{
+  "locale": "fr-FR",
+  "overviewTitle": "ALPHA · FRENCH · V2 REFINED",
+  "brand": [
+    { "lines": ["90 JOURS"], "redLines": [], "supportingText": "La discipline commence par la répétition, pas la motivation." },
+    { "lines": ["POUR REBÂTIR"], "redLines": [], "supportingText": "Tiens chaque jour au même niveau d'exigence." },
+    { "lines": ["TA VIE."], "redLines": [0], "supportingText": "BASIC · STANDARD · HARD. Trois étapes. 90 jours." }
+  ],
+  "product": [
+    { "lines": ["TERMINE", "TA JOURNÉE."], "redLines": [1], "supportingText": "Vérifie. Agis. Termine ta journée." },
+    { "lines": ["CONSIGNE TES", "ÉCHECS."], "redLines": [0], "supportingText": "Réussite ou échec, chaque journée reste inscrite." },
+    { "lines": ["ÉLÈVE TON", "NIVEAU."], "redLines": [1], "supportingText": "De BASIC à HARD, une étape de 30 jours à la fois." }
+  ]
+}

@@ -1,15 +1,15 @@
 {
-  "versionName": "1.0.1",
+  "versionName": "1.0.4",
   "localizations": {
-    "ko-KR": "스토어 소개 문구를 다듬고 앱 안정성을 개선했습니다.",
-    "en-US": "Refined the store description and improved app stability.",
-    "ja-JP": "ストアの紹介文を整え、アプリの安定性を改善しました。",
-    "es-ES": "Hemos mejorado la descripción de la tienda y la estabilidad de la aplicación.",
-    "de-DE": "Die Store-Beschreibung wurde überarbeitet und die App-Stabilität verbessert.",
-    "fr-FR": "La présentation sur le store a été affinée et la stabilité de l’application améliorée.",
-    "pt-BR": "A descrição na loja foi aprimorada e a estabilidade do app foi melhorada.",
-    "zh-TW": "優化了商店介紹文字，並提升應用程式穩定性。",
-    "it-IT": "Abbiamo perfezionato la descrizione sullo store e migliorato la stabilità dell’app.",
-    "zh-CN": "优化了商店介绍文案，并提升了应用稳定性。"
+    "ko-KR": "ALPHA의 BASIC·STANDARD·HARD 3단계 과정과 90일 여정을 더 명확하게 안내하도록 스토어 정보를 정리했습니다.",
+    "en-US": "Clarified ALPHA's three-stage BASIC, STANDARD, and HARD journey and its full 90-day structure.",
+    "ja-JP": "BASIC・STANDARD・HARDの3段階と、90日間の全体構成をより分かりやすくしました。",
+    "es-ES": "Aclaramos el recorrido de 90 días y sus tres etapas: BASIC, STANDARD y HARD.",
+    "de-DE": "Der 90-Tage-Weg durch BASIC, STANDARD und HARD wird jetzt klarer erklärt.",
+    "fr-FR": "Nous avons clarifié le parcours de 90 jours en trois étapes : BASIC, STANDARD et HARD.",
+    "pt-BR": "Deixamos mais clara a jornada de 90 dias em três etapas: BASIC, STANDARD e HARD.",
+    "zh-TW": "更清楚說明BASIC、STANDARD、HARD三個階段，以及完整的90天旅程。",
+    "it-IT": "Abbiamo chiarito il percorso di 90 giorni in tre fasi: BASIC, STANDARD e HARD.",
+    "zh-CN": "更清楚地说明BASIC、STANDARD、HARD三个阶段，以及完整的90天旅程。"
   }
 }

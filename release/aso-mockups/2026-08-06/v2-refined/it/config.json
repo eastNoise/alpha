@@ -1,0 +1,14 @@
+{
+  "locale": "it",
+  "overviewTitle": "ALPHA · ITALIAN · V2 REFINED",
+  "brand": [
+    { "lines": ["90 GIORNI"], "redLines": [], "supportingText": "La disciplina nasce dalla ripetizione, non dalla motivazione." },
+    { "lines": ["PER RICOSTRUIRE"], "redLines": [], "supportingText": "Costruisci il tuo standard, giorno dopo giorno." },
+    { "lines": ["LA TUA VITA."], "redLines": [0], "supportingText": "BASIC · STANDARD · HARD. Tre fasi. 90 giorni." }
+  ],
+  "product": [
+    { "lines": ["CHIUDI", "LA GIORNATA."], "redLines": [1], "supportingText": "Controlla. Agisci. Chiudi la giornata." },
+    { "lines": ["REGISTRA OGNI", "FALLIMENTO."], "redLines": [0], "supportingText": "Vittoria o fallimento, ogni giorno resta registrato." },
+    { "lines": ["ALZA IL TUO", "STANDARD."], "redLines": [1], "supportingText": "Da BASIC a HARD, un percorso di 30 giorni alla volta." }
+  ]
+}

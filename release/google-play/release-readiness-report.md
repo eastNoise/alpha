@@ -1,5 +1,7 @@
 # ALPHA Google Play Release Readiness Report
 
+> Historical report: this document records the `1.0.1 (2)` submission on 2026-07-24. The current public release is `1.0.3 (3)`. Use `release/aso-validation-report-2026-08-06.md` and `release/google-play/play-console-checklist.md` for the current state.
+
 검사일: 2026-07-24
 
 ## 결론

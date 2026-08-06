@@ -182,12 +182,6 @@ function AlphaApp() {
 
   async function chooseCardImage(selection: CardVisualSelection) {
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        showToast(t('imagePermissionDenied'));
-        return;
-      }
-
       const result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: false,
         mediaTypes: ['images'],

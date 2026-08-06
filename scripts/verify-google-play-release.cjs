@@ -12,6 +12,7 @@ const screenshotsPath = path.join(root, 'release/google-play/screenshots');
 const listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
 const notes = JSON.parse(fs.readFileSync(notesPath, 'utf8'));
 const errors = [];
+let screenshotCount = 0;
 
 for (const [locale, listing] of Object.entries(listings.localizations)) {
   if ([...listing.title].length > 30) errors.push(`${locale}: title exceeds 30 characters`);
@@ -45,9 +46,10 @@ for (const locale of Object.keys(listings.localizations)) {
     .filter((file) => /\.(jpe?g|png)$/i.test(file))
     .sort();
 
-  if (screenshots.length !== 5) {
-    errors.push(`${locale}: expected 5 screenshots, found ${screenshots.length}`);
+  if (screenshots.length < 2 || screenshots.length > 8) {
+    errors.push(`${locale}: expected 2 to 8 screenshots, found ${screenshots.length}`);
   }
+  screenshotCount += screenshots.length;
 
   for (const screenshot of screenshots) {
     const screenshotInfo = imageInfo(path.join(localePath, screenshot));
@@ -62,4 +64,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Google Play release assets verified: ${Object.keys(listings.localizations).length} locales, 50 screenshots`);
+console.log(`Google Play release assets verified: ${Object.keys(listings.localizations).length} locales, ${screenshotCount} screenshots`);

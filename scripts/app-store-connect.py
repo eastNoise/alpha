@@ -267,6 +267,7 @@ def upsert_localization(headers, collection, parent_type, parent_id, locale, att
 def validate_metadata(metadata):
     for locale, item in metadata["localizations"].items():
         checks = {
+            "name": (item.get("name", metadata["appName"]), 30),
             "subtitle": (item["subtitle"], 30),
             "promotionalText": (item["promotionalText"], 170),
             "keywords": (item["keywords"], 100),
@@ -274,13 +275,17 @@ def validate_metadata(metadata):
             "whatsNew": (item["whatsNew"], 4000),
         }
         for field, (value, limit) in checks.items():
-            if len(value) > limit:
-                raise RuntimeError(f"{locale} {field} is {len(value)} characters; limit is {limit}")
+            used = len(value.encode("utf-8")) if field == "keywords" else len(value)
+            unit = "UTF-8 bytes" if field == "keywords" else "characters"
+            if used > limit:
+                raise RuntimeError(f"{locale} {field} is {used} {unit}; limit is {limit}")
 
 
-def apply_metadata(headers, app_info, version, metadata):
+def apply_metadata(headers, app_info, version, metadata, only_locale=None):
     validate_metadata(metadata)
     for locale, item in metadata["localizations"].items():
+        if only_locale and locale != only_locale:
+            continue
         info_action = upsert_localization(
             headers,
             "appInfoLocalizations",
@@ -288,7 +293,7 @@ def apply_metadata(headers, app_info, version, metadata):
             app_info["id"],
             locale,
             {
-                "name": metadata["appName"],
+                "name": item.get("name", metadata["appName"]),
                 "subtitle": item["subtitle"],
                 "privacyPolicyUrl": metadata["privacyPolicyUrl"],
             },
@@ -666,7 +671,7 @@ def main():
     }, ensure_ascii=False, indent=2))
     if args.command == "apply-metadata":
         metadata = json.loads(Path(args.metadata).read_text())
-        apply_metadata(headers, app_info, version, metadata)
+        apply_metadata(headers, app_info, version, metadata, args.locale)
     elif args.command == "apply-compliance":
         compliance = json.loads(Path(args.compliance).read_text())
         apply_compliance(headers, app, app_info, compliance)

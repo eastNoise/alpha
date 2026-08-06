@@ -13,14 +13,18 @@ let source = fs.readFileSync(buildGradlePath, 'utf8');
 const propertiesBlock = `
 def alphaSigningProperties = new Properties()
 def alphaSigningPropertiesPath = System.getenv("ALPHA_ANDROID_SIGNING_PROPERTIES")
-if (!alphaSigningPropertiesPath) {
+def isAlphaReleaseTask = gradle.startParameter.taskNames.any {
+    it.toLowerCase().contains("release")
+}
+if (alphaSigningPropertiesPath) {
+    def alphaSigningPropertiesFile = file(alphaSigningPropertiesPath)
+    if (!alphaSigningPropertiesFile.exists()) {
+        throw new GradleException("Android signing properties not found: " + alphaSigningPropertiesPath)
+    }
+    alphaSigningPropertiesFile.withInputStream { alphaSigningProperties.load(it) }
+} else if (isAlphaReleaseTask) {
     throw new GradleException("ALPHA_ANDROID_SIGNING_PROPERTIES is required for a release build.")
 }
-def alphaSigningPropertiesFile = file(alphaSigningPropertiesPath)
-if (!alphaSigningPropertiesFile.exists()) {
-    throw new GradleException("Android signing properties not found: " + alphaSigningPropertiesPath)
-}
-alphaSigningPropertiesFile.withInputStream { alphaSigningProperties.load(it) }
 `;
 
 if (!source.includes('def alphaSigningProperties = new Properties()')) {
@@ -43,7 +47,7 @@ source = source
 if (!source.includes('storeFile file(alphaSigningProperties["storeFile"])')) {
   source = source.replace(
     /    signingConfigs \{\n(\s+debug \{[\s\S]*?\n\s+\})\n    \}/,
-    `    signingConfigs {\n$1\n        release {\n            storeFile file(alphaSigningProperties["storeFile"])\n            storePassword alphaSigningProperties["storePassword"]\n            keyAlias alphaSigningProperties["keyAlias"]\n            keyPassword alphaSigningProperties["keyPassword"]\n        }\n    }`,
+    `    signingConfigs {\n$1\n        release {\n            if (!alphaSigningProperties.isEmpty()) {\n                storeFile file(alphaSigningProperties["storeFile"])\n                storePassword alphaSigningProperties["storePassword"]\n                keyAlias alphaSigningProperties["keyAlias"]\n                keyPassword alphaSigningProperties["keyPassword"]\n            }\n        }\n    }`,
   );
 }
 

@@ -8,7 +8,7 @@
     "contests": "NONE",
     "gambling": false,
     "gamblingSimulated": "NONE",
-    "gunsOrOtherWeapons": "INFREQUENT",
+    "gunsOrOtherWeapons": "NONE",
     "healthOrWellnessTopics": true,
     "lootBox": false,
     "medicalOrTreatmentInformation": "NONE",

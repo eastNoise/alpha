@@ -1,0 +1,14 @@
+{
+  "locale": "zh-Hant",
+  "overviewTitle": "ALPHA · TRADITIONAL CHINESE · V2 REFINED",
+  "brand": [
+    { "lines": ["用90天"], "redLines": [], "supportingText": "自律不是靠動力，而是從反覆行動開始。" },
+    { "lines": ["把你的人生"], "redLines": [], "supportingText": "每天完成該做的事，累積你的標準。" },
+    { "lines": ["重新建立。"], "redLines": [0], "supportingText": "BASIC・STANDARD・HARD。三個階段，90天。" }
+  ],
+  "product": [
+    { "lines": ["把今天", "做完。"], "redLines": [1], "supportingText": "確認、執行，然後完成今天。" },
+    { "lines": ["連失敗", "都記下。"], "redLines": [0], "supportingText": "完成也好，失敗也好，每一天都會留下。" },
+    { "lines": ["提高你的", "標準。"], "redLines": [1], "supportingText": "從BASIC到HARD，每30天進入下一階段。" }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "locale": "de-DE",
+  "overviewTitle": "ALPHA · GERMAN · V2 REFINED",
+  "brand": [
+    { "lines": ["IN 90 TAGEN"], "redLines": [], "supportingText": "Disziplin beginnt mit Wiederholung, nicht mit Motivation." },
+    { "lines": ["BAU DEIN LEBEN"], "redLines": [], "supportingText": "Miss jeden Tag am selben Maßstab." },
+    { "lines": ["NEU AUF."], "redLines": [0], "supportingText": "BASIC · STANDARD · HARD. Drei Stufen. 90 Tage." }
+  ],
+  "product": [
+    { "lines": ["BEENDE", "DEN TAG."], "redLines": [1], "supportingText": "Prüfen. Handeln. Den Tag abschließen." },
+    { "lines": ["ZEICHNE JEDEN", "FEHLER AUF."], "redLines": [0], "supportingText": "Erfolg oder Fehler: Jeder Tag bleibt im Verlauf." },
+    { "lines": ["STEIGERE DEIN", "NIVEAU."], "redLines": [1], "supportingText": "Von BASIC bis HARD, alle 30 Tage die nächste Stufe." }
+  ]
+}
