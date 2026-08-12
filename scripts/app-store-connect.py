@@ -146,7 +146,7 @@ def review_submission_items(headers, submission_id):
         "GET",
         f"/reviewSubmissions/{submission_id}/items",
         headers,
-        params={"limit": 50},
+        params={"limit": 50, "include": "appStoreVersion"},
     )["data"]
 
 
@@ -163,6 +163,7 @@ def submit_version(headers, app, version):
             "READY_FOR_REVIEW",
             "WAITING_FOR_REVIEW",
             "IN_REVIEW",
+            "UNRESOLVED_ISSUES",
         }:
             continue
         for item in review_submission_items(headers, submission["id"]):
@@ -170,9 +171,29 @@ def submit_version(headers, app, version):
             if relationship.get("data", {}).get("id") != version["id"]:
                 continue
             state = submission["attributes"].get("state")
-            if state != "READY_FOR_REVIEW":
+            if state in {"WAITING_FOR_REVIEW", "IN_REVIEW"}:
                 print(f"Version is already in review submission state {state}")
                 return submission
+            if state == "UNRESOLVED_ISSUES":
+                item_state = item.get("attributes", {}).get("state")
+                if item_state == "REJECTED":
+                    request(
+                        "PATCH",
+                        f"/reviewSubmissionItems/{item['id']}",
+                        headers,
+                        payload={
+                            "data": {
+                                "type": "reviewSubmissionItems",
+                                "id": item["id"],
+                                "attributes": {"resolved": True},
+                            }
+                        },
+                    )
+                    print("Resolved rejected review submission item")
+                elif item_state != "READY_FOR_REVIEW":
+                    raise RuntimeError(
+                        f"Cannot resubmit review item in state {item_state}"
+                    )
             request(
                 "PATCH",
                 f"/reviewSubmissions/{submission['id']}",

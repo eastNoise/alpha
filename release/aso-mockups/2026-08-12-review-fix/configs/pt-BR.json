@@ -1,0 +1,12 @@
+{
+  "locale": "pt-BR",
+  "overviewTitle": "ALPHA · PORTUGUESE · 8 SCREENSHOTS",
+  "overviewSubtitle": "3 visuais da marca + 5 telas reais do app",
+  "slides": [
+    { "source": "02-today.png", "filename": "04-today.jpg", "title": "ENCERRE O DIA.", "redText": "O DIA.", "supportingText": "Confira. Faça. Encerre o dia." },
+    { "source": "03-course.png", "filename": "05-course.jpg", "title": "ELEVE SEU PADRÃO.", "redText": "PADRÃO.", "supportingText": "Do BASIC ao HARD, um curso de 30 dias por vez." },
+    { "source": "05-records.png", "filename": "06-records.jpg", "title": "REGISTRE CADA FALHA.", "redText": "FALHA.", "supportingText": "Com vitória ou falha, cada dia fica registrado." },
+    { "source": "04-day-result.png", "filename": "07-close-day.jpg", "title": "ENCARA O RESULTADO.", "redText": "RESULTADO.", "supportingText": "Veja o resultado de hoje e faça uma reflexão sincera." },
+    { "source": "01-onboarding.png", "filename": "08-start.jpg", "title": "RECONSTRUA-SE EM 90 DIAS.", "redText": "90 DIAS.", "supportingText": "BASIC · STANDARD · HARD. Três etapas de disciplina." }
+  ]
+}

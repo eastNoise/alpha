@@ -1,0 +1,12 @@
+{
+  "locale": "de-DE",
+  "overviewTitle": "ALPHA · GERMAN · 8 SCREENSHOTS",
+  "overviewSubtitle": "3 Markenvisuals + 5 echte App-Ansichten",
+  "slides": [
+    { "source": "02-today.png", "filename": "04-today.jpg", "title": "BEENDE DEN TAG.", "redText": "DEN TAG.", "supportingText": "Prüfen. Handeln. Den Tag abschließen." },
+    { "source": "03-course.png", "filename": "05-course.jpg", "title": "STEIGERE DEIN NIVEAU.", "redText": "NIVEAU.", "supportingText": "Von BASIC bis HARD, alle 30 Tage die nächste Stufe." },
+    { "source": "05-records.png", "filename": "06-records.jpg", "title": "ZEICHNE JEDEN FEHLER AUF.", "redText": "FEHLER AUF.", "supportingText": "Erfolg oder Fehler: Jeder Tag bleibt im Verlauf." },
+    { "source": "04-day-result.png", "filename": "07-close-day.jpg", "title": "STELL DICH DEM ERGEBNIS.", "redText": "ERGEBNIS.", "supportingText": "Sieh dein Tagesergebnis und halte ehrlich Rückschau." },
+    { "source": "01-onboarding.png", "filename": "08-start.jpg", "title": "BAU DICH IN 90 TAGEN NEU AUF.", "redText": "90 TAGEN", "supportingText": "BASIC · STANDARD · HARD. Drei Stufen der Disziplin." }
+  ]
+}

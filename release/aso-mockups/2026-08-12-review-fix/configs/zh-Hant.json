@@ -1,0 +1,12 @@
+{
+  "locale": "zh-Hant",
+  "overviewTitle": "ALPHA · TRADITIONAL CHINESE · 8 SCREENSHOTS",
+  "overviewSubtitle": "3張品牌視覺 + 5張真實應用程式畫面",
+  "slides": [
+    { "source": "02-today.png", "filename": "04-today.jpg", "title": "把今天做完。", "redText": "做完。", "supportingText": "確認、執行，然後完成今天。" },
+    { "source": "03-course.png", "filename": "05-course.jpg", "title": "提高你的標準。", "redText": "標準。", "supportingText": "從BASIC到HARD，每30天進入下一階段。" },
+    { "source": "05-records.png", "filename": "06-records.jpg", "title": "連失敗都記下。", "redText": "失敗", "supportingText": "完成也好，失敗也好，每一天都會留下。" },
+    { "source": "04-day-result.png", "filename": "07-close-day.jpg", "title": "直面今天的結果。", "redText": "結果。", "supportingText": "查看今天的結果，留下真實的回顧。" },
+    { "source": "01-onboarding.png", "filename": "08-start.jpg", "title": "用90天重新建立自己。", "redText": "90天", "supportingText": "BASIC・STANDARD・HARD。自律的三個階段。" }
+  ]
+}

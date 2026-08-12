@@ -1,0 +1,12 @@
+{
+  "locale": "it",
+  "overviewTitle": "ALPHA · ITALIAN · 8 SCREENSHOTS",
+  "overviewSubtitle": "3 visual di marca + 5 schermate reali dell'app",
+  "slides": [
+    { "source": "02-today.png", "filename": "04-today.jpg", "title": "CHIUDI LA GIORNATA.", "redText": "GIORNATA.", "supportingText": "Controlla. Agisci. Chiudi la giornata." },
+    { "source": "03-course.png", "filename": "05-course.jpg", "title": "ALZA IL TUO STANDARD.", "redText": "STANDARD.", "supportingText": "Da BASIC a HARD, un percorso di 30 giorni alla volta." },
+    { "source": "05-records.png", "filename": "06-records.jpg", "title": "REGISTRA OGNI FALLIMENTO.", "redText": "FALLIMENTO.", "supportingText": "Vittoria o fallimento, ogni giorno resta registrato." },
+    { "source": "04-day-result.png", "filename": "07-close-day.jpg", "title": "AFFRONTA IL RISULTATO.", "redText": "RISULTATO.", "supportingText": "Guarda il risultato di oggi e rifletti con sincerità." },
+    { "source": "01-onboarding.png", "filename": "08-start.jpg", "title": "RICOSTRUISCITI IN 90 GIORNI.", "redText": "90 GIORNI.", "supportingText": "BASIC · STANDARD · HARD. Tre fasi di disciplina." }
+  ]
+}

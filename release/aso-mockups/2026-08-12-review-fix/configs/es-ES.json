@@ -1,0 +1,12 @@
+{
+  "locale": "es-ES",
+  "overviewTitle": "ALPHA · SPANISH · 8 SCREENSHOTS",
+  "overviewSubtitle": "3 visuales de marca + 5 pantallas reales de la app",
+  "slides": [
+    { "source": "02-today.png", "filename": "04-today.jpg", "title": "CIERRA EL DÍA.", "redText": "EL DÍA.", "supportingText": "Revísalo. Hazlo. Cierra el día." },
+    { "source": "03-course.png", "filename": "05-course.jpg", "title": "ELEVA TU ESTÁNDAR.", "redText": "ESTÁNDAR.", "supportingText": "De BASIC a HARD, un curso de 30 días cada vez." },
+    { "source": "05-records.png", "filename": "06-records.jpg", "title": "REGISTRA TUS FALLOS.", "redText": "FALLOS.", "supportingText": "Cumplas o falles, cada día queda registrado." },
+    { "source": "04-day-result.png", "filename": "07-close-day.jpg", "title": "AFRONTA EL RESULTADO.", "redText": "RESULTADO.", "supportingText": "Mira el resultado de hoy y deja una reflexión sincera." },
+    { "source": "01-onboarding.png", "filename": "08-start.jpg", "title": "RECONSTRÚYETE EN 90 DÍAS.", "redText": "90 DÍAS.", "supportingText": "BASIC · STANDARD · HARD. Tres etapas de disciplina." }
+  ]
+}

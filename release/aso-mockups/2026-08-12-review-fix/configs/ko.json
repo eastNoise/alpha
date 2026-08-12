@@ -1,0 +1,12 @@
+{
+  "locale": "ko",
+  "overviewTitle": "ALPHA · KOREAN · 8 SCREENSHOTS",
+  "overviewSubtitle": "계단 비주얼 3장 + 실제 앱 전체 화면 5장",
+  "slides": [
+    { "source": "02-today.png", "filename": "04-today.jpg", "title": "오늘을 끝내라.", "redText": "끝내라.", "supportingText": "루틴을 확인하고, 실행하고, 하루를 마감한다." },
+    { "source": "03-course.png", "filename": "05-course.jpg", "title": "기준을 높여라.", "redText": "높여라.", "supportingText": "BASIC부터 HARD까지, 30일마다 다음 단계로." },
+    { "source": "05-records.png", "filename": "06-records.jpg", "title": "실패까지 기록하라.", "redText": "실패까지", "supportingText": "완료한 날도 무너진 날도 기록에 남는다." },
+    { "source": "04-day-result.png", "filename": "07-close-day.jpg", "title": "결과를 숨기지 마라.", "redText": "숨기지 마라.", "supportingText": "오늘의 결과를 확인하고 솔직한 회고를 남긴다." },
+    { "source": "01-onboarding.png", "filename": "08-start.jpg", "title": "90일로 다시 세워라.", "redText": "다시 세워라.", "supportingText": "BASIC · STANDARD · HARD, 세 단계의 자기통제 과정." }
+  ]
+}

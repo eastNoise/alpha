@@ -1,0 +1,12 @@
+{
+  "locale": "zh-Hans",
+  "overviewTitle": "ALPHA · SIMPLIFIED CHINESE · 8 SCREENSHOTS",
+  "overviewSubtitle": "3张品牌视觉 + 5张真实应用界面",
+  "slides": [
+    { "source": "02-today.png", "filename": "04-today.jpg", "title": "把今天做完。", "redText": "做完。", "supportingText": "确认、执行，然后完成今天。" },
+    { "source": "03-course.png", "filename": "05-course.jpg", "title": "提高你的标准。", "redText": "标准。", "supportingText": "从BASIC到HARD，每30天进入下一阶段。" },
+    { "source": "05-records.png", "filename": "06-records.jpg", "title": "连失败都记下。", "redText": "失败", "supportingText": "完成也好，失败也好，每一天都会留下。" },
+    { "source": "04-day-result.png", "filename": "07-close-day.jpg", "title": "直面今天的结果。", "redText": "结果。", "supportingText": "查看今天的结果，留下真实的复盘。" },
+    { "source": "01-onboarding.png", "filename": "08-start.jpg", "title": "用90天重新建立自己。", "redText": "90天", "supportingText": "BASIC・STANDARD・HARD。自律的三个阶段。" }
+  ]
+}

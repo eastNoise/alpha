@@ -1,0 +1,12 @@
+{
+  "locale": "en-US",
+  "overviewTitle": "ALPHA · ENGLISH · 8 SCREENSHOTS",
+  "overviewSubtitle": "3 brand visuals + 5 full in-app screens",
+  "slides": [
+    { "source": "02-today.png", "filename": "04-today.jpg", "title": "FINISH THE DAY.", "redText": "THE DAY.", "supportingText": "Check it. Do it. Close the day." },
+    { "source": "03-course.png", "filename": "05-course.jpg", "title": "RAISE YOUR STANDARD.", "redText": "STANDARD.", "supportingText": "From BASIC to HARD, one 30-day course at a time." },
+    { "source": "05-records.png", "filename": "06-records.jpg", "title": "RECORD EVERY FAILURE.", "redText": "FAILURE.", "supportingText": "Win or fail, every day stays in your record." },
+    { "source": "04-day-result.png", "filename": "07-close-day.jpg", "title": "FACE THE RESULT.", "redText": "RESULT.", "supportingText": "See today's result and leave an honest reflection." },
+    { "source": "01-onboarding.png", "filename": "08-start.jpg", "title": "REBUILD IN 90 DAYS.", "redText": "90 DAYS.", "supportingText": "BASIC · STANDARD · HARD. Three stages of discipline." }
+  ]
+}

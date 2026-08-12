@@ -1,0 +1,12 @@
+{
+  "locale": "ja",
+  "overviewTitle": "ALPHA · JAPANESE · 8 SCREENSHOTS",
+  "overviewSubtitle": "ブランドビジュアル3枚 + 実際のアプリ画面5枚",
+  "slides": [
+    { "source": "02-today.png", "filename": "04-today.jpg", "title": "今日を締めろ。", "redText": "締めろ。", "supportingText": "確認し、実行し、一日を締める。" },
+    { "source": "03-course.png", "filename": "05-course.jpg", "title": "基準を上げろ。", "redText": "上げろ。", "supportingText": "BASICからHARDへ。30日ごとに次の段階へ。" },
+    { "source": "05-records.png", "filename": "06-records.jpg", "title": "失敗まで記録しろ。", "redText": "失敗まで", "supportingText": "できた日も、崩れた日も、記録に残る。" },
+    { "source": "04-day-result.png", "filename": "07-close-day.jpg", "title": "結果から逃げるな。", "redText": "逃げるな。", "supportingText": "今日の結果を見て、正直な振り返りを残す。" },
+    { "source": "01-onboarding.png", "filename": "08-start.jpg", "title": "90日で立て直せ。", "redText": "立て直せ。", "supportingText": "BASIC・STANDARD・HARD。自律を鍛える3段階。" }
+  ]
+}

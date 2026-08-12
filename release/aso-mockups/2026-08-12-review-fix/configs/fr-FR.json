@@ -1,0 +1,12 @@
+{
+  "locale": "fr-FR",
+  "overviewTitle": "ALPHA · FRENCH · 8 SCREENSHOTS",
+  "overviewSubtitle": "3 visuels de marque + 5 écrans réels de l'app",
+  "slides": [
+    { "source": "02-today.png", "filename": "04-today.jpg", "title": "TERMINE TA JOURNÉE.", "redText": "JOURNÉE.", "supportingText": "Vérifie. Agis. Termine ta journée." },
+    { "source": "03-course.png", "filename": "05-course.jpg", "title": "ÉLÈVE TON NIVEAU.", "redText": "NIVEAU.", "supportingText": "De BASIC à HARD, une étape de 30 jours à la fois." },
+    { "source": "05-records.png", "filename": "06-records.jpg", "title": "CONSIGNE TES ÉCHECS.", "redText": "ÉCHECS.", "supportingText": "Réussite ou échec, chaque journée reste inscrite." },
+    { "source": "04-day-result.png", "filename": "07-close-day.jpg", "title": "AFFRONTE LE RÉSULTAT.", "redText": "RÉSULTAT.", "supportingText": "Regarde le résultat du jour et fais un bilan honnête." },
+    { "source": "01-onboarding.png", "filename": "08-start.jpg", "title": "REBÂTIS-TOI EN 90 JOURS.", "redText": "90 JOURS.", "supportingText": "BASIC · STANDARD · HARD. Trois étapes de discipline." }
+  ]
+}
