@@ -224,7 +224,7 @@ function AlphaApp() {
     const measuredAspectRatio = frame && frame.width > 0 && frame.height > 0
       ? frame.width / frame.height
       : fallbackCardAspectRatios[target];
-    playHaptic(hapticsEnabled, 'selection');
+    playHaptic(hapticsEnabled, 'light');
     setCardVisualSelection({ aspectRatio: measuredAspectRatio, target });
   }
 
@@ -244,6 +244,7 @@ function AlphaApp() {
         target: selection.target,
       });
     } catch {
+      playHaptic(hapticsEnabled, 'error');
       showToast(t('imageSaveFailed'));
     } finally {
       setCardVisualSelection(null);
@@ -257,7 +258,7 @@ function AlphaApp() {
       uri: image.uri,
     });
     setCardCropSelection(null);
-    playHaptic(hapticsEnabled, 'success');
+    playHaptic(hapticsEnabled, 'confirm');
     showToast(t('imageUpdatedToast'));
   }
 
@@ -265,9 +266,10 @@ function AlphaApp() {
     setCardVisualSelection(null);
     try {
       await cardVisuals.restoreDefault(target);
-      playHaptic(hapticsEnabled, 'selection');
+      playHaptic(hapticsEnabled, 'confirm');
       showToast(t('imageResetToast'));
     } catch {
+      playHaptic(hapticsEnabled, 'error');
       showToast(t('imageSaveFailed'));
     }
   }
@@ -280,12 +282,13 @@ function AlphaApp() {
         title: t('shareAppTitle'),
       });
     } catch {
+      playHaptic(hapticsEnabled, 'error');
       showToast(t('shareFailedToast'));
     }
   }
 
   function openAppShare() {
-    playHaptic(hapticsEnabled, 'success');
+    playHaptic(hapticsEnabled, 'light');
     void shareCompletedProgram();
   }
 
@@ -294,7 +297,7 @@ function AlphaApp() {
       case 'onboarding':
         return (
           <OnboardingScreen
-            onStart={withHaptic('success', startOnboarding)}
+            onStart={withHaptic('commit', startOnboarding)}
           />
         );
       case 'today':
@@ -313,29 +316,35 @@ function AlphaApp() {
             visualSource={cardSources.today}
             onAddRoutine={withHaptic('light', openAddRoutine)}
             onCloseDay={() => {
-              playHaptic(hapticsEnabled, done === total ? 'success' : 'warning');
+              playHaptic(hapticsEnabled, done === total ? 'progressComplete' : 'warning');
               closeDay();
             }}
             onEditCard={(frame) => {
-              playHaptic(hapticsEnabled, 'selection');
+              playHaptic(hapticsEnabled, 'light');
               setTodayCardEditFrame(frame);
             }}
             onOpenReflection={withHaptic('light', () => setOverlay('reflection'))}
             onMoveRoutine={(id, targetIndex) => {
-              playHaptic(hapticsEnabled, 'selection');
+              playHaptic(hapticsEnabled, 'rigid');
               moveRoutine(id, targetIndex);
             }}
             onRemoveRoutine={(id) => {
-              playHaptic(hapticsEnabled, 'warning');
+              playHaptic(hapticsEnabled, 'destructive');
               removeRoutine(id);
             }}
-            onRestoreRoutines={withHaptic('selection', restoreCourseRoutines)}
+            onRestoreRoutines={withHaptic('confirm', restoreCourseRoutines)}
+            onRoutineEditingToggle={() => playHaptic(hapticsEnabled, 'rigid')}
             onShareApp={openAppShare}
-            onStartNextCourse={withHaptic('success', beginNextCourse)}
-            onSettings={withHaptic('selection', () => go('settings'))}
+            onStartNextCourse={withHaptic('commit', beginNextCourse)}
+            onSettings={withHaptic('light', () => go('settings'))}
             onToggleRoutine={(id) => {
               const selectedRoutine = routines.find((routine) => routine.id === id);
-              playHaptic(hapticsEnabled, selectedRoutine?.done ? 'selection' : 'light');
+              const haptic = selectedRoutine?.done
+                ? 'progressDown'
+                : done + 1 === total
+                  ? 'progressComplete'
+                  : 'progressUp';
+              playHaptic(hapticsEnabled, haptic);
               toggleRoutine(id);
             }}
           />
@@ -352,17 +361,18 @@ function AlphaApp() {
             streak={streak}
             total={total}
             visualSource={cardSources.records}
-            onCollection={withHaptic('selection', () => go('collection'))}
-            onDetail={withHaptic('selection', () => go('detail'))}
+            onCollection={withHaptic('light', () => go('collection'))}
+            onDetail={withHaptic('light', () => go('detail'))}
             onOpenDay={(day) => {
-              playHaptic(hapticsEnabled, 'selection');
+              playHaptic(hapticsEnabled, 'light');
               openDay(day);
             }}
             onSelectCourse={(level) => {
-              playHaptic(hapticsEnabled, 'selection');
+              if (level === recordCourse) return;
+              playHaptic(hapticsEnabled, 'rigid');
               selectRecordCourse(level);
             }}
-            onSettings={withHaptic('selection', () => go('settings'))}
+            onSettings={withHaptic('light', () => go('settings'))}
             onVisualPress={(frame) => openCardVisual('records', frame)}
           />
         );
@@ -375,11 +385,11 @@ function AlphaApp() {
             nextCourseAvailable={nextCourseAvailable}
             state={state}
             visualSource={cardSources.course}
-            onDetail={withHaptic('selection', () => go('detail'))}
-            onSettings={withHaptic('selection', () => go('settings'))}
+            onDetail={withHaptic('light', () => go('detail'))}
+            onSettings={withHaptic('light', () => go('settings'))}
             onShareApp={openAppShare}
-            onStartNextCourse={withHaptic('success', beginNextCourse)}
-            onRestartCourse={withHaptic('warning', restartCourse)}
+            onStartNextCourse={withHaptic('commit', beginNextCourse)}
+            onRestartCourse={withHaptic('destructive', restartCourse)}
             onVisualPress={(frame) => openCardVisual('course', frame)}
           />
         );
@@ -387,12 +397,18 @@ function AlphaApp() {
         return (
           <SettingsScreen
             state={state}
-            onBack={withHaptic('selection', back)}
-            onDataReset={withHaptic('warning', () => setOverlay('resetData'))}
-            onHapticsToggle={withHaptic('selection', toggleHaptics)}
-            onInfo={withHaptic('selection', () => setOverlay('appInfo'))}
-            onLanguage={withHaptic('selection', () => setOverlay('language'))}
-            onNotificationsToggle={withHaptic('selection', toggleNotifications)}
+            onBack={withHaptic('light', back)}
+            onDataReset={withHaptic('light', () => setOverlay('resetData'))}
+            onHapticsToggle={() => {
+              playHaptic(true, 'rigid');
+              toggleHaptics();
+            }}
+            onInfo={withHaptic('light', () => setOverlay('appInfo'))}
+            onLanguage={withHaptic('light', () => setOverlay('language'))}
+            onNotificationsToggle={() => {
+              playHaptic(hapticsEnabled, 'rigid');
+              toggleNotifications();
+            }}
           />
         );
       case 'detail':
@@ -403,9 +419,9 @@ function AlphaApp() {
             recordCourse={recordCourse}
             records={sortedRecords}
             state={state}
-            onBack={withHaptic('selection', back)}
+            onBack={withHaptic('light', back)}
             onOpenDay={(day) => {
-              playHaptic(hapticsEnabled, 'selection');
+              playHaptic(hapticsEnabled, 'light');
               openDay(day);
             }}
           />
@@ -416,9 +432,9 @@ function AlphaApp() {
             recordCourse={recordCourse}
             records={sortedRecords}
             visualSource={cardSources.records}
-            onBack={withHaptic('selection', back)}
+            onBack={withHaptic('light', back)}
             onOpenDay={(day) => {
-              playHaptic(hapticsEnabled, 'selection');
+              playHaptic(hapticsEnabled, 'light');
               openDay(day);
             }}
             onVisualPress={(frame) => openCardVisual('records', frame)}
@@ -458,7 +474,11 @@ function AlphaApp() {
           <BottomTabs
             active={screen}
             bottomInset={insets.bottom}
-            onPress={selectTab}
+            onPress={(nextScreen) => {
+              if (nextScreen === screen) return;
+              playHaptic(hapticsEnabled, 'rigid');
+              selectTab(nextScreen);
+            }}
           />
         ) : null}
         {toast ? (
@@ -467,7 +487,7 @@ function AlphaApp() {
             bottom={showTabs ? insets.bottom + 96 : insets.bottom + 26}
             message={toast.message}
             onAction={toast.action === 'undoRoutineRemoval'
-              ? withHaptic('selection', undoRoutineRemoval)
+              ? withHaptic('confirm', undoRoutineRemoval)
               : undefined}
           />
         ) : null}
@@ -476,7 +496,7 @@ function AlphaApp() {
       <IncompleteCloseModal
         missed={missed}
         open={overlay === 'confirmIncomplete'}
-        onBack={withHaptic('selection', () => setOverlay(null))}
+        onBack={withHaptic('light', () => setOverlay(null))}
         onConfirm={withHaptic('warning', confirmIncompleteClose)}
       />
       <FinishDayModal
@@ -485,7 +505,7 @@ function AlphaApp() {
         open={overlay === 'finish'}
         result={state.today.result ?? (done === total ? 'complete' : 'incomplete')}
         streak={streak}
-        onClose={withHaptic('selection', () => setOverlay(null))}
+        onClose={withHaptic('light', () => setOverlay(null))}
         onReflection={() => {
           playHaptic(hapticsEnabled, 'light');
           setOverlay('reflection');
@@ -495,21 +515,24 @@ function AlphaApp() {
         open={overlay === 'reflection'}
         text={reflectionText}
         onChangeText={(text) => setReflectionText(text.slice(0, 160))}
-        onClose={withHaptic('selection', () => setOverlay(null))}
-        onSave={withHaptic('success', saveReflection)}
+        onClose={withHaptic('light', () => setOverlay(null))}
+        onSave={() => {
+          playHaptic(hapticsEnabled, reflectionText.trim() ? 'confirm' : 'error');
+          saveReflection();
+        }}
       />
       <TodayStandardModal
         defaultText={i18n.motto(state.currentCourse.level, state.currentCourse.day)}
         open={overlay === 'standard'}
         text={standardText}
         onChangeText={(text) => setStandardText(text.slice(0, 80))}
-        onClose={withHaptic('selection', () => setOverlay(null))}
-        onSave={withHaptic('success', saveTodayStandard)}
+        onClose={withHaptic('light', () => setOverlay(null))}
+        onSave={withHaptic('confirm', saveTodayStandard)}
       />
       <TodayCardEditSheet
         bottomInset={insets.bottom}
         open={todayCardEditFrame !== null}
-        onClose={withHaptic('selection', () => setTodayCardEditFrame(null))}
+        onClose={withHaptic('light', () => setTodayCardEditFrame(null))}
         onEditImage={() => {
           const frame = todayCardEditFrame;
           setTodayCardEditFrame(null);
@@ -517,7 +540,7 @@ function AlphaApp() {
         }}
         onEditStandard={() => {
           setTodayCardEditFrame(null);
-          playHaptic(hapticsEnabled, 'selection');
+          playHaptic(hapticsEnabled, 'light');
           openTodayStandard();
         }}
       />
@@ -526,11 +549,19 @@ function AlphaApp() {
         routineName={routineName}
         selectedCat={selectedCat}
         selectedScope={selectedScope}
-        onAdd={withHaptic('success', addPersonalRoutine)}
+        onAdd={withHaptic('confirm', addPersonalRoutine)}
         onChangeName={setRoutineName}
-        onClose={withHaptic('selection', () => setOverlay(null))}
-        onSelectCat={setSelectedCat}
-        onSelectScope={setSelectedScope}
+        onClose={withHaptic('light', () => setOverlay(null))}
+        onSelectCat={(category) => {
+          if (category === selectedCat) return;
+          playHaptic(hapticsEnabled, 'rigid');
+          setSelectedCat(category);
+        }}
+        onSelectScope={(scope) => {
+          if (scope === selectedScope) return;
+          playHaptic(hapticsEnabled, 'rigid');
+          setSelectedScope(scope);
+        }}
       />
       <DayDetailSheet
         course={recordCourse}
@@ -539,24 +570,24 @@ function AlphaApp() {
         records={sortedRecords}
         routines={routines}
         state={state}
-        onClose={withHaptic('selection', () => setOverlay(null))}
+        onClose={withHaptic('light', () => setOverlay(null))}
       />
       <ResetDataModal
         open={overlay === 'resetData'}
-        onClose={withHaptic('selection', () => setOverlay(null))}
-        onReset={withHaptic('warning', resetData)}
+        onClose={withHaptic('light', () => setOverlay(null))}
+        onReset={withHaptic('destructive', resetData)}
       />
       <AppInfoModal
         level={state.currentCourse.level}
         open={overlay === 'appInfo'}
-        onClose={withHaptic('selection', () => setOverlay(null))}
+        onClose={withHaptic('light', () => setOverlay(null))}
       />
       <LanguageModal
         language={state.settings.language ?? 'system'}
         open={overlay === 'language'}
-        onClose={withHaptic('selection', () => setOverlay(null))}
+        onClose={withHaptic('light', () => setOverlay(null))}
         onSelect={(language) => {
-          playHaptic(hapticsEnabled, 'selection');
+          playHaptic(hapticsEnabled, 'rigid');
           setLanguage(language);
           setOverlay(null);
         }}
@@ -567,9 +598,10 @@ function AlphaApp() {
         open={cardVisualSelection !== null}
         target={cardVisualSelection?.target ?? null}
         onChoose={() => {
+          playHaptic(hapticsEnabled, 'light');
           if (cardVisualSelection) void chooseCardImage(cardVisualSelection);
         }}
-        onClose={withHaptic('selection', () => setCardVisualSelection(null))}
+        onClose={withHaptic('light', () => setCardVisualSelection(null))}
         onRestore={() => {
           if (cardVisualSelection) void restoreCardImage(cardVisualSelection.target);
         }}
@@ -587,9 +619,10 @@ function AlphaApp() {
           }}
           topInset={insets.top}
           onApply={(image) => saveCroppedCardImage(cardCropSelection.target, image)}
-          onCancel={withHaptic('selection', () => setCardCropSelection(null))}
+          onCancel={withHaptic('light', () => setCardCropSelection(null))}
           onError={() => {
             setCardCropSelection(null);
+            playHaptic(hapticsEnabled, 'error');
             showToast(t('imageSaveFailed'));
           }}
         />
@@ -675,7 +708,7 @@ function OnboardingScreen({ onStart }: { onStart: () => void }) {
   const surfaceHeight = Math.max(height, 690);
   const wordmarkWidth = width * 0.435;
   const alphaWidth = width * 0.59;
-  const taglineWidth = width * 0.49;
+  const taglineWidth = width * 0.64;
   const buttonWidth = width * 0.675;
 
   return (
@@ -690,15 +723,20 @@ function OnboardingScreen({ onStart }: { onStart: () => void }) {
       />
       {i18n.locale === 'ko' ? (
         <Image
+          accessibilityLabel={i18n.tagline.replace('\n', ' ')}
+          accessible
+          resizeMode="contain"
           source={visuals.onboardingTagline}
-          style={[styles.onboardingTagline, { height: taglineWidth * (130 / 480), top: surfaceHeight * 0.64, width: taglineWidth }]}
+          style={[styles.onboardingTagline, { height: taglineWidth * (190 / 640), top: surfaceHeight * 0.64, width: taglineWidth }]}
         />
       ) : (
-        <Text maxFontSizeMultiplier={DISPLAY_TEXT_MAX_SCALE} style={[styles.onboardingTaglineText, { top: surfaceHeight * 0.64, width: width * 0.78 }]}>
+        <Text
+          maxFontSizeMultiplier={DISPLAY_TEXT_MAX_SCALE}
+          style={[styles.onboardingTaglineText, { top: surfaceHeight * 0.64, width: width * 0.78 }]}
+        >
           {i18n.tagline}
         </Text>
       )}
-      <View style={[styles.onboardingRule, { top: surfaceHeight * 0.718 }]} />
       <TouchableOpacity
         accessibilityLabel={i18n.t('start')}
         accessibilityRole="button"
@@ -709,7 +747,10 @@ function OnboardingScreen({ onStart }: { onStart: () => void }) {
         {i18n.locale === 'ko' ? (
           <Image source={visuals.onboardingStartButton} style={styles.onboardingStartButtonImage} />
         ) : (
-          <Text adjustsFontSizeToFit maxFontSizeMultiplier={DISPLAY_TEXT_MAX_SCALE} minimumFontScale={0.72} numberOfLines={1} style={styles.onboardingStartButtonText}>{i18n.t('start')}</Text>
+          <>
+            <View pointerEvents="none" style={styles.onboardingStartButtonLocalizedFrame} />
+            <Text adjustsFontSizeToFit maxFontSizeMultiplier={DISPLAY_TEXT_MAX_SCALE} minimumFontScale={0.72} numberOfLines={1} style={styles.onboardingStartButtonText}>{i18n.t('start')}</Text>
+          </>
         )}
       </TouchableOpacity>
     </View>
@@ -735,6 +776,7 @@ function TodayScreen({
   onOpenReflection,
   onRemoveRoutine,
   onRestoreRoutines,
+  onRoutineEditingToggle,
   onShareApp,
   onStartNextCourse,
   onSettings,
@@ -758,6 +800,7 @@ function TodayScreen({
   onOpenReflection: () => void;
   onRemoveRoutine: (id: string) => void;
   onRestoreRoutines: () => void;
+  onRoutineEditingToggle: () => void;
   onShareApp: () => void;
   onStartNextCourse: () => void;
   onSettings: () => void;
@@ -832,7 +875,10 @@ function TodayScreen({
         <SectionTitle
           actionLabel={!locked ? t(editingRoutines ? 'finishEditing' : 'edit') : undefined}
           title={t('todayRoutines')}
-          onAction={!locked ? () => setEditingRoutines((editing) => !editing) : undefined}
+          onAction={!locked ? () => {
+            onRoutineEditingToggle();
+            setEditingRoutines((editing) => !editing);
+          } : undefined}
         />
         <RoutineList
           editing={editingRoutines}
@@ -3017,21 +3063,22 @@ const styles = StyleSheet.create({
     position: 'absolute',
     textAlign: 'center',
   },
-  onboardingRule: {
-    alignSelf: 'center',
-    backgroundColor: colors.red,
-    height: 2,
-    position: 'absolute',
-    width: 42,
-  },
   onboardingStartButton: {
     alignItems: 'center',
     alignSelf: 'center',
-    borderColor: colors.red,
     borderRadius: 18,
-    borderWidth: 1,
     justifyContent: 'center',
     position: 'absolute',
+  },
+  onboardingStartButtonLocalizedFrame: {
+    borderColor: 'rgba(241, 25, 25, 0.82)',
+    borderRadius: 10,
+    borderWidth: 1,
+    bottom: '19%',
+    left: '7.3%',
+    position: 'absolute',
+    right: '7.3%',
+    top: '19%',
   },
   onboardingStartButtonImage: {
     height: '100%',
@@ -3040,7 +3087,7 @@ const styles = StyleSheet.create({
   onboardingStartButtonText: {
     color: colors.white,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    fontSize: 21,
+    fontSize: 19,
     textAlign: 'center',
   },
   programProgress: {

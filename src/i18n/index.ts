@@ -35,16 +35,16 @@ const localeTags: Record<AppLocale, string> = {
 };
 
 const taglines: Record<AppLocale, string> = {
-  ko: '흔들려도, 이어가라.',
-  en: 'Waver, but do not stop.',
-  ja: '揺れても、止まるな。',
-  es: 'Aunque vaciles, no te detengas.',
-  de: 'Auch wenn du wankst, bleib nicht stehen.',
-  fr: 'Même si tu vacilles, ne t’arrête pas.',
-  zh: '即使动摇，也不要停下。',
-  'pt-BR': 'Mesmo que vacile, não pare.',
-  'zh-Hant': '即使動搖，也不要停下。',
-  it: 'Anche se vacilli, non fermarti.',
+  ko: '90일로 네 인생을\n다시 세워라.',
+  en: 'Rebuild your life in 90 days.',
+  ja: '90日で、人生を立て直せ。',
+  es: 'Reconstruye tu vida en 90 días.',
+  de: 'Baue dein Leben in 90 Tagen neu auf.',
+  fr: 'Rebâtis ta vie en 90 jours.',
+  zh: '用90天，重塑你的人生。',
+  'pt-BR': 'Reconstrua sua vida em 90 dias.',
+  'zh-Hant': '用90天，重塑你的人生。',
+  it: 'Ricostruisci la tua vita in 90 giorni.',
 };
 
 const courseNames: Record<AppLocale, (level: CourseLevel) => string> = {
