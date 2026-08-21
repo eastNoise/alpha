@@ -1,12 +1,15 @@
 import { courseRoutinesFor, createInitialState, dateForCourseDay } from '../data';
-import { AppState, Routine } from '../types';
+import { AppState, CourseLevel, Routine } from '../types';
 import {
+  applyRoutinePreferences,
+  courseRoutinePreferencesFor,
   courseRoutineTemplates,
   courseStateFor,
   createRecordForDay,
   courseResultForRoutines,
   elapsedCourseDayForDate,
   mergeRecord,
+  resetRoutineCompletion,
   routinesForNewDay,
 } from './alpha';
 
@@ -16,10 +19,33 @@ const COURSE_PASS_THRESHOLD = {
   HARD: 90,
 } as const;
 
+const COURSE_LEVELS: CourseLevel[] = ['BASIC', 'STANDARD', 'HARD'];
+
+function hydratedRoutinePreferences(state: AppState) {
+  return Object.fromEntries(
+    COURSE_LEVELS.map((level) => [level, courseRoutinePreferencesFor(state, level)]),
+  ) as AppState['routinePreferencesByCourse'];
+}
+
 export function courseRoutineTemplatesFor(state: AppState): Routine[] {
   const templates = (state as Partial<AppState>).courseRoutineTemplates;
   if (Array.isArray(templates)) return templates.map((routine) => ({ ...routine, done: false }));
   return courseRoutineTemplates(state);
+}
+
+export function resetProgressPreservingSettings(state: AppState): AppState {
+  const fresh = createInitialState();
+  return {
+    ...fresh,
+    hasOnboarded: true,
+    routinesByDate: {
+      [fresh.today.date]: resetRoutineCompletion(fresh.routinesByDate[fresh.today.date]),
+    },
+    settings: {
+      ...fresh.settings,
+      ...state.settings,
+    },
+  };
 }
 
 export function isCourseComplete(state: AppState) {
@@ -78,8 +104,13 @@ export function startNextCourse(state: AppState, startedAt = state.today.date): 
       hasReflection: false,
       isClosed: false,
       result: null,
+      standard: '',
     },
     courseRoutineTemplates: [],
+    routinePreferencesByCourse: {
+      ...hydratedRoutinePreferences(state),
+      [level]: { hiddenRoutineIds: [], order: [] },
+    },
     routinesByDate: {
       ...state.routinesByDate,
       [startedAt]: [],
@@ -111,8 +142,13 @@ export function restartCurrentCourse(state: AppState, startedAt = state.today.da
       hasReflection: false,
       isClosed: false,
       result: null,
+      standard: '',
     },
     courseRoutineTemplates: [],
+    routinePreferencesByCourse: {
+      ...hydratedRoutinePreferences(state),
+      [level]: { hiddenRoutineIds: [], order: [] },
+    },
     records: state.records.filter((record) => record.course !== level),
     routinesByDate: {
       ...state.routinesByDate,
@@ -124,6 +160,13 @@ export function restartCurrentCourse(state: AppState, startedAt = state.today.da
 }
 
 export function reopenTodayForEditing(state: AppState): AppState {
+  const currentRecord = state.records.find(
+    (record) => (
+      record.course === state.currentCourse.level
+      && record.day === state.currentCourse.day
+      && record.date === state.today.date
+    ),
+  );
   const records = state.records.filter(
     (record) => !(
       record.course === state.currentCourse.level
@@ -136,6 +179,7 @@ export function reopenTodayForEditing(state: AppState): AppState {
     hasReflection: false,
     isClosed: false,
     result: null,
+    standard: state.today.standard ?? currentRecord?.standard ?? '',
   };
   const nextState: AppState = {
     ...state,
@@ -154,6 +198,7 @@ export function reconcileStateForDate(input: AppState, currentDate: string): App
     ...initial,
     ...input,
     courseRoutineTemplates: courseRoutineTemplatesFor(input),
+    routinePreferencesByCourse: hydratedRoutinePreferences(input),
     currentCourse: {
       ...initial.currentCourse,
       ...input.currentCourse,
@@ -185,7 +230,11 @@ export function reconcileStateForDate(input: AppState, currentDate: string): App
     .map((routine) => routine.id)
     .sort()
     .join('|');
-  const expectedCourseRoutines = courseRoutinesFor(hydrated.currentCourse.level, hydrated.currentCourse.day);
+  const routinePreferences = courseRoutinePreferencesFor(hydrated);
+  const expectedCourseRoutines = applyRoutinePreferences(
+    courseRoutinesFor(hydrated.currentCourse.level, hydrated.currentCourse.day),
+    routinePreferences,
+  );
   const expectedRoutineIds = expectedCourseRoutines.map((routine) => routine.id).sort().join('|');
   const hasCurrentCourseRecord = hydrated.records.some(
     (record) => record.course === hydrated.currentCourse.level && record.day === hydrated.currentCourse.day,
@@ -196,13 +245,13 @@ export function reconcileStateForDate(input: AppState, currentDate: string): App
     && currentCoreRoutineIds !== expectedRoutineIds
   ) {
     const existingRoutines = new Map(currentRoutines.map((routine) => [routine.id, routine]));
-    hydrated.routinesByDate[hydrated.today.date] = [
+    hydrated.routinesByDate[hydrated.today.date] = applyRoutinePreferences([
       ...expectedCourseRoutines.map((routine) => ({
         ...routine,
         done: existingRoutines.get(routine.id)?.done ?? false,
       })),
       ...currentRoutines.filter((routine) => routine.type === 'personal'),
-    ];
+    ], routinePreferences);
   }
 
   hydrated.currentCourse = courseStateFor(hydrated, hydrated.today.date, hydrated.records);
@@ -229,6 +278,7 @@ export function reconcileStateForDate(input: AppState, currentDate: string): App
           day,
           level: hydrated.currentCourse.level,
           routines: dayRoutines,
+          standard: date === hydrated.today.date ? hydrated.today.standard : undefined,
           status,
         }),
       );
@@ -250,6 +300,7 @@ export function reconcileStateForDate(input: AppState, currentDate: string): App
       hasReflection: false,
       isClosed: false,
       result: null,
+      standard: '',
     },
   };
   nextState.currentCourse = courseStateFor(nextState, currentDate, records);

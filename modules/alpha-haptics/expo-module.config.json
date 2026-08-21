@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["AlphaHapticsModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.alphahaptics.AlphaHapticsModule"]
+  }
+}

@@ -53,6 +53,30 @@ try {
     'zh-Hant': ['套用', '調整圖片'],
     it: ['Applica', 'Regola immagine'],
   };
+  const dayCloseLabels = {
+    ko: ['오늘 마감', '아직 {count}개 남았다.', '이대로 마감하면 오늘은 미완성으로 기록된다.', '돌아가기', '미완성으로 마감', '오늘의 기준을 지켰다.'],
+    en: ['Close today', 'You still have {count} left.', 'Closing now will record today as incomplete.', 'Go back', 'Close as incomplete', "You held today's standard."],
+    ja: ['今日を締める', 'まだ{count}件残っている。', 'このまま締めると、今日は未完了として記録される。', '戻る', '未完了で締める', '今日の基準を守った。'],
+    es: ['Cerrar el día', 'Aún quedan {count}.', 'Si cierras ahora, hoy quedará registrado como incompleto.', 'Volver', 'Cerrar como incompleto', 'Cumpliste el estándar de hoy.'],
+    de: ['Tag abschließen', 'Noch {count} offen.', 'Wenn du jetzt abschließt, wird der heutige Tag als unvollständig gespeichert.', 'Zurück', 'Unvollständig abschließen', 'Du hast deinen heutigen Standard gehalten.'],
+    fr: ['Clore la journée', 'Il en reste encore {count}.', 'Si tu clos maintenant, cette journée sera enregistrée comme incomplète.', 'Retour', 'Clore comme incomplète', 'Tu as respecté l’exigence du jour.'],
+    zh: ['结束今天', '还有 {count} 项未完成。', '现在结束，今天将被记录为未完成。', '返回', '按未完成结束', '你守住了今天的标准。'],
+    'pt-BR': ['Encerrar o dia', 'Ainda faltam {count}.', 'Se encerrar agora, o dia será registrado como incompleto.', 'Voltar', 'Encerrar como incompleto', 'Você manteve o padrão de hoje.'],
+    'zh-Hant': ['結束今天', '還有 {count} 項未完成。', '現在結束，今天將記錄為未完成。', '返回', '以未完成結束', '你守住了今天的標準。'],
+    it: ['Chiudi la giornata', 'Ne restano ancora {count}.', 'Se chiudi ora, oggi verrà registrato come incompleto.', 'Indietro', 'Chiudi come incompleto', 'Hai rispettato lo standard di oggi.'],
+  };
+  const shareAppLabels = {
+    ko: '친구에게 앱 공유하기',
+    en: 'Share ALPHA with a friend',
+    ja: '友達にアプリを共有',
+    es: 'Compartir la app con un amigo',
+    de: 'App mit einem Freund teilen',
+    fr: 'Partager l’app avec un ami',
+    zh: '把应用分享给朋友',
+    'pt-BR': 'Compartilhar o app com um amigo',
+    'zh-Hant': '把 App 分享給朋友',
+    it: 'Condividi l’app con un amico',
+  };
   const nativeLocaleDirectories = {
     ko: 'ko', en: 'en', ja: 'ja', es: 'es', de: 'de', fr: 'fr', zh: 'zh-Hans',
     'pt-BR': 'pt-BR', 'zh-Hant': 'zh-Hant', it: 'it',
@@ -69,6 +93,23 @@ try {
     assert.equal(content.ui.apply, cropEditorLabels[locale][0], `${locale} crop apply label`);
     assert.equal(content.ui.adjustCardImage, cropEditorLabels[locale][1], `${locale} crop title`);
     assert.ok(content.ui.cropImageInstruction.trim(), `${locale} crop instruction`);
+    assert.deepEqual(
+      [
+        content.ui.closeDayAction,
+        content.ui.incompleteCloseTitle,
+        content.ui.incompleteCloseCopy,
+        content.ui.returnToRoutines,
+        content.ui.closeIncomplete,
+        content.ui.resultCompleteCopy,
+      ],
+      dayCloseLabels[locale],
+      `${locale} day-close labels`,
+    );
+    assert.equal(content.ui.shareApp, shareAppLabels[locale], `${locale} share label`);
+    assert.ok(content.ui.shareAppTitle.trim(), `${locale} missing share title`);
+    assert.ok(content.ui.shareAppMessage.trim(), `${locale} missing share message`);
+    assert.doesNotMatch(content.ui.shareAppMessage, /https?:\/\//u, `${locale} share link must remain unset`);
+    assert.ok(content.ui.shareFailedToast.trim(), `${locale} missing share failure message`);
     for (const id of routineIds) {
       assert.ok(content.routines[id]?.trim(), `${locale} missing routine ${id}`);
     }

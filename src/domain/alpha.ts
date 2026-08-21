@@ -1,5 +1,20 @@
-import { AppState, DayRecord, Routine } from '../types';
+import { AppState, CourseRoutinePreferences, DayRecord, Routine } from '../types';
 import { courseRoutinesFor, courseStageForDay, dateForCourseDay, dateKeyToDayNumber, getTodayKey, stageForDay } from '../data';
+
+const PROGRAM_DAY_OFFSET: Record<AppState['currentCourse']['level'], number> = {
+  BASIC: 0,
+  STANDARD: 30,
+  HARD: 60,
+};
+
+export function programDayForCourse(level: AppState['currentCourse']['level'], courseDay: number) {
+  const normalizedCourseDay = Math.min(30, Math.max(1, courseDay));
+  return PROGRAM_DAY_OFFSET[level] + normalizedCourseDay;
+}
+
+export function programProgressForCourse(level: AppState['currentCourse']['level'], courseDay: number) {
+  return Math.round((programDayForCourse(level, courseDay) / 90) * 100);
+}
 
 export function doneCount(routines: Routine[]) {
   return routines.filter((routine) => routine.done).length;
@@ -104,12 +119,73 @@ export function courseRoutineTemplates(state: AppState) {
   return Array.from(templates.values());
 }
 
+export function courseRoutinePreferencesFor(
+  state: AppState,
+  level = state.currentCourse.level,
+): CourseRoutinePreferences {
+  const stored = (state as Partial<AppState>).routinePreferencesByCourse?.[level];
+  return {
+    hiddenRoutineIds: Array.from(new Set(stored?.hiddenRoutineIds ?? [])),
+    order: Array.from(new Set(stored?.order ?? [])),
+  };
+}
+
+export function applyRoutinePreferences(
+  routines: Routine[],
+  preferences: CourseRoutinePreferences,
+) {
+  const hiddenRoutineIds = new Set(preferences.hiddenRoutineIds);
+  const orderById = new Map(preferences.order.map((id, index) => [id, index]));
+  const fallbackStart = preferences.order.length;
+
+  return routines
+    .filter((routine) => routine.type !== 'basic' || !hiddenRoutineIds.has(routine.id))
+    .map((routine, index) => ({ index, routine }))
+    .sort((left, right) => (
+      (orderById.get(left.routine.id) ?? fallbackStart + left.index)
+      - (orderById.get(right.routine.id) ?? fallbackStart + right.index)
+    ))
+    .map(({ routine }) => routine);
+}
+
+export function restoreRoutineAtPosition({
+  fallbackIndex,
+  nextRoutineId,
+  previousRoutineId,
+  routine,
+  routines,
+}: {
+  fallbackIndex: number;
+  nextRoutineId?: string;
+  previousRoutineId?: string;
+  routine: Routine;
+  routines: Routine[];
+}) {
+  if (routines.some((item) => item.id === routine.id)) return routines;
+
+  const nextIndex = nextRoutineId
+    ? routines.findIndex((item) => item.id === nextRoutineId)
+    : -1;
+  const previousIndex = previousRoutineId
+    ? routines.findIndex((item) => item.id === previousRoutineId)
+    : -1;
+  const insertionIndex = nextIndex >= 0
+    ? nextIndex
+    : previousIndex >= 0
+      ? previousIndex + 1
+      : Math.max(0, Math.min(routines.length, fallbackIndex));
+
+  const restored = [...routines];
+  restored.splice(insertionIndex, 0, { ...routine });
+  return restored;
+}
+
 export function routinesForNewDay(state: AppState, day = state.currentCourse.day) {
   const templates = (state as Partial<AppState>).courseRoutineTemplates;
-  return [
+  return applyRoutinePreferences([
     ...cloneRoutines(courseRoutinesFor(state.currentCourse.level, day)),
     ...(Array.isArray(templates) ? cloneRoutines(templates) : courseRoutineTemplates(state)),
-  ];
+  ], courseRoutinePreferencesFor(state));
 }
 
 export function resetRoutineCompletion(routines: Routine[]) {
@@ -122,6 +198,7 @@ export function createRecordForDay({
   day,
   level,
   reflection,
+  standard,
   routines,
   status,
 }: {
@@ -130,6 +207,7 @@ export function createRecordForDay({
   day: number;
   level: AppState['currentCourse']['level'];
   reflection?: string;
+  standard?: string;
   routines: Routine[];
   status: DayRecord['status'];
 }): DayRecord {
@@ -143,6 +221,7 @@ export function createRecordForDay({
     completedRoutineIds: routines.filter((routine) => routine.done).map((routine) => routine.id),
     missedRoutineIds: routines.filter((routine) => !routine.done).map((routine) => routine.id),
     reflection,
+    standard: standard?.trim() || undefined,
     closedAt,
   };
 }

@@ -21,8 +21,8 @@ try {
   ], { stdio: 'inherit' });
 
   const { basicRoutines, courseRoutinesFor, courseStageForDay, createInitialState, dailyMottos, dailyMottoFor, dateForCourseDay } = require(join(outputDirectory, 'data.js'));
-  const { courseResultForRoutines, courseStateFor, createRecordForDay, doneCount, elapsedCourseDayForDate, mergeRecord, progressForRecords, recordsForCourse, routinesForNewDay, streakCount } = require(join(outputDirectory, 'domain/alpha.js'));
-  const { canRestartCurrentCourse, canStartNextCourse, courseCompletionRate, courseRoutineTemplatesFor, hasPassedCurrentCourse, isCourseComplete, nextCourseLevel, reconcileStateForDate, reopenTodayForEditing, restartCurrentCourse, startNextCourse } = require(join(outputDirectory, 'domain/stateLifecycle.js'));
+  const { applyRoutinePreferences, courseResultForRoutines, courseRoutinePreferencesFor, courseStateFor, createRecordForDay, doneCount, elapsedCourseDayForDate, mergeRecord, programDayForCourse, programProgressForCourse, progressForRecords, recordsForCourse, restoreRoutineAtPosition, routinesForNewDay, streakCount } = require(join(outputDirectory, 'domain/alpha.js'));
+  const { canRestartCurrentCourse, canStartNextCourse, courseCompletionRate, courseRoutineTemplatesFor, hasPassedCurrentCourse, isCourseComplete, nextCourseLevel, reconcileStateForDate, reopenTodayForEditing, resetProgressPreservingSettings, restartCurrentCourse, startNextCourse } = require(join(outputDirectory, 'domain/stateLifecycle.js'));
   const appSource = readFileSync(resolve('App.tsx'), 'utf8');
 
   assert.equal(appSource.includes('>BASIC 과정</Text>'), false);
@@ -30,6 +30,38 @@ try {
   assert.equal(appSource.includes('basicRoutines'), false);
   assert.equal(appSource.includes('stageItems'), false);
   assert.equal(appSource.includes('<SectionTitle title="기본 루틴" />'), false);
+  assert.equal(appSource.includes('accessibilityRole="tab"'), false);
+  assert.equal(appSource.includes('accessibilityRole="radio"'), false);
+  assert.ok(appSource.includes('name="reorder-three-outline"'));
+  assert.ok(appSource.includes('disabled={!routineName.trim()}'));
+  assert.equal(appSource.includes('v19 · 1.0.0'), false);
+  assert.ok(appSource.includes('value={APP_VERSION_LABEL}'));
+  assert.ok(appSource.includes('style={styles.standardModalScroll}'));
+  assert.ok(appSource.includes('style={styles.bottomSheetScroll}'));
+  assert.ok(appSource.includes("accessibilityRole={checked === undefined ? 'button' : 'switch'}"));
+  assert.ok(appSource.includes('onPress={() => onOpenDay(record.day)}'));
+  assert.ok(appSource.includes('await Share.share'));
+  assert.ok(appSource.includes("const APP_SHARE_URL = '';"));
+  assert.equal(appSource.includes('apps.apple.com'), false);
+  assert.equal(appSource.includes('play.google.com'), false);
+
+  const todayScreenSource = appSource.slice(
+    appSource.indexOf('function TodayScreen'),
+    appSource.indexOf('function RecordsScreen'),
+  );
+  assert.ok(todayScreenSource.includes('canStartNextCourse'));
+  assert.ok(todayScreenSource.includes('canShareApp'));
+  assert.ok(todayScreenSource.includes("t('shareApp')"));
+  assert.ok(todayScreenSource.includes('onStartNextCourse'));
+  assert.ok(todayScreenSource.includes('onShareApp'));
+
+  const courseScreenSource = appSource.slice(
+    appSource.indexOf('function CourseScreen'),
+    appSource.indexOf('function DetailScreen'),
+  );
+  assert.ok(courseScreenSource.includes("state.currentCourse.level === 'BASIC'"));
+  assert.ok(courseScreenSource.includes("t('shareApp')"));
+  assert.ok(courseScreenSource.includes('onShareApp'));
 
   const chooseCardImageSource = appSource.slice(
     appSource.indexOf('async function chooseCardImage'),
@@ -82,6 +114,7 @@ try {
       level: state.currentCourse.level,
       reflection,
       routines,
+      standard: state.today.standard,
       status: courseResultForRoutines(routines),
     });
     const records = mergeRecord(state.records, record);
@@ -93,6 +126,7 @@ try {
         hasReflection: Boolean(reflection),
         isClosed: true,
         result: record.status,
+        standard: state.today.standard,
         closedAt: record.closedAt,
       },
       records,
@@ -175,6 +209,12 @@ try {
   }
   assert.equal(dailyMottoFor('STANDARD', 30), '좋은 사람을 논하지 마라.\n이제 그런 사람이 되어라.');
   assert.equal(dailyMottoFor('HARD', 26), '자신을 돌아보아 옳다면\n천만 명이 막아서도\n나아가라.');
+  assert.equal(programDayForCourse('BASIC', 1), 1);
+  assert.equal(programDayForCourse('BASIC', 30), 30);
+  assert.equal(programDayForCourse('STANDARD', 1), 31);
+  assert.equal(programDayForCourse('HARD', 14), 74);
+  assert.equal(programDayForCourse('HARD', 30), 90);
+  assert.equal(programProgressForCourse('HARD', 14), 82);
   for (const level of ['BASIC', 'STANDARD', 'HARD']) {
     for (const motto of dailyMottos[level]) {
       assert.ok(motto.split('\n').length <= 3, `${level} motto exceeds three deliberate lines: ${motto}`);
@@ -197,11 +237,78 @@ try {
     assert.equal(canStartNextCourse(ended), expectedPass && level !== 'HARD');
   }
 
+  const progressToReset = endedCourseState('BASIC', 15);
+  progressToReset.settings = {
+    ...progressToReset.settings,
+    hapticsEnabled: false,
+    language: 'de',
+    notificationsEnabled: false,
+  };
+  const resetProgress = resetProgressPreservingSettings(progressToReset);
+  assert.equal(resetProgress.hasOnboarded, true);
+  assert.equal(resetProgress.currentCourse.level, 'BASIC');
+  assert.equal(resetProgress.currentCourse.day, 1);
+  assert.equal(resetProgress.records.length, 0);
+  assert.deepEqual(resetProgress.settings, progressToReset.settings);
+
   const templated = stateFor('2026-07-01');
   templated.courseRoutineTemplates = [template];
   assert.equal(routinesForNewDay(templated).some((routine) => routine.id === template.id), true);
   templated.courseRoutineTemplates = [];
   assert.equal(routinesForNewDay(templated).some((routine) => routine.id === template.id), false);
+
+  const preferredRoutines = stateFor('2026-07-01');
+  const [waterRoutine, bedRoutine, pushupRoutine] = courseRoutinesFor('BASIC', 1);
+  preferredRoutines.routinePreferencesByCourse.BASIC = {
+    hiddenRoutineIds: [bedRoutine.id],
+    order: [pushupRoutine.id, waterRoutine.id],
+  };
+  assert.deepEqual(
+    routinesForNewDay(preferredRoutines).map((routine) => routine.id),
+    [pushupRoutine.id, waterRoutine.id],
+  );
+  assert.deepEqual(
+    applyRoutinePreferences(courseRoutinesFor('BASIC', 1), courseRoutinePreferencesFor(preferredRoutines))
+      .map((routine) => routine.id),
+    [pushupRoutine.id, waterRoutine.id],
+  );
+
+  const orderedRoutines = [
+    { ...waterRoutine, id: 'a' },
+    { ...bedRoutine, id: 'b' },
+    { ...pushupRoutine, id: 'c' },
+    { ...pushupRoutine, id: 'd' },
+  ];
+  const reorderedAfterRemoval = [orderedRoutines[3], orderedRoutines[0], orderedRoutines[2]];
+  assert.deepEqual(
+    restoreRoutineAtPosition({
+      fallbackIndex: 1,
+      nextRoutineId: 'c',
+      previousRoutineId: 'a',
+      routine: orderedRoutines[1],
+      routines: reorderedAfterRemoval,
+    }).map((routine) => routine.id),
+    ['d', 'a', 'b', 'c'],
+  );
+  assert.deepEqual(
+    restoreRoutineAtPosition({
+      fallbackIndex: 1,
+      routine: orderedRoutines[1],
+      routines: [orderedRoutines[0], orderedRoutines[2]],
+    }).map((routine) => routine.id),
+    ['a', 'b', 'c'],
+  );
+  preferredRoutines.routinesByDate['2026-07-01'] = routinesForNewDay(preferredRoutines);
+  const preferredSameDay = reconcileStateForDate(preferredRoutines, '2026-07-01');
+  assert.deepEqual(
+    preferredSameDay.routinesByDate['2026-07-01'].map((routine) => routine.id),
+    [pushupRoutine.id, waterRoutine.id],
+  );
+  const preferredNextDay = reconcileStateForDate(preferredSameDay, '2026-07-02');
+  assert.deepEqual(
+    preferredNextDay.routinesByDate['2026-07-02'].map((routine) => routine.id),
+    [pushupRoutine.id, waterRoutine.id],
+  );
 
   const completeCourseWithOpenPersonalRoutine = [
     ...courseRoutinesFor('BASIC', 1).map((routine) => ({ ...routine, done: true })),
@@ -216,13 +323,25 @@ try {
   const migrated = reconcileStateForDate(legacy, '2026-07-01');
   assert.equal(courseRoutineTemplatesFor(migrated).some((routine) => routine.id === template.id), true);
 
+  const legacyRoutinePreferences = stateFor('2026-07-01');
+  delete legacyRoutinePreferences.routinePreferencesByCourse;
+  const migratedRoutinePreferences = reconcileStateForDate(legacyRoutinePreferences, '2026-07-01');
+  assert.deepEqual(migratedRoutinePreferences.routinePreferencesByCourse, {
+    BASIC: { hiddenRoutineIds: [], order: [] },
+    STANDARD: { hiddenRoutineIds: [], order: [] },
+    HARD: { hiddenRoutineIds: [], order: [] },
+  });
+
   const rollover = stateFor('2026-07-01');
   rollover.courseRoutineTemplates = [template];
+  rollover.today.standard = '시작한 일은 오늘 끝낸다.';
   const advanced = reconcileStateForDate(rollover, '2026-07-03');
   assert.deepEqual(advanced.records.map((record) => record.day).sort(), [1, 2]);
   assert.equal(advanced.today.date, '2026-07-03');
   assert.equal(advanced.currentCourse.day, 3);
   assert.equal(advanced.routinesByDate['2026-07-03'].some((routine) => routine.id === template.id), true);
+  assert.equal(advanced.records.find((record) => record.day === 1).standard, '시작한 일은 오늘 끝낸다.');
+  assert.equal(advanced.today.standard, '');
 
   const stageBoundary = stateFor('2026-07-07', '2026-07-01');
   stageBoundary.currentCourse = courseStateFor(stageBoundary, '2026-07-07', stageBoundary.records);
@@ -344,9 +463,11 @@ try {
     level: 'BASIC',
     reflection: '오늘도 이어갔다.',
     routines: basicRoutines.map((routine) => ({ ...routine, done: true })),
+    standard: '  시작한 일은 끝낸다.  ',
     status: 'complete',
   });
   assert.equal(reflectionRecord.reflection, '오늘도 이어갔다.');
+  assert.equal(reflectionRecord.standard, '시작한 일은 끝낸다.');
   assert.deepEqual(reflectionRecord.completedRoutineIds, basicRoutines.map((routine) => routine.id));
   const replacedRecord = { ...reflectionRecord, reflection: '회고 수정' };
   const singleRecord = mergeRecord([reflectionRecord], replacedRecord);
@@ -363,6 +484,7 @@ try {
     day: 1,
     level: 'BASIC',
     routines: reopened.routinesByDate['2026-07-01'],
+    standard: '한 번 정한 기준은 지킨다.',
     status: 'incomplete',
   });
   reopened.records = [closedRecord];
@@ -378,6 +500,7 @@ try {
   assert.equal(editableAgain.today.isClosed, false);
   assert.equal(editableAgain.today.result, null);
   assert.equal(editableAgain.today.closedAt, undefined);
+  assert.equal(editableAgain.today.standard, '한 번 정한 기준은 지킨다.');
   assert.equal(editableAgain.records.some((record) => record.day === 1), false);
   assert.equal(editableAgain.routinesByDate['2026-07-01'][0].done, true);
   assert.equal(editableAgain.currentCourse.progress, 0);
@@ -403,23 +526,39 @@ try {
 
   const blockedStandardStart = startNextCourse(completed, '2026-07-30');
   assert.equal(blockedStandardStart, completed);
-  const basicRestart = restartCurrentCourse(completed, '2026-08-01');
+  const completedWithPreferences = {
+    ...completed,
+    routinePreferencesByCourse: {
+      ...completed.routinePreferencesByCourse,
+      BASIC: { hiddenRoutineIds: ['bed'], order: ['pushup', 'water'] },
+    },
+  };
+  const basicRestart = restartCurrentCourse(completedWithPreferences, '2026-08-01');
   assert.equal(basicRestart.currentCourse.level, 'BASIC');
   assert.equal(basicRestart.currentCourse.day, 1);
   assert.equal(basicRestart.records.some((record) => record.course === 'BASIC'), false);
+  assert.deepEqual(basicRestart.routinePreferencesByCourse.BASIC, { hiddenRoutineIds: [], order: [] });
 
   const passingBasicRecords = completedRecordsFor('BASIC', 15, '2026-07-01');
   const passingBasic = { ...completed, records: [completed.records[0], ...passingBasicRecords] };
   assert.equal(courseCompletionRate(passingBasic), 50);
   assert.equal(hasPassedCurrentCourse(passingBasic), true);
   assert.equal(canStartNextCourse(passingBasic), true);
-  const standardStart = startNextCourse(passingBasic, '2026-07-30');
+  const passingBasicWithPreferences = {
+    ...passingBasic,
+    routinePreferencesByCourse: {
+      ...passingBasic.routinePreferencesByCourse,
+      STANDARD: { hiddenRoutineIds: ['standard-bed'], order: ['standard-water'] },
+    },
+  };
+  const standardStart = startNextCourse(passingBasicWithPreferences, '2026-07-30');
   assert.equal(standardStart.currentCourse.level, 'STANDARD');
   assert.equal(standardStart.currentCourse.day, 1);
   assert.equal(standardStart.currentCourse.progress, 0);
   assert.equal(isCourseComplete(standardStart), false);
   assert.equal(recordsForCourse(standardStart.records, 'BASIC').length, 16);
   assert.equal(recordsForCourse(standardStart.records, 'STANDARD').length, 0);
+  assert.deepEqual(standardStart.routinePreferencesByCourse.STANDARD, { hiddenRoutineIds: [], order: [] });
   assert.deepEqual(
     standardStart.routinesByDate['2026-07-30'].map((routine) => routine.id),
     courseRoutinesFor('STANDARD', 1).map((routine) => routine.id),
