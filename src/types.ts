@@ -36,6 +36,7 @@ export interface TodayState {
   isClosed: boolean;
   hasReflection: boolean;
   result: DayResult | null;
+  standard?: string;
   closedAt?: string;
 }
 
@@ -61,6 +62,7 @@ export interface DayRecord {
   completedRoutineIds: string[];
   missedRoutineIds: string[];
   reflection?: string;
+  standard?: string;
   closedAt: string;
 }
 
@@ -71,12 +73,18 @@ export interface SettingsState {
   language: SupportedLanguage;
 }
 
+export interface CourseRoutinePreferences {
+  hiddenRoutineIds: string[];
+  order: string[];
+}
+
 export interface AppState {
   schemaVersion: number;
   hasOnboarded: boolean;
   currentCourse: CourseState;
   today: TodayState;
   courseRoutineTemplates: Routine[];
+  routinePreferencesByCourse: Record<CourseLevel, CourseRoutinePreferences>;
   routinesByDate: Record<string, Routine[]>;
   records: DayRecord[];
   settings: SettingsState;

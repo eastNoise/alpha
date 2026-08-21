@@ -256,8 +256,14 @@ export function createInitialState(): AppState {
       isClosed: false,
       hasReflection: false,
       result: null,
+      standard: '',
     },
     courseRoutineTemplates: [],
+    routinePreferencesByCourse: {
+      BASIC: { hiddenRoutineIds: [], order: [] },
+      STANDARD: { hiddenRoutineIds: [], order: [] },
+      HARD: { hiddenRoutineIds: [], order: [] },
+    },
     routinesByDate: {
       [todayKey]: courseRoutinesFor('BASIC', 1),
     },
