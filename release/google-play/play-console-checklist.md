@@ -1,73 +1,67 @@
-# Google Play Console Final Checklist
+# ALPHA Google Play 업데이트 체크리스트
 
-## Release artifact
+최종 확인: 2026-08-22 KST
 
-- Current production release: `1.0.3 (3)`
-- Current Korean listing name: `ALPHA - 90일 자기통제`
-- Package: `com.eastnoise.alpha`
-- Version name: `1.0.4`
-- Version code: `4`
-- AAB: `release/google-play/build/ALPHA-1.0.4-vc4.aab` (local ignored build artifact)
-- AAB SHA-256: `3967425b93def1b73a706a7595b58577674cd193ce4f0da399baabeea2c689b8`
-- Local validation: the release bundle build and JAR signature verification passed, the signer matches the new upload key, and the merged release manifest has the expected package/version with blocked permissions absent.
-- Target SDK: `36`
-- Minimum SDK: `24`
-- Currently registered upload certificate SHA-256: `2C:6E:F9:25:25:E9:12:0A:D6:D6:A4:F3:83:86:5D:FF:94:44:B5:B0:12:0F:3C:8F:0F:6B:25:E9:BB:43:42:E6`
-- Upload key reset: requested on 2026-08-06 with the new certificate; Play Console shows the request as pending. Do not upload the AAB until the reset is approved.
+## 프로덕션 릴리스
 
-## Store setup
+- [x] 패키지: `com.eastnoise.alpha`
+- [x] 버전: `1.0.5 (5)`
+- [x] AAB: `release/google-play/build/ALPHA-1.0.5-vc5.aab` (로컬 빌드 산출물, Git 제외)
+- [x] AAB SHA-256: `d6fda684b9648ac74ee3398e703f69ad3303fd03df8b2b67411e939fe33868fc`
+- [x] 최소 SDK 24, 대상 SDK 36
+- [x] JAR 서명 검증과 `bundletool validate` 통과
+- [x] 카메라, 광범위 저장소, 마이크, 다른 앱 위 표시 권한이 병합 Manifest에 없음을 확인
+- [x] Google Play Developer API로 프로덕션 트랙에 제출
+- [x] API 재조회 결과: 릴리스 `1.0.5 (5)`, 상태 `completed`, version code `5`
 
-- App or game: App
-- Free or paid: Paid
-- Category: Productivity
-- Price in South Korea: KRW 4,400
-- Countries/regions: Select all intended countries before publishing.
-- Privacy policy: https://east-noise-web.vercel.app/legal/alpha/privacy
-- App website: https://east-noise-web.vercel.app/alpha
-- Support: https://east-noise-web.vercel.app/alpha/support
-- Store copy: `release/google-play/store-listings.json`
-- Release notes: `release/google-play/release-notes.json`
-- App icon: `release/google-play/assets/app-icon-512.png`
-- Feature graphic: `release/google-play/assets/feature-graphic.png`
-- Phone screenshot source: 10 locales x 6 status-neutral Android listing images under `release/google-play/screenshots/` (`1320 x 2640`).
-- Console application: 10 locale listings and 60 screenshots were committed through the Developer API on 2026-08-06.
-- Asset verification: live icon and feature graphic SHA-256 values match the local source files, so they were not re-uploaded.
-- API authentication: use keyless gcloud impersonation with the dedicated ALPHA Play service account; no service-account JSON key is stored locally or in the repository.
+`completed`는 프로덕션 트랙 편집이 커밋됐다는 뜻이다. 국가별 공개 페이지 전파와 Play 심사 완료는 별도 게이트로 다시 확인한다.
 
-## App content answers
+## 국가별 스토어 정보
 
-- App access: All functionality is available without login or restricted access.
-- Ads: No, the app does not contain ads.
-- Target audience: Not designed for children. Confirm the selected age group before submission.
-- News app: No.
-- Government app: No.
-- Financial features: None.
-- Health apps declaration: Select `Health and fitness > Activity and Fitness` because the app records exercise routines and progress. It does not diagnose, treat, access Health Connect, or collect health data.
-- Content rating: The current Korean public rating is `3세 이상`. Answer no to violence, depicted sexual material, gambling, drugs, profanity, and user-generated online content. The routine text includes a non-graphic `포르노 금지` item; review that wording when resubmitting the questionnaire.
+- [x] 한국어, 영어, 일본어, 스페인어, 독일어, 프랑스어, 포르투갈어(브라질), 중국어(번체), 이탈리아어, 중국어(간체) 10개 로케일 적용
+- [x] 로케일별 제목, 짧은 설명, 전체 설명을 서버 저장값과 대조
+- [x] 로케일별 업데이트 노트 적용
+- [x] 로케일별 휴대전화 스크린샷 8장, 총 80장 적용
+- [x] 80장의 서버 SHA-256과 로컬 원본이 모두 일치
+- [x] 새 512 x 512 앱 아이콘 적용 및 서버 SHA-256 일치 확인
+- [x] 기존 1024 x 500 피처 그래픽은 서버와 로컬 해시가 같아 유지
 
-## Data safety answers
+로케일 매핑:
 
-- Data collected: No.
-- Data shared with third parties: No.
-- User accounts: None.
-- Routine progress, reflections, settings, and selected card images stay on the user's device.
-- Photos: The user explicitly chooses an image for a card. Images are processed and stored locally and are not uploaded.
-- Notifications: The app schedules local reminders on the device. It does not use remote marketing notifications.
-- Permissions: The next build opens the Android system photo picker without requesting broad external-storage permission. Confirm the uploaded AAB no longer lists `READ_EXTERNAL_STORAGE` or `WRITE_EXTERNAL_STORAGE`.
-- Data deletion request: Not applicable because there is no account and no server-side user data. Deleting the app removes its local app data, subject to Android backup/restore behavior.
-- Security practices: Select the answers that correspond to no transmitted user data. Do not claim server-side encryption for data that never leaves the device.
+| 콘텐츠 | Google Play |
+| --- | --- |
+| 한국어 | `ko-KR` |
+| 영어(미국) | `en-US` |
+| 일본어 | `ja-JP` |
+| 스페인어(스페인) | `es-ES` |
+| 독일어 | `de-DE` |
+| 프랑스어 | `fr-FR` |
+| 포르투갈어(브라질) | `pt-BR` |
+| 중국어(번체) | `zh-TW` |
+| 이탈리아어 | `it-IT` |
+| 중국어(간체) | `zh-CN` |
 
-## Final manual checks
+## 유지한 콘솔 설정
 
-- ASO listing edits are complete. The upload-key reset request is pending; no AAB, release track, or production rollout has changed yet.
-- Real-device QA was intentionally skipped for this ASO-only pass and remains unverified.
+- 앱 유형: App
+- 유료 앱 설정과 가격
+- 카테고리: Productivity
+- 개인정보 처리방침, 웹사이트, 고객지원 URL
+- 앱 액세스, 광고, 대상 연령, 콘텐츠 등급, 건강 앱 선언, 데이터 보안 답변
+- 판매 국가와 지역
 
-- After the reset is approved, confirm the registered upload certificate matches the new local certificate before uploading `1.0.4 (4)`.
-- Confirm pricing and every country/region before publishing. A published free app cannot later be changed to paid.
-- Public checks on 2026-08-06 confirmed `KRW 4,400` and availability in KR. The same listing was publicly available in US, JP, ES, DE, FR, BR, TW, and IT; mainland China did not expose a Google Play sale page.
-- The exact Play Console country/region selection is still a console-only check and must be captured before publishing.
-- Review the automatically generated permission declaration after uploading the AAB.
-- Verify the Data safety preview matches the answers above.
-- Verify the content rating and target-audience result.
-- Run the closed-testing or production pre-launch report and review crashes, ANRs, accessibility, and screenshots.
-- Do not press the final production publish button until the above checks are complete.
+이번 업데이트에서는 위 설정을 변경하지 않았다. 앱 코드의 계정 없음, 서버 전송 없음, 기기 내 기록 저장 구조도 바뀌지 않았다.
+
+## 이번 범위에서 제외
+
+- [ ] Google Play 개발자 계정 이전
+- [ ] 매출, 지급, 재무 보고서 조회 또는 변경
+- [ ] 전체 판매 국가와 가격 재설정
+- [ ] 실제 Android 기기 QA와 Play 사전 출시 보고서 검토
+- [ ] 국가별 공개 페이지에서 `1.0.5` 전파 완료 확인
+
+## 다음 확인
+
+1. Play Console에서 업데이트 심사 또는 처리 상태를 확인한다.
+2. 공개 페이지에 `1.0.5`가 노출되면 한국어와 대표 해외 로케일의 아이콘, 문구, 스크린샷을 확인한다.
+3. 계정 이전이 완료된 뒤 새 소유자 계정의 API 권한과 릴리스 권한을 별도 검증한다.
