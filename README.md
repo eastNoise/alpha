@@ -1,6 +1,11 @@
 # ALPHA
 
-Expo React Native + TypeScript implementation of the ALPHA v19 mobile app.
+Expo SDK 57 + React Native + TypeScript implementation of the ALPHA v19 mobile app.
+
+Current release candidates: Android `1.0.6 (6)` and iOS `1.0.6 (20)`. See
+`release/google-play/release-status-2026-09-03.md` and
+`release/ios/release-status-2026-09-03.md` for the verified build and
+submission states.
 
 ## Project
 
@@ -21,7 +26,16 @@ The original ALPHA v19 planning and design handoff files are kept in:
 ## Commands
 
 ```sh
+nvm use 22 # Node.js 22.13 or newer
 npm install
 npx expo start
 npx tsc --noEmit
+npm run verify:core
+npm run verify:i18n
+npm run verify:google-play
+npm run build:android:release
 ```
+
+The Android release build regenerates the native project with Expo Prebuild.
+The local iOS config plugin keeps the ten localized photo-permission strings
+when the iOS project is regenerated.

@@ -1,67 +1,79 @@
-# ALPHA Google Play 업데이트 체크리스트
+# ALPHA Google Play 1.0.6 제출 체크리스트
 
-최종 확인: 2026-08-22 KST
+최종 확인: 2026-09-03 KST
 
-## 프로덕션 릴리스
+## 현재 결론
+
+- [x] Google Play 개발자 계정과 앱을 새 소유자 계정으로 이전
+- [x] 새 Google Cloud 프로젝트와 keyless 서비스 계정으로 Play API 읽기·업로드 권한 확인
+- [x] Expo SDK 57 기반 `1.0.6 (6)` 서명 AAB 생성 및 정적 검증
+- [x] 새 Play 계정의 한국 개발자 Account Details 추가 정보 완료
+- [x] API로 변경사항을 검토 대기 상태로 커밋
+- [x] Play Console에서 **검토를 위해 변경사항 전송**
+- [x] 앱 재제공용 `업데이트 상태` 변경의 **검토 다시 시작** 확인과 전송 성공 receipt 확인
+- [ ] Play 심사 완료와 국가별 공개 페이지 전파 확인
+
+`1.0.6 (6)`은 원격 production 트랙에 커밋됐고 Play Console에서 검토 전송까지 완료됐다. 앱이 삭제된 상태에서 다시 제공되기 위한 `업데이트 상태` 변경도 검토 재시작으로 전송했으며 성공 토스트와 활동 로그를 확인했다. 현재 production은 `검토 중인 변경사항`이고 승인·공개 전파는 아직 완료되지 않았다.
+
+## 릴리스 산출물
 
 - [x] 패키지: `com.eastnoise.alpha`
-- [x] 버전: `1.0.5 (5)`
-- [x] AAB: `release/google-play/build/ALPHA-1.0.5-vc5.aab` (로컬 빌드 산출물, Git 제외)
-- [x] AAB SHA-256: `d6fda684b9648ac74ee3398e703f69ad3303fd03df8b2b67411e939fe33868fc`
+- [x] 버전: `1.0.6 (6)`
+- [x] AAB: `release/google-play/build/ALPHA-1.0.6-vc6.aab` (로컬 산출물, Git 제외)
+- [x] AAB SHA-256: `6037e8925252fc91b5f4ad4fbe0ef1139a94bfc944a10c58488b98e4fa2620a9`
+- [x] 업로드 인증서 SHA-256이 기존 `1.0.5 (5)` AAB와 일치
 - [x] 최소 SDK 24, 대상 SDK 36
 - [x] JAR 서명 검증과 `bundletool validate` 통과
-- [x] 카메라, 광범위 저장소, 마이크, 다른 앱 위 표시 권한이 병합 Manifest에 없음을 확인
-- [x] Google Play Developer API로 프로덕션 트랙에 제출
-- [x] API 재조회 결과: 릴리스 `1.0.5 (5)`, 상태 `completed`, version code `5`
+- [x] `CAMERA`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `RECORD_AUDIO`, `SYSTEM_ALERT_WINDOW`가 병합 Manifest에 없음
+- [x] 10개 로케일 업데이트 노트 작성
+- [x] 기존 10개 로케일 스토어 문구와 스크린샷 80장 검증
 
-`completed`는 프로덕션 트랙 편집이 커밋됐다는 뜻이다. 국가별 공개 페이지 전파와 Play 심사 완료는 별도 게이트로 다시 확인한다.
+## SDK 57 전환
 
-## 국가별 스토어 정보
+- [x] Expo `57.0.19`, React Native `0.86.3`, React `19.2.3`으로 업데이트
+- [x] Expo 권장 네이티브 모듈 버전으로 정렬
+- [x] TypeScript `6.0.3`으로 업데이트하고 검증 스크립트 호환성 수정
+- [x] React Compiler 활성화 후 Android production 번들 생성
+- [x] iOS 최소 버전을 SDK 57 요구사항인 16.4로 갱신
+- [x] iOS Prebuild 때 10개 언어 권한 문구가 유지되도록 로컬 config plugin 추가
+- [x] `npx expo install --check` 통과
+- [x] `expo-doctor` 20/20 통과
+- [x] TypeScript, 핵심 상태 전이, 다국어, Play 에셋 검사 통과
 
-- [x] 한국어, 영어, 일본어, 스페인어, 독일어, 프랑스어, 포르투갈어(브라질), 중국어(번체), 이탈리아어, 중국어(간체) 10개 로케일 적용
-- [x] 로케일별 제목, 짧은 설명, 전체 설명을 서버 저장값과 대조
-- [x] 로케일별 업데이트 노트 적용
-- [x] 로케일별 휴대전화 스크린샷 8장, 총 80장 적용
-- [x] 80장의 서버 SHA-256과 로컬 원본이 모두 일치
-- [x] 새 512 x 512 앱 아이콘 적용 및 서버 SHA-256 일치 확인
-- [x] 기존 1024 x 500 피처 그래픽은 서버와 로컬 해시가 같아 유지
+네이티브 폴더와 `app.json`을 함께 관리한다는 Expo Doctor 일반 경고는 비활성화했다. Android 릴리스 빌드는 매번 `expo prebuild --clean`을 실행하고, iOS 현지화는 config plugin으로 재생성 가능하게 만들었기 때문이다.
 
-로케일 매핑:
+## 계정 이전과 API
 
-| 콘텐츠 | Google Play |
-| --- | --- |
-| 한국어 | `ko-KR` |
-| 영어(미국) | `en-US` |
-| 일본어 | `ja-JP` |
-| 스페인어(스페인) | `es-ES` |
-| 독일어 | `de-DE` |
-| 프랑스어 | `fr-FR` |
-| 포르투갈어(브라질) | `pt-BR` |
-| 중국어(번체) | `zh-TW` |
-| 이탈리아어 | `it-IT` |
-| 중국어(간체) | `zh-CN` |
+- 새 Google Cloud 프로젝트: `eastnoise-alpha-play`
+- 기본 서비스 계정: `alpha-play-console-submit@eastnoise-alpha-play.iam.gserviceaccount.com`
+- 인증 방식: 새 소유자 계정의 gcloud 인증을 이용한 keyless impersonation
+- 사용자 관리형 서비스 계정 키 파일: 없음
+- 이전 서비스 계정의 Play API 접근: 차단 확인
+- 현재 production API 조회: `1.0.6 (6)`, `completed`, 출시 노트 10개
+
+`scripts/google-play-release.cjs`는 `GOOGLE_PLAY_CHANGES_NOT_SENT_FOR_REVIEW=true`일 때 자동 심사 전송 없이 edit을 커밋한다. 다음 명령으로 이번 production edit을 커밋했다.
+
+```sh
+GOOGLE_PLAY_AAB=release/google-play/build/ALPHA-1.0.6-vc6.aab \
+GOOGLE_PLAY_CHANGES_NOT_SENT_FOR_REVIEW=true \
+node scripts/google-play-release.cjs
+```
+
+커밋 성공 뒤 Play Console에서 검토를 위해 변경사항을 전송했다. API의 `completed`는 edit/track 상태이지 심사 완료나 사용자 공개 완료를 뜻하지 않는다.
 
 ## 유지한 콘솔 설정
 
-- 앱 유형: App
 - 유료 앱 설정과 가격
-- 카테고리: Productivity
+- 카테고리, 판매 국가와 지역
 - 개인정보 처리방침, 웹사이트, 고객지원 URL
 - 앱 액세스, 광고, 대상 연령, 콘텐츠 등급, 건강 앱 선언, 데이터 보안 답변
-- 판매 국가와 지역
+- 기존 스토어 아이콘, 피처 그래픽, 스크린샷 80장
 
-이번 업데이트에서는 위 설정을 변경하지 않았다. 앱 코드의 계정 없음, 서버 전송 없음, 기기 내 기록 저장 구조도 바뀌지 않았다.
+이번 업데이트는 앱의 로컬 저장 구조와 데이터 전송 방식을 바꾸지 않는다.
 
-## 이번 범위에서 제외
+## 남은 운영 게이트
 
-- [ ] Google Play 개발자 계정 이전
-- [ ] 매출, 지급, 재무 보고서 조회 또는 변경
-- [ ] 전체 판매 국가와 가격 재설정
-- [ ] 실제 Android 기기 QA와 Play 사전 출시 보고서 검토
-- [ ] 국가별 공개 페이지에서 `1.0.5` 전파 완료 확인
-
-## 다음 확인
-
-1. Play Console에서 업데이트 심사 또는 처리 상태를 확인한다.
-2. 공개 페이지에 `1.0.5`가 노출되면 한국어와 대표 해외 로케일의 아이콘, 문구, 스크린샷을 확인한다.
-3. 계정 이전이 완료된 뒤 새 소유자 계정의 API 권한과 릴리스 권한을 별도 검증한다.
+1. 게시 개요가 재제공용 `업데이트 상태` 행을 미제출 영역에 계속 표시하는지 다음 상태 변경 때 확인한다. 전송 성공 receipt와 활동 로그가 있으므로 같은 심사를 반복 재시작하지 않는다.
+2. Play 심사·게시 상태와 국가별 공개 페이지를 따로 확인한다.
+3. Play 사전 출시 보고서를 확인한다.
+4. 실제 Android 기기에서 업데이트 설치, 알림, 사진 선택·크롭, 저장 복원을 확인한다.

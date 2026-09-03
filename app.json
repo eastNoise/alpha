@@ -3,13 +3,14 @@
     "name": "ALPHA",
     "slug": "alpha",
     "scheme": "alpha",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.eastnoise.alpha",
-      "buildNumber": "19",
+      "buildNumber": "20",
+      "appleTeamId": "K8387X4MHC",
       "supportsTablet": false,
       "config": {
         "usesNonExemptEncryption": false
@@ -17,13 +18,24 @@
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
         "CFBundleDevelopmentRegion": "en",
-        "CFBundleLocalizations": ["en", "ko", "ja", "es", "de", "fr", "zh-Hans", "pt-BR", "zh-Hant", "it"],
+        "CFBundleLocalizations": [
+          "en",
+          "ko",
+          "ja",
+          "es",
+          "de",
+          "fr",
+          "zh-Hans",
+          "pt-BR",
+          "zh-Hant",
+          "it"
+        ],
         "UIUserInterfaceStyle": "Dark"
       }
     },
     "android": {
       "package": "com.eastnoise.alpha",
-      "versionCode": 5,
+      "versionCode": 6,
       "blockedPermissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
@@ -54,11 +66,39 @@
         "expo-localization",
         {
           "supportedLocales": {
-            "ios": ["en", "ko", "ja", "es", "de", "fr", "zh-Hans", "pt-BR", "zh-Hant", "it"],
-            "android": ["en", "ko", "ja", "es", "de", "fr", "zh-CN", "pt-BR", "zh-TW", "it"]
+            "ios": [
+              "en",
+              "ko",
+              "ja",
+              "es",
+              "de",
+              "fr",
+              "zh-Hans",
+              "pt-BR",
+              "zh-Hant",
+              "it"
+            ],
+            "android": [
+              "en",
+              "ko",
+              "ja",
+              "es",
+              "de",
+              "fr",
+              "zh-CN",
+              "pt-BR",
+              "zh-TW",
+              "it"
+            ]
           }
         }
-      ]
-    ]
+      ],
+      "expo-font",
+      "expo-status-bar",
+      "./plugins/withIosLocalizedInfoPlist"
+    ],
+    "experiments": {
+      "reactCompiler": true
+    }
   }
 }

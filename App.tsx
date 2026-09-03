@@ -3153,7 +3153,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   cardImagePressTarget: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 4,
   },
   fireMini: {
@@ -3366,7 +3366,7 @@ const styles = StyleSheet.create({
     width: 20,
   },
   checkFill: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: colors.red,
     borderColor: '#ff4747',
     borderRadius: 10,
