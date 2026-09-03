@@ -3,6 +3,8 @@ const fs = require('node:fs');
 const { execFileSync } = require('node:child_process');
 
 const androidPublisherScope = 'https://www.googleapis.com/auth/androidpublisher';
+const defaultServiceAccount =
+  'alpha-play-console-submit@eastnoise-alpha-play.iam.gserviceaccount.com';
 
 function createAssertion(credentials) {
   const now = Math.floor(Date.now() / 1000);
@@ -56,12 +58,8 @@ async function getAccessToken() {
   if (process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON) {
     return tokenFromKeyFile(process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON);
   }
-  if (process.env.GOOGLE_PLAY_SERVICE_ACCOUNT) {
-    return tokenFromImpersonation(process.env.GOOGLE_PLAY_SERVICE_ACCOUNT);
-  }
-  throw new Error(
-    'Set GOOGLE_PLAY_SERVICE_ACCOUNT for keyless gcloud impersonation, ' +
-      'or GOOGLE_PLAY_SERVICE_ACCOUNT_JSON for a private key file.',
+  return tokenFromImpersonation(
+    process.env.GOOGLE_PLAY_SERVICE_ACCOUNT || defaultServiceAccount,
   );
 }
 

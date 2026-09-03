@@ -1,15 +1,15 @@
 {
-  "versionName": "1.0.5",
+  "versionName": "1.0.6",
   "localizations": {
-    "ko-KR": "새 앱 아이콘을 적용하고 90일 과정의 진행 화면, 버튼 반응과 햅틱 피드백을 다듬었습니다.",
-    "en-US": "Added a new app icon and refined the 90-day journey, button feedback, and haptics.",
-    "ja-JP": "新しいアプリアイコンを追加し、90日間の進行画面、ボタンの反応、触覚フィードバックを改善しました。",
-    "es-ES": "Estrenamos un nuevo icono y mejoramos el recorrido de 90 días, la respuesta de los botones y la vibración háptica.",
-    "de-DE": "Neues App-Icon sowie Verbesserungen am 90-Tage-Ablauf, an der Tastenreaktion und am haptischen Feedback.",
-    "fr-FR": "Nouvelle icône et améliorations du parcours de 90 jours, de la réactivité des boutons et du retour haptique.",
-    "pt-BR": "Novo ícone e melhorias na jornada de 90 dias, na resposta dos botões e no feedback tátil.",
-    "zh-TW": "換上全新App圖示，並優化90天進程、按鈕回饋與觸覺回饋。",
-    "it-IT": "Nuova icona e miglioramenti al percorso di 90 giorni, alla risposta dei pulsanti e al feedback aptico.",
-    "zh-CN": "换上全新应用图标，并优化90天进程、按钮反馈与触觉反馈。"
+    "ko-KR": "Expo SDK를 최신 안정 버전으로 올리고 앱 안정성과 호환성을 개선했습니다.",
+    "en-US": "Updated to the latest stable Expo SDK and improved app stability and compatibility.",
+    "ja-JP": "Expo SDKを最新の安定版に更新し、アプリの安定性と互換性を改善しました。",
+    "es-ES": "Actualizamos Expo SDK a la última versión estable y mejoramos la estabilidad y la compatibilidad.",
+    "de-DE": "Expo SDK wurde auf die neueste stabile Version aktualisiert und Stabilität sowie Kompatibilität wurden verbessert.",
+    "fr-FR": "Mise à jour vers la dernière version stable d’Expo SDK, avec une stabilité et une compatibilité améliorées.",
+    "pt-BR": "Atualizamos o Expo SDK para a versão estável mais recente e melhoramos a estabilidade e a compatibilidade.",
+    "zh-TW": "已將 Expo SDK 更新至最新穩定版本，並提升應用程式的穩定性與相容性。",
+    "it-IT": "Expo SDK è stato aggiornato all’ultima versione stabile, migliorando stabilità e compatibilità.",
+    "zh-CN": "已将 Expo SDK 更新至最新稳定版本，并提升应用的稳定性与兼容性。"
   }
 }

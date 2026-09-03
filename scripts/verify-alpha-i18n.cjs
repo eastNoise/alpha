@@ -9,9 +9,11 @@ const tsc = resolve('node_modules/.bin/tsc');
 
 try {
   execFileSync(tsc, [
+    '--ignoreConfig',
     '--module', 'commonjs',
     '--target', 'es2020',
     '--moduleResolution', 'node',
+    '--ignoreDeprecations', '6.0',
     '--skipLibCheck',
     '--outDir', outputDirectory,
     'src/types.ts',

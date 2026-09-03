@@ -7,6 +7,8 @@ const root = path.resolve(__dirname, '..');
 const packageName = process.env.GOOGLE_PLAY_PACKAGE_NAME || 'com.eastnoise.alpha';
 const track = process.env.GOOGLE_PLAY_TRACK || 'production';
 const releaseStatus = process.env.GOOGLE_PLAY_RELEASE_STATUS || 'completed';
+const changesNotSentForReview =
+  process.env.GOOGLE_PLAY_CHANGES_NOT_SENT_FOR_REVIEW === 'true';
 const appBundlePath = process.env.GOOGLE_PLAY_AAB;
 
 if (!appBundlePath) {
@@ -85,13 +87,19 @@ async function main() {
       method: 'PUT',
     });
 
-    await request(`${editBase}:validate`, accessToken, {
-      body: '{}',
-      headers: { 'Content-Type': 'application/json' },
-      method: 'POST',
-    });
+    const reviewQuery = changesNotSentForReview
+      ? '?changesNotSentForReview=true'
+      : '';
 
-    const committed = await request(`${editBase}:commit`, accessToken, {
+    if (!changesNotSentForReview) {
+      await request(`${editBase}:validate`, accessToken, {
+        body: '{}',
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      });
+    }
+
+    const committed = await request(`${editBase}:commit${reviewQuery}`, accessToken, {
       body: '{}',
       headers: { 'Content-Type': 'application/json' },
       method: 'POST',
@@ -99,6 +107,7 @@ async function main() {
 
     console.log(JSON.stringify({
       editId: committed.id,
+      changesNotSentForReview,
       packageName,
       releaseName: release.name,
       status: releaseStatus,
