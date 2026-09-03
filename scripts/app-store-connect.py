@@ -350,6 +350,64 @@ def apply_metadata(headers, app_info, version, metadata, only_locale=None):
     )
 
 
+def verify_metadata(headers, app_info, version, metadata):
+    validate_metadata(metadata)
+    expected_locales = set(metadata["localizations"])
+    app_info_items = request(
+        "GET",
+        f"/appInfos/{app_info['id']}/appInfoLocalizations",
+        headers,
+        params={"limit": 200},
+    )["data"]
+    version_items = request(
+        "GET",
+        f"/appStoreVersions/{version['id']}/appStoreVersionLocalizations",
+        headers,
+        params={"limit": 200},
+    )["data"]
+    app_info_by_locale = {
+        item["attributes"]["locale"]: item["attributes"] for item in app_info_items
+    }
+    version_by_locale = {
+        item["attributes"]["locale"]: item["attributes"] for item in version_items
+    }
+    if set(app_info_by_locale) != expected_locales:
+        raise RuntimeError(
+            f"App info locales differ: expected {sorted(expected_locales)}, "
+            f"found {sorted(app_info_by_locale)}"
+        )
+    if set(version_by_locale) != expected_locales:
+        raise RuntimeError(
+            f"Version locales differ: expected {sorted(expected_locales)}, "
+            f"found {sorted(version_by_locale)}"
+        )
+
+    mismatches = []
+    for locale, item in metadata["localizations"].items():
+        expected_info = {
+            "name": item.get("name", metadata["appName"]),
+            "subtitle": item["subtitle"],
+            "privacyPolicyUrl": metadata["privacyPolicyUrl"],
+        }
+        expected_version = {
+            "description": item["description"],
+            "keywords": item["keywords"],
+            "marketingUrl": metadata["marketingUrl"],
+            "promotionalText": item["promotionalText"],
+            "supportUrl": metadata["supportUrl"],
+            "whatsNew": item["whatsNew"],
+        }
+        for field, expected in expected_info.items():
+            if app_info_by_locale[locale].get(field) != expected:
+                mismatches.append(f"{locale} appInfo.{field}")
+        for field, expected in expected_version.items():
+            if version_by_locale[locale].get(field) != expected:
+                mismatches.append(f"{locale} version.{field}")
+    if mismatches:
+        raise RuntimeError("Metadata mismatches: " + ", ".join(mismatches))
+    print(f"Metadata verified for {len(expected_locales)} locales")
+
+
 def apply_compliance(headers, app, app_info, compliance):
     request(
         "PATCH",
@@ -598,6 +656,49 @@ def inspect_screenshots(headers, version):
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
+def verify_screenshots(headers, version, metadata, screenshots_root, display_type):
+    localizations = version_localizations(headers, version["id"])
+    root = Path(screenshots_root)
+    expected_locales = set(metadata["localizations"])
+    if set(localizations) != expected_locales:
+        raise RuntimeError(
+            f"Screenshot locales differ: expected {sorted(expected_locales)}, "
+            f"found {sorted(localizations)}"
+        )
+
+    verified = 0
+    for locale in sorted(expected_locales):
+        expected_names = [path.name for path in sorted((root / locale).glob("*.jpg"))]
+        matching_sets = [
+            item
+            for item in screenshot_sets(headers, localizations[locale]["id"])
+            if item["attributes"]["screenshotDisplayType"] == display_type
+        ]
+        screenshot_set = one(matching_sets, f"{locale} {display_type} screenshot set")
+        screenshots = request(
+            "GET",
+            f"/appScreenshotSets/{screenshot_set['id']}/appScreenshots",
+            headers,
+            params={"limit": 200},
+        )["data"]
+        actual_names = [item["attributes"].get("fileName") for item in screenshots]
+        incomplete = [
+            item["attributes"].get("fileName")
+            for item in screenshots
+            if (item["attributes"].get("assetDeliveryState") or {}).get("state")
+            != "COMPLETE"
+        ]
+        if actual_names != expected_names:
+            raise RuntimeError(
+                f"{locale} screenshot order differs: expected {expected_names}, "
+                f"found {actual_names}"
+            )
+        if incomplete:
+            raise RuntimeError(f"{locale} incomplete screenshots: {incomplete}")
+        verified += len(screenshots)
+    print(f"Screenshots verified for {len(expected_locales)} locales: {verified} COMPLETE")
+
+
 def inspect_builds(headers, app_id):
     builds = request(
         "GET",
@@ -657,8 +758,10 @@ def main():
             "inspect",
             "create-version",
             "apply-metadata",
+            "verify-metadata",
             "apply-compliance",
             "inspect-screenshots",
+            "verify-screenshots",
             "upload-screenshots",
             "inspect-builds",
             "inspect-beta-groups",
@@ -693,11 +796,19 @@ def main():
     if args.command == "apply-metadata":
         metadata = json.loads(Path(args.metadata).read_text())
         apply_metadata(headers, app_info, version, metadata, args.locale)
+    elif args.command == "verify-metadata":
+        metadata = json.loads(Path(args.metadata).read_text())
+        verify_metadata(headers, app_info, version, metadata)
     elif args.command == "apply-compliance":
         compliance = json.loads(Path(args.compliance).read_text())
         apply_compliance(headers, app, app_info, compliance)
     elif args.command == "inspect-screenshots":
         inspect_screenshots(headers, version)
+    elif args.command == "verify-screenshots":
+        metadata = json.loads(Path(args.metadata).read_text())
+        verify_screenshots(
+            headers, version, metadata, args.screenshots, args.display_type
+        )
     elif args.command == "upload-screenshots":
         metadata = json.loads(Path(args.metadata).read_text())
         upload_screenshots(

@@ -62,5 +62,5 @@ To comply with Korean law, developers in Korea must provide additional informati
 - 앱 재제공용 `업데이트 상태` 행의 콘솔 표시와 실제 심사 receipt가 엇갈리므로 다음 Google 상태 변경 때 다시 대조해야 한다.
 - Play 심사 승인, 앱 재제공, 공개 전파를 각각 별도로 확인해야 한다.
 - 실제 Android 기기와 Play 사전 출시 보고서는 아직 확인하지 않았다.
-- SDK 57 업그레이드로 iOS 최소 지원 버전이 15.1에서 16.4로 올라갔다. 이번 제출은 Android 전용이며 iOS 업데이트는 별도 빌드·기기 QA·심사가 필요하다.
+- SDK 57 업그레이드로 iOS 최소 지원 버전이 15.1에서 16.4로 올라갔다. iOS `1.0.6 (20)`도 별도 제출해 `WAITING_FOR_REVIEW`이며 실제 기기 QA는 남아 있다.
 - `npm audit --omit=dev`의 moderate 11건은 Expo CLI/Xcode 파서 계열 전이 의존성이다. SDK 권장 버전을 깨는 강제 업데이트는 적용하지 않았다.

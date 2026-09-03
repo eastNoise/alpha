@@ -28,6 +28,8 @@ expo-env.d.ts
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+__pycache__/
+*.py[cod]
 
 # macOS
 .DS_Store
@@ -54,3 +56,4 @@ ios/**/*.xcuserdata/
 
 # Store build artifacts (generated locally or by CI)
 /release/google-play/build/
+/release/ios/build/

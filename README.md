@@ -2,9 +2,10 @@
 
 Expo SDK 57 + React Native + TypeScript implementation of the ALPHA v19 mobile app.
 
-Current Android release candidate: `1.0.6 (6)`. See
-`release/google-play/release-status-2026-09-03.md` for the verified build and
-submission state.
+Current release candidates: Android `1.0.6 (6)` and iOS `1.0.6 (20)`. See
+`release/google-play/release-status-2026-09-03.md` and
+`release/ios/release-status-2026-09-03.md` for the verified build and
+submission states.
 
 ## Project
 

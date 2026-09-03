@@ -4,7 +4,7 @@
 대상 버전: `1.0.4` 작업 기록
 작업 원칙: 한 단계씩 검토·승인한 뒤 다음 단계로 넘어간다.
 
-> 이 문서는 `1.0.4` ASO 의사결정 기록이다. `1.0.5` 이력은 `release/aso-validation-report-2026-08-22.md`, 최신 Android 상태는 `release/google-play/release-status-2026-09-03.md`와 `release/google-play/play-console-checklist.md`를 기준으로 본다.
+> 이 문서는 `1.0.4` ASO 의사결정 기록이다. `1.0.5` 이력은 `release/aso-validation-report-2026-08-22.md`, 최신 Android 상태는 `release/google-play/release-status-2026-09-03.md`와 `release/google-play/play-console-checklist.md`, 최신 iOS 상태는 `release/ios/release-status-2026-09-03.md`를 기준으로 본다.
 
 상태 표기:
 

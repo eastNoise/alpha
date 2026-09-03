@@ -9,7 +9,7 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.eastnoise.alpha",
-      "buildNumber": "19",
+      "buildNumber": "20",
       "appleTeamId": "K8387X4MHC",
       "supportsTablet": false,
       "config": {
