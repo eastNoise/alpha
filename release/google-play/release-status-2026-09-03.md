@@ -4,7 +4,7 @@
 
 ## 결론
 
-`1.0.6 (6)`은 Expo SDK 57 업그레이드, 릴리스 빌드, 서명과 AAB 정적 검증까지 완료됐다. 새 1730 소유자 계정의 keyless Play API로 앱 조회와 AAB 업로드도 성공했으나, production edit commit은 새 한국 개발자 계정의 Account Details 추가 정보 미완료로 차단됐다. 따라서 이 문서 시점에는 심사 제출 완료로 간주하지 않는다.
+`1.0.6 (6)`은 Expo SDK 57 업그레이드, 릴리스 빌드, 서명과 AAB 정적 검증을 완료했다. 새 1730 소유자 계정의 keyless Play API로 production edit을 커밋했고, Play Console에서 검토 전송까지 완료했다. 현재는 Google의 자동 사전 검사 뒤 심사로 전송되는 `검토 중인 변경사항` 단계이며 심사 승인·공개 전파는 완료로 간주하지 않는다.
 
 ## 변경 내용
 
@@ -41,21 +41,26 @@
 - iOS Simulator Debug 빌드: 성공
 - 새 서비스 계정 Play API 읽기: 통과
 - 새 서비스 계정 AAB 업로드와 listing 쓰기: 통과
+- 한국 개발자 Account Details 필수 항목 저장: 통과
+- 원격 production 트랙 `1.0.6 (6)`, status `completed`, 출시 노트 10개: API 재조회 통과
+- Play Console `검토를 위해 변경사항 전송`: 완료
 
 ## 원격 제출 상태
 
-첫 시도는 Play가 자동 심사 전송을 허용하지 않아 `changesNotSentForReview=true`를 요구했다. 스크립트에 검토 대기 커밋 옵션을 추가했다. 두 번째 유효 커밋 시도는 다음 계정 정책 오류로 차단됐다.
+첫 시도는 Play가 자동 심사 전송을 허용하지 않아 `changesNotSentForReview=true`를 요구했다. 스크립트에 검토 대기 커밋 옵션을 추가했다. 다음 시도에서 한국 개발자 계정의 Account Details 추가 정보가 필요하다는 정책 오류를 확인했다.
 
 ```text
 To comply with Korean law, developers in Korea must provide additional information on the Account Details page.
 ```
 
-각 실패 시 생성된 Google Play edit은 스크립트가 삭제했다. 현재 원격 production 트랙은 여전히 `1.0.5 (5)`이며, `1.0.6 (6)` 제출·심사·공개는 미완료다.
+실패 시 생성된 Google Play edit은 스크립트가 삭제했다. 사업자등록·통신판매업 신고·발급기관 필수 항목을 공식 등록 문서와 대조해 Play Console에 저장한 뒤 재시도했고, 원격 production 트랙은 `1.0.6 (6)`으로 커밋됐다. Play Console의 최종 검토 전송도 완료됐다.
+
+자동 사전 검사 뒤 삭제된 앱을 다시 제공하기 위한 `업데이트 상태` 변경이 별도로 나타났다. 이를 전송하면서 기존 심사를 재시작한다는 경고를 확인하고 승인했으며, 전송 성공 토스트와 활동 로그의 제출 기록을 확인했다. 게시 개요는 이후에도 이 파생 행을 미제출 영역에 표시하지만 production `1.0.6 (6)`은 `검토 중인 변경사항`이다. 반복 전송은 기존 심사를 다시 취소하므로 다음 Google 상태 변경 전에는 재시도하지 않는다.
 
 ## 남은 위험과 다음 행동
 
-- `remote_dashboard_needed`: Play Console Account Details에 실제 한국 개발자 정보를 입력해야 한다. 본인확인·법적 정보는 자동 추정하지 않는다.
-- Account Details 완료 뒤 API edit commit과 Play Console의 최종 검토 전송을 각각 확인한다.
+- 앱 재제공용 `업데이트 상태` 행의 콘솔 표시와 실제 심사 receipt가 엇갈리므로 다음 Google 상태 변경 때 다시 대조해야 한다.
+- Play 심사 승인, 앱 재제공, 공개 전파를 각각 별도로 확인해야 한다.
 - 실제 Android 기기와 Play 사전 출시 보고서는 아직 확인하지 않았다.
 - SDK 57 업그레이드로 iOS 최소 지원 버전이 15.1에서 16.4로 올라갔다. 이번 제출은 Android 전용이며 iOS 업데이트는 별도 빌드·기기 QA·심사가 필요하다.
 - `npm audit --omit=dev`의 moderate 11건은 Expo CLI/Xcode 파서 계열 전이 의존성이다. SDK 권장 버전을 깨는 강제 업데이트는 적용하지 않았다.

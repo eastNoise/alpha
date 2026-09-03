@@ -7,12 +7,13 @@
 - [x] Google Play 개발자 계정과 앱을 새 소유자 계정으로 이전
 - [x] 새 Google Cloud 프로젝트와 keyless 서비스 계정으로 Play API 읽기·업로드 권한 확인
 - [x] Expo SDK 57 기반 `1.0.6 (6)` 서명 AAB 생성 및 정적 검증
-- [ ] 새 Play 계정의 한국 개발자 Account Details 추가 정보 완료
-- [ ] API로 변경사항을 검토 대기 상태로 커밋
-- [ ] Play Console에서 **검토를 위해 변경사항 전송**
+- [x] 새 Play 계정의 한국 개발자 Account Details 추가 정보 완료
+- [x] API로 변경사항을 검토 대기 상태로 커밋
+- [x] Play Console에서 **검토를 위해 변경사항 전송**
+- [x] 앱 재제공용 `업데이트 상태` 변경의 **검토 다시 시작** 확인과 전송 성공 receipt 확인
 - [ ] Play 심사 완료와 국가별 공개 페이지 전파 확인
 
-현재 차단 원인은 AAB나 서비스 계정 권한이 아니다. API commit 응답은 새 한국 개발자 계정의 Account Details 추가 정보가 필요하다는 `403 PERMISSION_DENIED`다. 실패한 API edit은 삭제되어 `1.0.6`이 원격 production 트랙에 반영된 상태가 아니다.
+`1.0.6 (6)`은 원격 production 트랙에 커밋됐고 Play Console에서 검토 전송까지 완료됐다. 앱이 삭제된 상태에서 다시 제공되기 위한 `업데이트 상태` 변경도 검토 재시작으로 전송했으며 성공 토스트와 활동 로그를 확인했다. 현재 production은 `검토 중인 변경사항`이고 승인·공개 전파는 아직 완료되지 않았다.
 
 ## 릴리스 산출물
 
@@ -48,9 +49,9 @@
 - 인증 방식: 새 소유자 계정의 gcloud 인증을 이용한 keyless impersonation
 - 사용자 관리형 서비스 계정 키 파일: 없음
 - 이전 서비스 계정의 Play API 접근: 차단 확인
-- 현재 production API 조회: `1.0.5 (5)`, `completed`
+- 현재 production API 조회: `1.0.6 (6)`, `completed`, 출시 노트 10개
 
-`scripts/google-play-release.cjs`는 `GOOGLE_PLAY_CHANGES_NOT_SENT_FOR_REVIEW=true`일 때 자동 심사 전송 없이 edit을 커밋할 수 있다. Account Details 완료 후 다음 명령으로 재시도한다.
+`scripts/google-play-release.cjs`는 `GOOGLE_PLAY_CHANGES_NOT_SENT_FOR_REVIEW=true`일 때 자동 심사 전송 없이 edit을 커밋한다. 다음 명령으로 이번 production edit을 커밋했다.
 
 ```sh
 GOOGLE_PLAY_AAB=release/google-play/build/ALPHA-1.0.6-vc6.aab \
@@ -58,7 +59,7 @@ GOOGLE_PLAY_CHANGES_NOT_SENT_FOR_REVIEW=true \
 node scripts/google-play-release.cjs
 ```
 
-커밋 성공 뒤에는 Play Console에서 검토를 위해 변경사항을 전송해야 한다. API의 `completed`는 edit/track 상태이지 심사 완료나 사용자 공개 완료를 뜻하지 않는다.
+커밋 성공 뒤 Play Console에서 검토를 위해 변경사항을 전송했다. API의 `completed`는 edit/track 상태이지 심사 완료나 사용자 공개 완료를 뜻하지 않는다.
 
 ## 유지한 콘솔 설정
 
@@ -72,8 +73,7 @@ node scripts/google-play-release.cjs
 
 ## 남은 운영 게이트
 
-1. 새 Play 계정의 **Account Details**에서 한국 법률상 필수 추가 정보를 실제 정보로 완료한다.
-2. 위 API 명령을 다시 실행해 `1.0.6 (6)` edit commit 성공 응답을 확인한다.
-3. Play Console에서 **검토를 위해 변경사항 전송**을 누른다.
-4. Play 심사·게시 상태와 국가별 공개 페이지를 따로 확인한다.
-5. 실제 Android 기기에서 업데이트 설치, 알림, 사진 선택·크롭, 저장 복원을 확인한다.
+1. 게시 개요가 재제공용 `업데이트 상태` 행을 미제출 영역에 계속 표시하는지 다음 상태 변경 때 확인한다. 전송 성공 receipt와 활동 로그가 있으므로 같은 심사를 반복 재시작하지 않는다.
+2. Play 심사·게시 상태와 국가별 공개 페이지를 따로 확인한다.
+3. Play 사전 출시 보고서를 확인한다.
+4. 실제 Android 기기에서 업데이트 설치, 알림, 사진 선택·크롭, 저장 복원을 확인한다.
