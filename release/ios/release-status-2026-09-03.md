@@ -1,12 +1,12 @@
 # ALPHA iOS 1.0.6 릴리스 상태
 
-검증일: 2026-09-03 KST
+최종 갱신: 2026-09-04 10:58 KST
 
 ## 결론
 
-Expo SDK 57 기반 `1.0.6 (20)`을 App Store Connect에 업로드하고 빌드·메타데이터·스크린샷·등급 정보를 연결한 뒤 심사 제출했다. App Store Connect API 재조회 상태는 `WAITING_FOR_REVIEW`다. 출시 방식은 `MANUAL`이므로 심사 승인 뒤에도 수동 출시와 공개 전파 확인이 별도로 필요하다.
+Expo SDK 57 기반 `1.0.6 (20)`의 심사가 승인돼 App Store Connect API로 수동 출시 요청을 전송했다. 요청 직후 API 재조회 상태는 `READY_FOR_SALE`·`READY_FOR_DISTRIBUTION`이다. 한국 App Store 공개 조회는 아직 `1.0.5`를 반환하므로 `1.0.6` 공개 전파와 실제 업데이트 가능 상태는 별도로 확인해야 한다.
 
-현재 공개된 iOS `1.0.5`는 App Store Connect API에서 `READY_FOR_SALE`이다.
+출시 요청 시각은 2026-09-04 10:58 KST다. Apple 안내상 수동 출시 뒤 스토어 반영에는 최대 24시간이 걸릴 수 있다.
 
 ## 산출물과 검증
 
@@ -23,7 +23,10 @@ Expo SDK 57 기반 `1.0.6 (20)`을 App Store Connect에 업로드하고 빌드·
 - 10개 언어 x 8장 스크린샷: 원격 80장, 전부 `COMPLETE`, 순서 일치
 - 콘텐츠 권리·카테고리·연령 등급: API 반영
 - 빌드 20을 iOS 1.0.6에 연결
-- 심사 제출: `WAITING_FOR_REVIEW`
+- 심사 승인: `PENDING_DEVELOPER_RELEASE` 확인
+- 수동 출시 요청: App Store Connect API `201 Created`
+- 출시 요청 직후 상태: `READY_FOR_SALE`·`READY_FOR_DISTRIBUTION`
+- 한국 공개 조회: 아직 `1.0.5`, 전파 대기
 
 ## 자동화 보강
 
@@ -32,9 +35,15 @@ Expo SDK 57 기반 `1.0.6 (20)`을 App Store Connect에 업로드하고 빌드·
 - `scripts/app-store-connect.py verify-screenshots`: 로케일·파일명·순서·처리 상태 원격 대조
 - `release/ios/build/`과 Python cache를 Git 제외 대상으로 추가
 
+## 2026-09-04 수동 출시
+
+- 대상이 `com.eastnoise.alpha`, iOS `1.0.6 (20)`, `PENDING_DEVELOPER_RELEASE`인지 API로 재확인한 뒤 해당 버전에만 출시 요청을 전송했다.
+- 출시 요청은 성공했고 App Store Connect 원격 상태가 `READY_FOR_SALE`·`READY_FOR_DISTRIBUTION`으로 전환됐다.
+- 한국 storefront 공개 API는 같은 시각 기존 `1.0.5`를 반환했다. 이는 출시 요청 실패가 아니라 공개 전파가 아직 끝나지 않은 상태로 분리해 추적한다.
+
 ## 남은 위험과 다음 행동
 
-- Apple 심사 승인 뒤 수동 출시하고 한국 App Store 공개 페이지와 실제 업데이트 가능 상태를 확인한다.
+- 한국 App Store 공개 페이지와 공개 API가 `1.0.6`으로 전환되는지 확인한다.
 - 실제 iPhone에서 업데이트 설치, 첫 실행, 알림, 사진 선택·크롭, 저장 복원을 확인한다.
 - 업로드는 성공했지만 ExpoImageManipulator, React, ReactNativeDependencies, SDWebImage, hermesvm 프레임워크의 dSYM 누락 경고가 있었다. 앱 자체 dSYM은 포함됐으며 심사 차단 오류는 아니지만 해당 프레임워크 내부 크래시의 심볼화가 제한될 수 있다.
 - 심사 제출·승인·수동 출시·공개 전파·실기기 QA를 각각 별도 상태로 유지한다.
