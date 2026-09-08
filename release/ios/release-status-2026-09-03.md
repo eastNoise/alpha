@@ -1,6 +1,10 @@
 # ALPHA iOS 1.0.6 릴리스 상태
 
-최종 갱신: 2026-09-04 10:58 KST
+최종 갱신: 2026-09-08 KST
+
+## 현재 상태 (2026-09-08)
+
+App Store Connect와 한국 공개 lookup 모두 `1.0.6` 공개를 확인했다. `downloadable=true`, `READY_FOR_SALE`이며 공개 전파 대기는 종료했다. 아래 9월 4일 조회 결과는 당시 이력이다. 공개 설치본 실기기 QA와 프레임워크 dSYM 경고 추적은 남는다. 후속 로컬 패치·검증 상태는 `../post-release-status-2026-09-08.md`를 참조한다.
 
 ## 결론
 
@@ -43,7 +47,7 @@ Expo SDK 57 기반 `1.0.6 (20)`의 심사가 승인돼 App Store Connect API로 
 
 ## 남은 위험과 다음 행동
 
-- 한국 App Store 공개 페이지와 공개 API가 `1.0.6`으로 전환되는지 확인한다.
+- 한국 App Store 공개 API `1.0.6` 전환 확인 완료 (2026-09-08 재조회).
 - 실제 iPhone에서 업데이트 설치, 첫 실행, 알림, 사진 선택·크롭, 저장 복원을 확인한다.
 - 업로드는 성공했지만 ExpoImageManipulator, React, ReactNativeDependencies, SDWebImage, hermesvm 프레임워크의 dSYM 누락 경고가 있었다. 앱 자체 dSYM은 포함됐으며 심사 차단 오류는 아니지만 해당 프레임워크 내부 크래시의 심볼화가 제한될 수 있다.
 - 심사 제출·승인·수동 출시·공개 전파·실기기 QA를 각각 별도 상태로 유지한다.
