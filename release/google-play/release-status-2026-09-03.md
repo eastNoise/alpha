@@ -1,6 +1,10 @@
 # ALPHA Android 1.0.6 릴리스 상태
 
-검증일: 2026-09-03 KST
+검증일: 2026-09-08 KST
+
+## 현재 상태 (2026-09-08)
+
+한국 Google Play 공개 주소가 HTTP 200이며 공개 페이지 버전 데이터는 `1.0.6`이다. 한국 앱 재제공·공개 전파를 확인했다. 아래 검토 중 상태는 9월 3일 제출 이력이다. 다른 국가, 콘솔 잔여 변경, 사전 출시 보고서와 실제 Android 설치본 QA는 이 확인에 포함되지 않는다. 후속 정리는 `../post-release-status-2026-09-08.md`를 참조한다.
 
 ## 결론
 
@@ -60,7 +64,7 @@ To comply with Korean law, developers in Korea must provide additional informati
 ## 남은 위험과 다음 행동
 
 - 앱 재제공용 `업데이트 상태` 행의 콘솔 표시와 실제 심사 receipt가 엇갈리므로 다음 Google 상태 변경 때 다시 대조해야 한다.
-- Play 심사 승인, 앱 재제공, 공개 전파를 각각 별도로 확인해야 한다.
+- 한국 공개 페이지의 앱 재제공·버전 `1.0.6` 확인 완료. 다른 국가와 콘솔 상세 상태는 별도 확인한다.
 - 실제 Android 기기와 Play 사전 출시 보고서는 아직 확인하지 않았다.
 - SDK 57 업그레이드로 iOS 최소 지원 버전이 15.1에서 16.4로 올라갔다. iOS `1.0.6 (20)`도 별도 제출해 `WAITING_FOR_REVIEW`이며 실제 기기 QA는 남아 있다.
 - `npm audit --omit=dev`의 moderate 11건은 Expo CLI/Xcode 파서 계열 전이 의존성이다. SDK 권장 버전을 깨는 강제 업데이트는 적용하지 않았다.

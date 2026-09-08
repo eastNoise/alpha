@@ -5,15 +5,15 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "2.2.0",
-    "expo": "~57.0.19",
+    "expo": "~57.0.20",
     "expo-file-system": "~57.0.6",
     "expo-font": "~57.0.3",
     "expo-haptics": "~57.0.2",
-    "expo-image-manipulator": "~57.0.15",
-    "expo-image-picker": "~57.0.15",
+    "expo-image-manipulator": "~57.0.16",
+    "expo-image-picker": "~57.0.16",
     "expo-linear-gradient": "~57.0.1",
     "expo-localization": "~57.0.1",
-    "expo-notifications": "~57.0.16",
+    "expo-notifications": "~57.0.17",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.3",
     "react": "19.2.3",
@@ -38,6 +38,7 @@
     "prepare:google-play:screenshots": "bash scripts/prepare-google-play-screenshots.sh",
     "verify:google-play": "node scripts/verify-google-play-release.cjs",
     "verify:core": "node scripts/verify-alpha-core.cjs",
+    "verify:xcode": "node scripts/verify-xcode-tooling.cjs",
     "verify:i18n": "node scripts/verify-alpha-i18n.cjs"
   },
   "engines": {
@@ -48,6 +49,11 @@
       "appConfigFieldsNotSyncedCheck": {
         "enabled": false
       }
+    }
+  },
+  "overrides": {
+    "xcode": {
+      "uuid": "11.1.1"
     }
   },
   "private": true
