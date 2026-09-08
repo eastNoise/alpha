@@ -1,15 +1,15 @@
 {
-  "versionName": "1.0.6",
+  "versionName": "1.0.7",
   "localizations": {
-    "ko-KR": "Expo SDK를 최신 안정 버전으로 올리고 앱 안정성과 호환성을 개선했습니다.",
-    "en-US": "Updated to the latest stable Expo SDK and improved app stability and compatibility.",
-    "ja-JP": "Expo SDKを最新の安定版に更新し、アプリの安定性と互換性を改善しました。",
-    "es-ES": "Actualizamos Expo SDK a la última versión estable y mejoramos la estabilidad y la compatibilidad.",
-    "de-DE": "Expo SDK wurde auf die neueste stabile Version aktualisiert und Stabilität sowie Kompatibilität wurden verbessert.",
-    "fr-FR": "Mise à jour vers la dernière version stable d’Expo SDK, avec une stabilité et une compatibilité améliorées.",
-    "pt-BR": "Atualizamos o Expo SDK para a versão estável mais recente e melhoramos a estabilidade e a compatibilidade.",
-    "zh-TW": "已將 Expo SDK 更新至最新穩定版本，並提升應用程式的穩定性與相容性。",
-    "it-IT": "Expo SDK è stato aggiornato all’ultima versione stabile, migliorando stabilità e compatibilità.",
-    "zh-CN": "已将 Expo SDK 更新至最新稳定版本，并提升应用的稳定性与兼容性。"
+    "ko-KR": "앱 안정성과 호환성을 개선했습니다.",
+    "en-US": "Improved app stability and compatibility.",
+    "ja-JP": "アプリの安定性と互換性を改善しました。",
+    "es-ES": "Mejoramos la estabilidad y la compatibilidad de la aplicación.",
+    "de-DE": "Stabilität und Kompatibilität der App wurden verbessert.",
+    "fr-FR": "Amélioration de la stabilité et de la compatibilité de l’application.",
+    "pt-BR": "Melhoramos a estabilidade e a compatibilidade do aplicativo.",
+    "zh-TW": "提升應用程式的穩定性與相容性。",
+    "it-IT": "Migliorate la stabilità e la compatibilità dell’app.",
+    "zh-CN": "提升应用的稳定性与兼容性。"
   }
 }

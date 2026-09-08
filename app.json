@@ -3,13 +3,13 @@
     "name": "ALPHA",
     "slug": "alpha",
     "scheme": "alpha",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.eastnoise.alpha",
-      "buildNumber": "20",
+      "buildNumber": "21",
       "appleTeamId": "K8387X4MHC",
       "supportsTablet": false,
       "config": {
@@ -35,7 +35,7 @@
     },
     "android": {
       "package": "com.eastnoise.alpha",
-      "versionCode": 6,
+      "versionCode": 7,
       "blockedPermissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
