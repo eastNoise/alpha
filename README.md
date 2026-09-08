@@ -3,9 +3,12 @@
 Expo SDK 57 + React Native + TypeScript implementation of the ALPHA v19 mobile app.
 
 Published in the Korean stores: Android `1.0.6 (6)` and iOS `1.0.6 (20)`.
-Post-release SDK maintenance is tracked in
-`release/post-release-status-2026-09-08.md`; these local patches are not in the
-published binaries. See
+Maintenance release `1.0.7` is submitted: Android code `7` (production and closed
+Alpha track), iOS build `21` (waiting for review, automatic release after approval).
+These patches are not yet in the published `1.0.6` binaries. Current evidence and
+remaining external gates are in `release/release-status-1.0.7-2026-09-08.md`.
+Earlier post-release maintenance is in
+`release/post-release-status-2026-09-08.md`. See
 `release/google-play/release-status-2026-09-03.md` and
 `release/ios/release-status-2026-09-03.md` for the verified build and
 submission states.

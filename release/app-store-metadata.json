@@ -8,7 +8,7 @@
     "ko": {
       "name": "ALPHA - 90일 자기통제",
       "subtitle": "90일로 네 인생을 다시 세워라",
-      "whatsNew": "Expo SDK를 최신 안정 버전으로 올리고 앱 안정성과 호환성을 개선했습니다.",
+      "whatsNew": "앱 안정성과 호환성을 개선했습니다.",
       "promotionalText": "의욕을 기다리지 마라. BASIC부터 HARD까지 매일 루틴을 끝내고 하루를 마감하라. 완료한 날도 무너진 날도 기록이 네 기준이 된다.",
       "keywords": "루틴,습관,자기관리,기록,집중,절제,운동,회고,생산성,목표",
       "description": "의욕은 오래가지 않는다. 기준은 반복으로 만들어진다.\n\nALPHA는 BASIC, STANDARD, HARD로 이어지는 3단계 자기통제 루틴 프로그램이다. 각 과정은 30일이며, 세 과정을 한 번에 통과하면 기본 여정은 90일이다.\n\nBASIC에서 몸과 생활의 기본을 세워라.\nSTANDARD에서 강도와 정확성을 높여라.\nHARD에서 집중과 절제를 끝까지 밀어붙여라.\n\n매일 해야 할 루틴을 확인하고 완료하라. 하루를 마감한 뒤 짧은 회고를 남겨라. 완료한 날도 무너진 날도 기록에 남는다. 기준을 충족하면 다음 과정이 열린다. 통과하지 못하면 같은 과정에 다시 도전할 수 있다.\n\n계정은 필요 없다. 모든 기록은 기기에 저장된다.\n\n의욕을 기다리지 마라.\n오늘을 끝내라.\n90일로 네 인생을 다시 세워라."
@@ -16,7 +16,7 @@
     "en-US": {
       "name": "ALPHA - 90-Day Discipline",
       "subtitle": "Rebuild Your Life in 90 Days",
-      "whatsNew": "Updated to the latest stable Expo SDK and improved app stability and compatibility.",
+      "whatsNew": "Improved app stability and compatibility.",
       "promotionalText": "Stop waiting for motivation. Complete your routines, close the day, and keep an honest record through BASIC, STANDARD, and HARD.",
       "keywords": "habits,routine,focus,self control,workout,journal,productivity,goals,motivation,consistency",
       "description": "Motivation does not last. Standards are built through repetition.\n\nALPHA is a three-stage self-discipline program. BASIC, STANDARD, and HARD each run for 30 days, making the core journey 90 days.\n\nBuild the foundations of body and daily life in BASIC.\nRaise intensity and precision in STANDARD.\nCarry focus and self-control through to the end in HARD.\n\nComplete each day's routines. Close the day and leave a short, honest reflection. Both completed and missed days remain in your record. Meet the standard to unlock the next course. If you fall short, you can take the course again.\n\nNo account is required. Your records stay on your device.\n\nStop waiting for motivation.\nClose the day.\nRebuild your life in 90 days."
@@ -24,7 +24,7 @@
     "ja": {
       "name": "ALPHA - 90日間の自己規律",
       "subtitle": "90日で人生を立て直せ",
-      "whatsNew": "Expo SDKを最新の安定版に更新し、アプリの安定性と互換性を改善しました。",
+      "whatsNew": "アプリの安定性と互換性を改善しました。",
       "promotionalText": "やる気を待つな。BASICからHARDまで毎日のルーティンを終え、一日を締めろ。できた日も崩れた日も、その記録が自分の基準になる。",
       "keywords": "習慣,ルーティン,自己管理,自律,集中,筋トレ,記録,日記,節制,目標",
       "description": "やる気は長続きしない。基準は反復によってつくられる。\n\nALPHAは、BASIC、STANDARD、HARDへ進む3段階の自己規律プログラムだ。各コースは30日。3つを一度で通過すれば、基本の道のりは90日となる。\n\nBASICで身体と生活の土台をつくれ。\nSTANDARDで強度と精度を上げろ。\nHARDで集中と自制を最後まで貫け。\n\n毎日のルーティンを完了し、一日を締め、短く正直な振り返りを残せ。できた日も未完了の日も、すべて記録に残る。基準を満たせば次のコースが開く。届かなければ同じコースに再挑戦できる。\n\nアカウントは不要。すべての記録は端末内に保存される。\n\nやる気を待つな。\n今日を終えろ。\n90日で人生を立て直せ。"
@@ -32,7 +32,7 @@
     "es-ES": {
       "name": "ALPHA - Disciplina en 90 días",
       "subtitle": "Reconstruye tu vida en 90 días",
-      "whatsNew": "Actualizamos Expo SDK a la última versión estable y mejoramos la estabilidad y la compatibilidad.",
+      "whatsNew": "Mejoramos la estabilidad y la compatibilidad de la aplicación.",
       "promotionalText": "No esperes la motivación. Cumple tus rutinas, cierra el día y conserva un registro honesto desde BASIC hasta HARD.",
       "keywords": "hábitos,rutina,enfoque,autocontrol,ejercicio,diario,productividad,metas,motivación,constancia",
       "description": "La motivación no dura. La disciplina se construye con repetición.\n\nALPHA es un programa de autodisciplina en tres etapas. BASIC, STANDARD y HARD duran 30 días cada una. Si completas las tres a la primera, el recorrido base dura 90 días.\n\nConstruye las bases del cuerpo y la vida diaria en BASIC.\nAumenta la intensidad y la precisión en STANDARD.\nLleva la concentración y el autocontrol hasta el final en HARD.\n\nCompleta las rutinas de cada día. Cierra el día y deja una reflexión breve y sincera. Tanto los días completados como los incompletos quedan en tu registro. Cumple el estándar para desbloquear el siguiente curso. Si no lo alcanzas, puedes repetir el curso.\n\nNo necesitas una cuenta. Tus registros permanecen en tu dispositivo.\n\nNo esperes la motivación.\nCierra el día.\nReconstruye tu vida en 90 días."
@@ -40,7 +40,7 @@
     "de-DE": {
       "name": "ALPHA - 90 Tage Disziplin",
       "subtitle": "Bau dein Leben in 90 Tagen neu",
-      "whatsNew": "Expo SDK wurde auf die neueste stabile Version aktualisiert und Stabilität sowie Kompatibilität wurden verbessert.",
+      "whatsNew": "Stabilität und Kompatibilität der App wurden verbessert.",
       "promotionalText": "Warte nicht auf Motivation. Erledige deine Routinen, schließe den Tag ab und führe von BASIC bis HARD ein ehrliches Protokoll.",
       "keywords": "Gewohnheiten,Routine,Fokus,Selbstkontrolle,Training,Tagebuch,Produktivität,Ziele,Motivation",
       "description": "Motivation hält nicht. Disziplin entsteht durch Wiederholung.\n\nALPHA ist ein dreistufiges Programm für Selbstdisziplin. BASIC, STANDARD und HARD dauern jeweils 30 Tage. Wer alle drei beim ersten Versuch besteht, absolviert den regulären Weg in 90 Tagen.\n\nLege in BASIC das Fundament für Körper und Alltag.\nSteigere in STANDARD Intensität und Präzision.\nHalte in HARD Fokus und Selbstkontrolle bis zum Ende.\n\nErledige die täglichen Routinen. Schließe den Tag ab und hinterlasse eine kurze, ehrliche Reflexion. Vollständige und unvollständige Tage bleiben im Verlauf sichtbar. Erfüllst du den Standard, wird der nächste Kurs freigeschaltet. Andernfalls kannst du den Kurs wiederholen.\n\nKein Konto erforderlich. Deine Daten bleiben auf deinem Gerät.\n\nWarte nicht auf Motivation.\nSchließe den Tag ab.\nBau dein Leben in 90 Tagen neu auf."
@@ -48,7 +48,7 @@
     "fr-FR": {
       "name": "ALPHA - Discipline en 90 jours",
       "subtitle": "Rebâtis ta vie en 90 jours",
-      "whatsNew": "Mise à jour vers la dernière version stable d’Expo SDK, avec une stabilité et une compatibilité améliorées.",
+      "whatsNew": "Amélioration de la stabilité et de la compatibilité de l’application.",
       "promotionalText": "N'attends pas la motivation. Termine tes routines, clôture ta journée et garde une trace honnête de BASIC jusqu'à HARD.",
       "keywords": "habitudes,routine,concentration,maîtrise,fitness,journal,productivité,objectifs,motivation",
       "description": "La motivation ne dure pas. La discipline se construit par la répétition.\n\nALPHA est un programme d'autodiscipline en trois étapes. BASIC, STANDARD et HARD durent chacune 30 jours. Si tu réussis les trois du premier coup, le parcours de base dure 90 jours.\n\nPose les bases du corps et du quotidien en BASIC.\nAugmente l'intensité et la précision en STANDARD.\nPousse la concentration et la maîtrise de soi jusqu'au bout en HARD.\n\nTermine les routines du jour. Clôture ta journée et laisse une réflexion courte et sincère. Les journées réussies comme incomplètes restent dans ton historique. Atteins le niveau requis pour débloquer le parcours suivant. Sinon, tu peux recommencer le même parcours.\n\nAucun compte n'est requis. Tes données restent sur ton appareil.\n\nN'attends pas la motivation.\nClôture ta journée.\nRebâtis ta vie en 90 jours."
@@ -56,7 +56,7 @@
     "pt-BR": {
       "name": "ALPHA - Disciplina em 90 dias",
       "subtitle": "Reconstrua sua vida em 90 dias",
-      "whatsNew": "Atualizamos o Expo SDK para a versão estável mais recente e melhoramos a estabilidade e a compatibilidade.",
+      "whatsNew": "Melhoramos a estabilidade e a compatibilidade do aplicativo.",
       "promotionalText": "Pare de esperar pela motivação. Conclua suas rotinas, encerre o dia e mantenha um registro honesto do BASIC ao HARD.",
       "keywords": "hábitos,rotina,foco,autocontrole,treino,diário,produtividade,metas,motivação,constância",
       "description": "A motivação não dura. A disciplina nasce da repetição.\n\nALPHA é um programa de autodisciplina em três etapas. BASIC, STANDARD e HARD duram 30 dias cada. Se você concluir as três de primeira, a jornada principal dura 90 dias.\n\nConstrua as bases do corpo e da vida diária no BASIC.\nAumente a intensidade e a precisão no STANDARD.\nLeve o foco e o autocontrole até o fim no HARD.\n\nConclua as rotinas de cada dia. Encerre o dia e deixe uma reflexão curta e sincera. Tanto os dias concluídos quanto os incompletos ficam no seu registro. Atinja o padrão para liberar o próximo curso. Se não conseguir, você pode repetir o curso.\n\nNenhuma conta é necessária. Seus registros ficam no dispositivo.\n\nPare de esperar pela motivação.\nEncerre o dia.\nReconstrua sua vida em 90 dias."
@@ -64,7 +64,7 @@
     "zh-Hant": {
       "name": "ALPHA - 90天自律養成",
       "subtitle": "用90天，重新建立你的人生",
-      "whatsNew": "已將 Expo SDK 更新至最新穩定版本，並提升應用程式的穩定性與相容性。",
+      "whatsNew": "提升應用程式的穩定性與相容性。",
       "promotionalText": "別再等待動力。從BASIC到HARD，完成每天的習慣並結束今天。完成與未完成的每一天，都會成為你的標準。",
       "keywords": "自律,習慣,打卡,專注,健身,記錄,日記,效率,自我管理,目標",
       "description": "動力不會持久。標準靠反覆行動建立。\n\nALPHA是一套三階段的自律計畫。BASIC、STANDARD、HARD各30天；三個階段一次通過，基本旅程就是90天。\n\n在BASIC建立身體與生活的基礎。\n在STANDARD提高強度與精準度。\n在HARD把專注與克制堅持到底。\n\n完成每天的習慣，結束今天，並留下簡短而誠實的反思。完成或未完成的日子都會留在記錄中。達到標準後，下一個課程就會解鎖；若未達標，可以重新挑戰同一課程。\n\n不需要帳號。所有記錄都儲存在你的裝置上。\n\n別再等待動力。\n完成今天。\n用90天，重新建立你的人生。"
@@ -72,7 +72,7 @@
     "it": {
       "name": "ALPHA - Disciplina: 90 giorni",
       "subtitle": "Ricostruisciti in 90 giorni",
-      "whatsNew": "Expo SDK è stato aggiornato all’ultima versione stabile, migliorando stabilità e compatibilità.",
+      "whatsNew": "Migliorate la stabilità e la compatibilità dell’app.",
       "promotionalText": "Non aspettare la motivazione. Completa le routine, chiudi la giornata e conserva un registro sincero da BASIC a HARD.",
       "keywords": "abitudini,routine,focus,autocontrollo,allenamento,diario,produttività,obiettivi,motivazione",
       "description": "La motivazione non dura. La disciplina nasce dalla ripetizione.\n\nALPHA è un programma di autodisciplina in tre fasi. BASIC, STANDARD e HARD durano 30 giorni ciascuno. Se li completi tutti al primo tentativo, il percorso base dura 90 giorni.\n\nCostruisci le basi del corpo e della vita quotidiana in BASIC.\nAumenta intensità e precisione in STANDARD.\nPorta concentrazione e autocontrollo fino in fondo in HARD.\n\nCompleta le routine di ogni giorno. Chiudi la giornata e lascia una riflessione breve e sincera. I giorni completati e quelli incompleti restano nel registro. Raggiungi lo standard per sbloccare il corso successivo. Se non ci riesci, puoi ripetere il corso.\n\nNon serve un account. I tuoi dati restano sul dispositivo.\n\nNon aspettare la motivazione.\nChiudi la giornata.\nRicostruisci la tua vita in 90 giorni."
@@ -80,7 +80,7 @@
     "zh-Hans": {
       "name": "ALPHA - 90天自律养成",
       "subtitle": "用90天，重建你的人生",
-      "whatsNew": "已将 Expo SDK 更新至最新稳定版本，并提升应用的稳定性与兼容性。",
+      "whatsNew": "提升应用的稳定性与兼容性。",
       "promotionalText": "别再等待动力。从BASIC到HARD，完成每天的习惯并结束今天。完成或未完成的每一天，都会成为你的标准。",
       "keywords": "自律,习惯,打卡,专注,健身,记录,日记,效率,自我管理,目标",
       "description": "动力不会持久。标准靠反复行动建立。\n\nALPHA是一套三阶段的自律计划。BASIC、STANDARD、HARD各30天；三个阶段一次通过，基础旅程就是90天。\n\n在BASIC建立身体与生活的基础。\n在STANDARD提高强度与准确度。\n在HARD把专注和克制坚持到底。\n\n完成每天的习惯，结束今天，并留下简短而诚实的复盘。完成或未完成的日子都会留在记录中。达到标准后，下一个课程就会解锁；如果未达标，可以重新挑战同一课程。\n\n不需要账号。所有记录都保存在你的设备上。\n\n别再等待动力。\n完成今天。\n用90天，重建你的人生。"
