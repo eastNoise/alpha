@@ -1,94 +1,62 @@
 # ALPHA Global Store Copy
 
-App name is intentionally shared across every locale: **ALPHA: REFORGE**.
+- updated: 2026-09-11
+- status: current
+- App Store source of truth: `release/app-store-metadata.json`
+- Google Play source of truth: `release/google-play/store-listings.json`
 
-## 한국어 (ko-KR)
+이 문서는 스토어 카피의 사람이 읽는 색인이다. 실제 제출 문자열은 위 JSON을 기준으로 하며, 이 문서에 상세 설명을 중복 복사하지 않는다.
 
-- 부제: 알파가 되어라.
-- 짧은 설명: 매일 루틴을 지키고 기록하며 BASIC에서 HARD까지 자신만의 기준을 세워라.
-- 프로모션 문구: 의욕을 기다리지 마라. 오늘의 루틴을 끝내고, 하루를 마감하고, 쌓인 기록으로 스스로를 증명하라.
-- 키워드: 루틴,습관,자기관리,자기계발,동기부여,운동,기록,집중,절제,30일
-- 상세 설명:
-  ALPHA는 말이 아니라 반복으로 자신을 다시 만드는 30일 루틴 프로그램이다.
+## Product contract
 
-  BASIC에서 몸과 생활의 기본을 세우고, STANDARD에서 강도와 정확성을 높이며, HARD에서 집중과 절제를 끝까지 밀어붙인다. 매일 루틴을 체크하고 하루를 마감한 뒤 솔직한 회고를 남겨라. 완료한 날과 무너진 날 모두 기록된다.
+- 앱은 `BASIC → STANDARD → HARD`의 3단계 자기통제 프로그램이다.
+- 각 과정은 30일이고, 세 과정을 한 번에 통과하는 기본 여정은 90일이다.
+- 완료한 날과 미완료한 날이 모두 기록된다.
+- 계정은 필요하지 않으며 기록은 기기에 저장된다.
+- ALPHA 전체를 단일 30일 프로그램으로 표현하지 않는다.
+- 90일을 과학적으로 보장된 변화 기간처럼 표현하지 않는다.
 
-  기분은 늦게 따라온다. 먼저 움직여라. 쌓인 기록이 너를 만든다.
+## Current localized names and subtitles
 
-## English (en-US)
+| Locale | Name | Subtitle |
+| --- | --- | --- |
+| ko | ALPHA - 90일 자기통제 | 90일로 네 인생을 다시 세워라 |
+| en-US | ALPHA - 90-Day Discipline | Rebuild Your Life in 90 Days |
+| ja | ALPHA - 90日間の自己規律 | 90日で人生を立て直せ |
+| es-ES | ALPHA - Disciplina en 90 días | Reconstruye tu vida en 90 días |
+| de-DE | ALPHA - 90 Tage Disziplin | Bau dein Leben in 90 Tagen neu |
+| fr-FR | ALPHA - Discipline en 90 jours | Rebâtis ta vie en 90 jours |
+| pt-BR | ALPHA - Disciplina em 90 dias | Reconstrua sua vida em 90 dias |
+| zh-Hant | ALPHA - 90天自律養成 | 用90天，重新建立你的人生 |
+| it | ALPHA - Disciplina: 90 giorni | Ricostruisciti in 90 giorni |
+| zh-Hans | ALPHA - 90天自律养成 | 用90天，重建你的人生 |
 
-- Subtitle: Build Discipline in 30 Days
-- Short description: Keep the routine. Close the day. Build your standard from BASIC to HARD.
-- Promotional text: Stop waiting for motivation. Finish today’s routines, close the day, and let an honest record prove who you are becoming.
-- Keywords: discipline,habits,routine,focus,motivation,workout,journal,productivity,self improvement
-- Full description:
-  ALPHA is a 30-day discipline program for rebuilding yourself through action, not promises.
+## English message hierarchy
 
-  Establish the fundamentals in BASIC. Raise the intensity and precision in STANDARD. Push focus and restraint to the end in HARD. Check each routine, close the day, and leave an honest reflection. Both the days you win and the days you fall short remain in the record.
+1. `A fixed 90-day discipline program.`
+2. `BASIC, STANDARD, and HARD each run for 30 days.`
+3. `Complete your routines, close the day, and keep an honest record.`
+4. `No account is required. Your records stay on your device.`
 
-  Motivation arrives late. Move first. The records you stack become the person you are.
+Reddit 등 커뮤니티 홍보에서는 다음 보조 포지셔닝을 사용한다.
 
-## 日本語 (ja-JP)
+> ALPHA is a fixed 90-day discipline program for people who don't want to design another productivity system.
 
-- サブタイトル: 30日で揺れない自分をつくる
-- 短い説明: 毎日のルーティンを守り、記録し、BASICからHARDまで自分の基準を築け。
-- プロモーションテキスト: やる気を待つな。今日のルーティンを終え、一日を締め、積み上げた記録で変化を証明しろ。
-- キーワード: 習慣,ルーティン,自己管理,自己成長,集中,筋トレ,記録,日記,自制,30日
-- 詳細説明:
-  ALPHAは、言葉ではなく行動で自分をつくり直す30日間の規律プログラムです。
+브랜드의 ALPHA는 타인 지배나 지위가 아니라 자기통제로 정의한다.
 
-  BASICで身体と生活の土台を整え、STANDARDで強度と精度を上げ、HARDで集中と自制を最後まで貫きます。毎日のルーティンを確認し、一日を締め、正直な振り返りを残してください。できた日も、崩れた日も、すべて記録に残ります。
+> ALPHA isn't about dominating other people. It's about keeping promises to yourself.
 
-  やる気はあとからついてくる。まず動け。積み上げた記録が自分をつくる。
+상세 Reddit 채널·카피·크리에이티브 기준은 `docs/marketing/reddit-growth-research-2026-09-11.md`를 참고한다.
 
-## Español (es-ES)
+## Validation
 
-- Subtítulo: Disciplina en 30 días
-- Descripción breve: Cumple la rutina, cierra el día y eleva tu estándar de BASIC a HARD.
-- Texto promocional: No esperes a tener ganas. Termina las rutinas de hoy, cierra el día y deja que un registro honesto demuestre en quién te estás convirtiendo.
-- Palabras clave: disciplina,hábitos,rutina,enfoque,motivación,ejercicio,diario,productividad,superación
-- Descripción completa:
-  ALPHA es un programa de disciplina de 30 días para reconstruirte con acciones, no con promesas.
+스토어 카피를 변경할 때는 다음을 함께 확인한다.
 
-  Crea los fundamentos en BASIC. Eleva la intensidad y la precisión en STANDARD. Lleva el enfoque y el autocontrol hasta el final en HARD. Marca cada rutina, cierra el día y deja una reflexión sincera. Tanto las victorias como los días incompletos permanecen en el registro.
+```bash
+jq -e '.localizations | length == 10' release/app-store-metadata.json
+jq -e '.localizations | length == 10' release/google-play/store-listings.json
+rg -n 'ALPHA is a 30-day discipline program|ALPHA는 말이 아니라 반복으로 자신을 다시 만드는 30일' \
+  release/app-store-metadata.json release/google-play/store-listings.json
+```
 
-  La motivación llega tarde. Muévete primero. Los registros que acumulas se convierten en quien eres.
-
-## Deutsch (de-DE)
-
-- Untertitel: Disziplin in 30 Tagen
-- Kurzbeschreibung: Halte deine Routinen ein und steigere deinen Maßstab von BASIC bis HARD.
-- Werbetext: Warte nicht auf Motivation. Beende die Routinen von heute, schließe den Tag ab und lass ehrliche Aufzeichnungen deinen Wandel beweisen.
-- Keywords: Disziplin,Gewohnheiten,Routine,Fokus,Motivation,Training,Tagebuch,Produktivität,Selbstkontrolle
-- Vollständige Beschreibung:
-  ALPHA ist ein 30-Tage-Programm, mit dem du dich durch Handlungen statt durch Versprechen neu aufbaust.
-
-  Lege in BASIC das Fundament. Erhöhe in STANDARD Intensität und Präzision. Bring in HARD Fokus und Selbstkontrolle bis zum Ende. Hake jede Routine ab, schließe den Tag und hinterlasse eine ehrliche Reflexion. Erfolge und unvollständige Tage bleiben gleichermaßen sichtbar.
-
-  Motivation kommt später. Beweg dich zuerst. Die Aufzeichnungen, die du stapelst, werden zu dir.
-
-## Français (fr-FR)
-
-- Sous-titre: La discipline en 30 jours
-- Description courte: Tiens tes routines et élève ton standard de BASIC jusqu’à HARD.
-- Texte promotionnel: N’attends pas la motivation. Termine les routines du jour, clôture la journée et laisse un journal honnête prouver ta transformation.
-- Mots-clés: discipline,habitudes,routine,concentration,motivation,entraînement,journal,productivité,maîtrise
-- Description complète:
-  ALPHA est un programme de discipline de 30 jours pour te reconstruire par les actes, pas par les promesses.
-
-  Pose les fondations en BASIC. Augmente l’intensité et la précision en STANDARD. Pousse la concentration et la maîtrise jusqu’au bout en HARD. Coche chaque routine, clôture la journée et laisse une réflexion honnête. Les victoires comme les journées incomplètes restent dans le journal.
-
-  La motivation arrive en retard. Bouge d’abord. Les traces que tu empiles deviennent la personne que tu es.
-
-## 简体中文 (zh-Hans)
-
-- 副标题: 30天，锻造真正的自律
-- 简短说明: 坚守每日习惯，从BASIC到HARD，建立属于自己的标准。
-- 推广文本: 不要等待动力。完成今天的习惯，结束今天，让诚实的记录证明你正在成为谁。
-- 关键词: 自律,习惯,打卡,专注,动力,健身,记录,日记,效率,自我提升
-- 完整描述:
-  ALPHA是一套为期30天的自律计划。它不靠承诺，而靠行动重塑自己。
-
-  在BASIC建立身体与生活的基础，在STANDARD提高强度与准确度，在HARD把专注和克制坚持到底。完成每日习惯，结束今天，并留下诚实的复盘。无论胜利还是未完成，都会被如实记录。
-
-  动力总会晚一步。先行动。你累积的记录，最终会成为你。
+마지막 검색은 과거의 “전체가 30일” 표현이 다시 들어오지 않았는지 검토하기 위한 것이다. 각 과정이 30일이라는 정확한 설명은 유지한다.

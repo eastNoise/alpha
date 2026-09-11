@@ -1,0 +1,73 @@
+{
+  "campaign": "alpha-reddit-organic-launch",
+  "createdAt": "2026-09-11",
+  "locale": "en-US",
+  "status": "ready-for-review-not-published",
+  "sourcePolicy": "actual-product-screens-only",
+  "sources": [
+    "assets/icon.png",
+    "release/screenshots/raw/en-US/02-today.png",
+    "release/screenshots/raw/en-US/03-course.png",
+    "release/screenshots/raw/en-US/04-day-result.png"
+  ],
+  "renderer": {
+    "images": "scripts/marketing/render-reddit-launch-assets.swift",
+    "video": "scripts/marketing/render-reddit-launch-video.sh"
+  },
+  "exports": [
+    {
+      "file": "01-program-not-tracker.png",
+      "purpose": "carousel-cover",
+      "size": "1200x1500",
+      "sha256": "5ca30fdd580b89c6f057f41fb0915a32be4c48b22bafb11ce27fa3c9cb436f69"
+    },
+    {
+      "file": "02-thirty-by-three.png",
+      "purpose": "course-structure",
+      "size": "1200x1500",
+      "sha256": "46793b22c8d0d60943491252a312949dea51f5bc2cad673edb1e3df319527e5b"
+    },
+    {
+      "file": "03-missed-days-recorded.png",
+      "purpose": "honest-record-proof",
+      "size": "1200x1500",
+      "sha256": "3d86d946ad8862fc3bd743cd513a66af072abcd42eb4c2602cf7b1e2621a71cb"
+    },
+    {
+      "file": "04-price-privacy.png",
+      "purpose": "offer-and-privacy",
+      "size": "1200x1500",
+      "sha256": "4fbd8950c95cf757a45633d5b1535cbcab5219742fa0699b479cb41daf0ac3b9"
+    },
+    {
+      "file": "05-self-command.png",
+      "purpose": "brand-reframe-alternative",
+      "size": "1200x1500",
+      "sha256": "3f63b2de95523de14ba4d224bdbfe21da58ed35a3217550265072e1670a39237"
+    },
+    {
+      "file": "alpha-reddit-launch-6s.mp4",
+      "purpose": "short-product-demo",
+      "size": "1080x1350",
+      "durationSeconds": 6.233333,
+      "video": "H.264, yuv420p, 30fps, no audio",
+      "sha256": "24cfebab3ea29cecba9cfdf743ecf243f998e296a88fe18c29085749baa3deb5"
+    }
+  ],
+  "reviewFiles": [
+    "contact-sheet.jpg",
+    "video-contact-sheet.jpg",
+    "post-copy.md"
+  ],
+  "claims": {
+    "price": "$2.99 one-time",
+    "subscription": "none",
+    "account": "not required",
+    "storage": "on-device",
+    "course": "BASIC, STANDARD, and HARD; 30 days each; 90-day core journey"
+  },
+  "publishing": {
+    "approved": false,
+    "notes": "Do not publish until the target community eligibility, direct campaign links, and final post copy are confirmed."
+  }
+}
