@@ -7,13 +7,15 @@
 - filtered URL: https://www.reddit.com/r/SideProject/comments/1we7b09/i_didnt_need_another_motivational_app_i_needed_90/
 - filter verification: submitted 2026-09-12 17:47:17 KST; API reported `removed_by_category: reddit` and `is_robot_indexable: false`; a logged-out page showed `Sorry, this post was removed by Reddit's filters.`
 - public-view evidence: `/Users/josugeun/cmux-assets/alpha/browser/20260911-reddit-login/sideproject-public-filtered.png`
+- moderator review: requested via modmail at 2026-09-12 18:21 KST with subject `Request for manual review of filtered ALPHA post`; awaiting response
+- modmail evidence: `/Users/josugeun/cmux-assets/alpha/browser/20260912-reddit-modmail-sent.png`
 - second-post format: text-only; the prepared 6.23-second app demo was not attached
 - primary creative: `01-program-not-tracker.png` → `02-thirty-by-three.png` → `03-missed-days-recorded.png` → `04-price-privacy.png`
 - video alternative: `alpha-reddit-launch-6s.mp4`
 
 ## Submitted post: r/SideProject
 
-The user reviewed the Korean direction and explicitly approved proceeding. Reddit created post `1we7b09`, but its automated filter removed it immediately. Do not duplicate-post it. Sending modmail or trying another community requires a separate decision.
+The user reviewed the Korean direction and explicitly approved proceeding. Reddit created post `1we7b09`, but its automated filter removed it immediately. A single transparent modmail asked the `r/SideProject` team to review and approve the existing post if appropriate; it also promised not to repost while review is pending. Do not duplicate-post it or contact the moderators again unless they reply or a new decision is made.
 
 ### Title
 
