@@ -1,7 +1,7 @@
 # ALPHA Reddit Post Copy
 
-- updated: 2026-09-11
-- status: ready for eligibility check; not published
+- updated: 2026-09-12
+- status: `r/ShowYourApp` copy finalized; first submission blocked by Reddit `BAD_CAPTCHA`
 - primary creative: `01-program-not-tracker.png` → `02-thirty-by-three.png` → `03-missed-days-recorded.png` → `04-price-privacy.png`
 - video alternative: `alpha-reddit-launch-6s.mp4`
 
@@ -37,13 +37,17 @@ One deliberate tradeoff I should make explicit: local-only means there is no clo
 
 ### Title
 
-A prescribed 90-day discipline app instead of a customizable habit tracker
+We built a 90-day discipline app that doesn't let you customize the program — freeing or too rigid?
 
 ### Body
 
-I built ALPHA around one deliberate constraint: the user does not design the program. BASIC → STANDARD → HARD raises the standard over three 30-day stages, and missed days remain visible.
+We're East Noise, the small team behind ALPHA.
 
-It is $2.99 once, requires no account, and stores records on the device. The attached six-second video shows the actual app flow. I am especially interested in whether the fixed path is immediately clear from the video.
+Most habit apps start by asking you to design a system. We chose the opposite: ALPHA gives you a fixed 90-day path. BASIC → STANDARD → HARD raises the standard every 30 days, and completed and missed days both stay visible.
+
+It's intentionally rigid: $2.99 once, no account, no subscription, and progress and reflections stay on your device (so there is no cloud backup).
+
+We'd genuinely like feedback on the core constraint: does a fixed path feel freeing, or just too restrictive?
 
 iOS: https://apps.apple.com/us/app/alpha-90-day-discipline/id6788264733
 

@@ -3,9 +3,9 @@
 - 조사 기준일: 2026-09-11 (KST)
 - 대상: 영어권 Reddit 유기적 홍보, iOS·Android 유료 앱
 - 제품 기준: 현재 저장소, 미국 App Store 공개 정보, ALPHA 공식 웹사이트
-- 문서 상태: 실행 제안. 아직 Reddit 게시·댓글·DM은 하지 않음
+- 문서 상태: 첫 게시물 작성 완료. 신규 계정 CAPTCHA 통과 뒤 공개 예정
 
-## 실행 현황 — 2026-09-11 18:00 KST
+## 실행 현황 — 2026-09-12 KST
 
 | 항목 | 상태 | 근거·다음 행동 |
 | --- | --- | --- |
@@ -14,9 +14,9 @@
 | Reddit 이미지·영상 | 완료 | `release/marketing/reddit/2026-09-11/`에 4:5 이미지 5장과 6.23초 영상·manifest·게시 초안 생성 |
 | Android Reddit UTM | 준비 완료 | 커뮤니티별 `utm_source=reddit`, `utm_campaign` 링크를 게시 초안에 반영 |
 | App Store 캠페인 링크 | 대기 | 현재 연결 가능한 로그인 브라우저가 없어 App Store Connect의 Campaigns에서 생성 필요 |
-| Reddit 계정 자격 | 미확인 | 현재 연결 가능한 로그인 브라우저가 없어 로컬 카르마·최근 자기홍보일·이메일 인증 확인 필요 |
+| Reddit 계정 자격 | 확인 완료 | `u/Impressive_Shock_785`가 Google `eastnoise26`에 연결됨. 이메일 인증 완료. 공개 이름은 `East Noise Apps`, 제품·팀 관계를 밝힌 프로필 설명 적용. 2026-09-11 생성, 게시물 카르마 1·댓글 카르마 0이라 `r/ProductivityApps`의 로컬 카르마 10 요건은 미충족. `r/ShowYourApp` 가입 완료 |
 | 창업자 Day 1 기록 | 사용자 실행 필요 | 실제 앱에서 BASIC을 시작하고 성공·실패 화면과 한 줄 회고를 보존 |
-| 공개 게시 | 미실행 | 계정 자격·iOS 캠페인 링크·게시 창업자 확인 뒤 최종 게시 |
+| 공개 게시 | CAPTCHA 대기 | `r/ShowYourApp`용 정직한 팀 소개·직접 스토어 링크·`Feedback` 플레어로 제출을 시도했으나 Reddit API가 `BAD_CAPTCHA`로 차단. CAPTCHA를 사람이 통과한 뒤 동일 원고를 한 번만 제출하고 공개 노출·삭제 여부를 확인 |
 
 ## 1. 결론부터
 
@@ -392,13 +392,17 @@ HARD 과정의 성인·민감 루틴은 SFW 커뮤니티의 첫 이미지나 제
 
 **Title**
 
-> A prescribed 90-day discipline app instead of a customizable habit tracker
+> We built a 90-day discipline app that doesn't let you customize the program — freeing or too rigid?
 
 **Body**
 
-> I built ALPHA around one deliberate constraint: the user does not design the program. BASIC → STANDARD → HARD raises the standard over three 30-day stages, and missed days remain visible.
+> We're East Noise, the small team behind ALPHA.
 >
-> It is $2.99 once, requires no account, and stores records on the device. Here is a 6-second walkthrough of the actual flow. I am especially interested in whether the fixed path is immediately clear from the video.
+> Most habit apps start by asking you to design a system. We chose the opposite: ALPHA gives you a fixed 90-day path. BASIC → STANDARD → HARD raises the standard every 30 days, and completed and missed days both stay visible.
+>
+> It's intentionally rigid: $2.99 once, no account, no subscription, and progress and reflections stay on your device (so there is no cloud backup).
+>
+> We'd genuinely like feedback on the core constraint: does a fixed path feel freeing, or just too restrictive?
 >
 > [iOS] · [Android]
 
