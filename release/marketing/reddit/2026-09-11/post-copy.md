@@ -31,7 +31,7 @@ You do the prescribed routines, close the day, and missed days stay visible. The
 
 The tradeoff is real: $2.99 once, no account or subscription, and progress and reflections stay on your device—so there is no cloud backup.
 
-We just launched it on iOS and Android. I'm not going to pretend it has already changed thousands of lives. I want the brutal version:
+We just launched it on iOS and Android. We're not going to pretend it has already changed thousands of lives. We want the brutal version:
 
 Would fewer choices help you act, or would you delete this immediately?
 
