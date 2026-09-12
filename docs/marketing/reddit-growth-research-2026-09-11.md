@@ -3,7 +3,7 @@
 - 조사 기준일: 2026-09-11 (KST)
 - 대상: 영어권 Reddit 유기적 홍보, iOS·Android 유료 앱
 - 제품 기준: 현재 저장소, 미국 App Store 공개 정보, ALPHA 공식 웹사이트
-- 문서 상태: `r/ShowYourApp` 첫 게시 삭제·`r/SideProject` 대체 초안 사용자 승인 대기
+- 문서 상태: `r/ShowYourApp` 첫 게시 삭제·`r/SideProject` 두 번째 게시 Reddit 자동 필터 제거
 
 ## 실행 현황 — 2026-09-12 KST
 
@@ -16,7 +16,7 @@
 | App Store 캠페인 링크 | 대기 | 현재 연결 가능한 로그인 브라우저가 없어 App Store Connect의 Campaigns에서 생성 필요 |
 | Reddit 계정 자격 | 확인 완료 | `u/Impressive_Shock_785`가 Google `eastnoise26`에 연결됨. 이메일 인증 완료. 공개 이름은 `East Noise Apps`, 제품·팀 관계를 밝힌 프로필 설명 적용. 2026-09-11 생성, 게시물 카르마 1·댓글 카르마 0이라 `r/ProductivityApps`의 로컬 카르마 10 요건은 미충족. `r/ShowYourApp` 가입 완료 |
 | 창업자 Day 1 기록 | 사용자 실행 필요 | 실제 앱에서 BASIC을 시작하고 성공·실패 화면과 한 줄 회고를 보존 |
-| 공개 게시 | 삭제 완료·대체안 승인 대기 | 2026-09-12 `r/ShowYourApp` [첫 게시물](https://www.reddit.com/r/ShowYourApp/comments/1we57jh/we_built_a_90day_discipline_app_that_doesnt_let/)은 조회 38·점수 1·댓글 0·공유 0에서 사용자 지시에 따라 삭제. API에서 작성자 `[deleted]`, `removed_by_category: deleted` 확인. 83만 구독 규모 `r/SideProject`의 주간 상위 앱 게시물은 영상 비중이 높아 6.23초 실제 앱 데모와 논쟁형 원고를 대체안으로 작성했으며 명시 승인 전 재게시 금지 |
+| 공개 게시 | 공개 실패·자동 필터 제거 | 2026-09-12 `r/ShowYourApp` [첫 게시물](https://www.reddit.com/r/ShowYourApp/comments/1we57jh/we_built_a_90day_discipline_app_that_doesnt_let/)은 조회 38·점수 1·댓글 0·공유 0에서 사용자 지시에 따라 삭제. 이어 사용자가 감정형 원고를 승인해 `r/SideProject` [두 번째 게시물](https://www.reddit.com/r/SideProject/comments/1we7b09/i_didnt_need_another_motivational_app_i_needed_90/)을 17:47 KST에 제출했으나 Reddit 자동 필터가 즉시 제거했다. API의 `removed_by_category: reddit`, `is_robot_indexable: false`와 로그아웃 화면의 제거 안내를 확인했다. 영상은 첨부되지 않은 텍스트 게시물이며, 중복 재게시·모더레이터 문의는 별도 결정 전 실행하지 않는다. |
 
 ## 1. 결론부터
 

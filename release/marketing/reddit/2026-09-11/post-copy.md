@@ -1,39 +1,51 @@
 # ALPHA Reddit Post Copy
 
 - updated: 2026-09-12
-- status: first `r/ShowYourApp` post deleted; `r/SideProject` rewrite awaiting user approval
+- status: first `r/ShowYourApp` post deleted; second `r/SideProject` post submitted but removed by Reddit's automated filter
 - deleted URL: https://www.reddit.com/r/ShowYourApp/comments/1we57jh/we_built_a_90day_discipline_app_that_doesnt_let/
 - result before deletion: 38 views, score 1, comments 0, shares 0, awards 0
+- filtered URL: https://www.reddit.com/r/SideProject/comments/1we7b09/i_didnt_need_another_motivational_app_i_needed_90/
+- filter verification: submitted 2026-09-12 17:47:17 KST; API reported `removed_by_category: reddit` and `is_robot_indexable: false`; a logged-out page showed `Sorry, this post was removed by Reddit's filters.`
+- public-view evidence: `/Users/josugeun/cmux-assets/alpha/browser/20260911-reddit-login/sideproject-public-filtered.png`
+- second-post format: text-only; the prepared 6.23-second app demo was not attached
 - primary creative: `01-program-not-tracker.png` → `02-thirty-by-three.png` → `03-missed-days-recorded.png` → `04-price-privacy.png`
 - video alternative: `alpha-reddit-launch-6s.mp4`
 
-## Approval draft: r/SideProject
+## Submitted post: r/SideProject
 
-Do not publish until the user explicitly approves this exact title, body, and creative. Recommended creative is the actual 6.23-second app demo `alpha-reddit-launch-6s.mp4`; if video upload is unavailable, return for a format decision instead of silently posting text-only.
+The user reviewed the Korean direction and explicitly approved proceeding. Reddit created post `1we7b09`, but its automated filter removed it immediately. Do not duplicate-post it. Sending modmail or trying another community requires a separate decision.
 
 ### Title
 
-We removed customization from our habit app. Is that discipline—or just bad UX?
+I didn't need another motivational app. I needed 90 days with nowhere to hide.
 
 ### Body
 
-We built ALPHA around an idea that sounds either obvious or terrible:
+A strong man isn't the loudest guy in the room.
 
-Maybe one of the easiest ways to procrastinate is to keep redesigning your system.
+It's the man who trains when nobody is watching. Who reads when he doesn't feel like it. Who gets back up after a bad day. Who keeps the promises he made to himself.
 
-So ALPHA doesn't ask you to build a routine. It gives you one fixed 90-day path:
+Full disclosure: I'm part of the team behind ALPHA. This isn't a disguised ‘I found this app and it changed my life’ post.
 
-- BASIC — 30 days
-- STANDARD — 30 days
-- HARD — 30 days
+We built it because we kept seeing the same loop: save motivational videos, design the perfect routine, restart every Monday, repeat.
 
-You do the prescribed routines, close the day, and missed days stay visible. The point is to remove the daily negotiation over what to do next.
+More choice was supposed to feel like freedom. Instead, it became an exit.
 
-The tradeoff is real: $2.99 once, no account or subscription, and progress and reflections stay on your device—so there is no cloud backup.
+So ALPHA removes the setup and gives you one fixed 90-day path:
 
-We just launched it on iOS and Android. We're not going to pretend it has already changed thousands of lives. We want the brutal version:
+- BASIC — 30 days to build the foundation
+- STANDARD — 30 days to stop avoiding discomfort
+- HARD — 30 days to keep going regardless of mood
 
-Would fewer choices help you act, or would you delete this immediately?
+You do the prescribed routines, close the day, and missed days stay visible. The goal isn't to look perfect. It's to face the record of who you actually were—and show up again tomorrow.
+
+The app won't change your life for you. It removes one excuse: deciding what to do next.
+
+ALPHA isn't about dominating other people. It's about commanding yourself.
+
+It's $2.99 once, with no subscription or account. Progress and reflections stay on your device, which also means there is no cloud backup.
+
+If you're tired of being the man who keeps planning and want to become the man who finishes, today can be Day 1.
 
 iOS: https://apps.apple.com/us/app/alpha-90-day-discipline/id6788264733
 
