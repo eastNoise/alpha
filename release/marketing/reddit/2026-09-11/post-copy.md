@@ -1,7 +1,9 @@
 # ALPHA Reddit Post Copy
 
 - updated: 2026-09-12
-- status: `r/ShowYourApp` copy finalized; first submission blocked by Reddit `BAD_CAPTCHA`
+- status: published to `r/ShowYourApp`; logged-out visibility verified
+- published URL: https://www.reddit.com/r/ShowYourApp/comments/1we57jh/we_built_a_90day_discipline_app_that_doesnt_let/
+- initial verification: `Feedback` flair, both store links visible, `removed_by_category: null`, `is_robot_indexable: true`, score 1, comments 0
 - primary creative: `01-program-not-tracker.png` → `02-thirty-by-three.png` → `03-missed-days-recorded.png` → `04-price-privacy.png`
 - video alternative: `alpha-reddit-launch-6s.mp4`
 
