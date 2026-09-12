@@ -1,11 +1,43 @@
 # ALPHA Reddit Post Copy
 
 - updated: 2026-09-12
-- status: published to `r/ShowYourApp`; logged-out visibility verified
-- published URL: https://www.reddit.com/r/ShowYourApp/comments/1we57jh/we_built_a_90day_discipline_app_that_doesnt_let/
-- initial verification: `Feedback` flair, both store links visible, `removed_by_category: null`, `is_robot_indexable: true`, score 1, comments 0
+- status: first `r/ShowYourApp` post deleted; `r/SideProject` rewrite awaiting user approval
+- deleted URL: https://www.reddit.com/r/ShowYourApp/comments/1we57jh/we_built_a_90day_discipline_app_that_doesnt_let/
+- result before deletion: 38 views, score 1, comments 0, shares 0, awards 0
 - primary creative: `01-program-not-tracker.png` → `02-thirty-by-three.png` → `03-missed-days-recorded.png` → `04-price-privacy.png`
 - video alternative: `alpha-reddit-launch-6s.mp4`
+
+## Approval draft: r/SideProject
+
+Do not publish until the user explicitly approves this exact title, body, and creative. Recommended creative is the actual 6.23-second app demo `alpha-reddit-launch-6s.mp4`; if video upload is unavailable, return for a format decision instead of silently posting text-only.
+
+### Title
+
+We removed customization from our habit app. Is that discipline—or just bad UX?
+
+### Body
+
+We built ALPHA around an idea that sounds either obvious or terrible:
+
+Maybe one of the easiest ways to procrastinate is to keep redesigning your system.
+
+So ALPHA doesn't ask you to build a routine. It gives you one fixed 90-day path:
+
+- BASIC — 30 days
+- STANDARD — 30 days
+- HARD — 30 days
+
+You do the prescribed routines, close the day, and missed days stay visible. The point is to remove the daily negotiation over what to do next.
+
+The tradeoff is real: $2.99 once, no account or subscription, and progress and reflections stay on your device—so there is no cloud backup.
+
+We just launched it on iOS and Android. I'm not going to pretend it has already changed thousands of lives. I want the brutal version:
+
+Would fewer choices help you act, or would you delete this immediately?
+
+iOS: https://apps.apple.com/us/app/alpha-90-day-discipline/id6788264733
+
+Android: https://play.google.com/store/apps/details?id=com.eastnoise.alpha&utm_source=reddit&utm_campaign=alpha_sideproject_01
 
 ## First post: r/ProductivityApps
 
